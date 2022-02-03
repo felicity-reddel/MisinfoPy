@@ -15,7 +15,7 @@ The goal of this project was to create an extendable agent-based model of misinf
    1. [UML Diagram](#31-uml-class-diagram)
    2. [Parameters](#32-model-parameters)
    3. [Results](#33-results)
-
+ 
     
 
 ## 1. General Remarks
