@@ -1,3 +1,7 @@
+import time
+import statistics
+import math
+from scipy.special import rel_entr
 from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.time import StagedActivation
@@ -20,7 +24,8 @@ class MisinfoPy(Model):
                  n_edges=2,
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                 ranking_intervention=False):
+                 ranking_intervention=False,
+                 show_plot=False):
         """
         Initializes the MisinfoPy
         :param agent_ratio: dictionary {String: float}
@@ -72,25 +77,53 @@ class MisinfoPy(Model):
             f"Agent 10": self.get_vax_belief_100,
         })
 
-        # Overview of how many agents have how many connections
-        data = [len(agent.followers) for agent in self.schedule.agents]
+        if show_plot:
+            # Overview of how many agents have how many connections
+            data = [len(agent.followers) for agent in self.schedule.agents]
 
-        bins = np.linspace(math.ceil(min(data)),
-                           math.floor(max(data)),
-                           40)  # a fixed number of bins
+            bins = np.linspace(math.ceil(min(data)),
+                               math.floor(max(data)),
+                               40)  # a fixed number of bins
 
-        plt.xlim([min(data) - 5, max(data) + 5])
+            plt.xlim([min(data) - 5, max(data) + 5])
 
-        plt.hist(data, bins=bins, alpha=0.5)
-        plt.xlabel(f'Number of followers (highest: {max(data)})')
-        plt.ylabel('Agent count')
-        plt.show()
+            plt.hist(data, bins=bins, alpha=0.5)
+            plt.xlabel(f'Number of followers (highest: {max(data)})')
+            plt.ylabel('Agent count')
+            plt.show()
 
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
         self.data_collector.collect(self)
         self.data_collector2.collect(self)
+
+    def run(self, steps=60, time_tracking=False, debug=False):
+        """
+        Runs the model for the specified number of steps.
+        :param steps: int: number of model-steps the model should take
+        :param time_tracking: Boolean, whether to print timing information
+        :param debug: Boolean, whether to print details
+        :return: tuple: metrics values for this run (n_above_belief_threshold, variance, kl_divergence, ...)
+        """
+
+        start_time = time.time()
+
+        for i in range(steps):
+            if debug:
+                print(f'Step: {i}')
+            self.step()
+
+        if time_tracking:
+            run_time = round(time.time() - start_time, 2)
+            print(f'Run time: {run_time} seconds')
+
+        # Calculate metrics for this run
+        # n_agents_above_belief_threshold = 0  # TODO: implement here
+        # polarization_variance = self.variance()
+        # polarization_kl_divergence_from_polarized = self.kl_divergence()
+
+        # return n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -456,7 +489,74 @@ class MisinfoPy(Model):
         return belief
 
 
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+# –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+def discretize(belief_list, n_bins=25):
+    """
+    Transform a list of (belief values) into a discretized distribution
+    :param belief_list: list: list of belief values (floats)
+    :param n_bins: int: number of bins
+    :return: list: list of integers, representing number of agents in that "belief-bin"
+    """
+    discrete_distribution = []
+    bin_size = math.ceil(100.0 / n_bins)
+    for i in range(1, n_bins + 1):
+        upper_bound = i * bin_size
+        agents_in_bin = [x for x in belief_list if x <= upper_bound]
+        # remove agents from current bin from the belief_list
+        belief_list = [x for x in belief_list if x not in agents_in_bin]
+        discrete_distribution.append(len(agents_in_bin))
+
+    # Make more robust (to avoid cases of existing empty bins, which would make KL-div=infinity)
+    if 0 in discrete_distribution:
+        discrete_distribution = [x+1 for x in discrete_distribution]
+
+    return discrete_distribution
+
+
+def create_polarized_pdf(epsilon=0.001, n_bins=25):
+    """
+    Creates most polarized probability distribtion function (pdf) as a comparison for the KL-divergence metric.
+    :param epsilon: float: smallest value, needed because values should not be 0 because of ln(0)=inf in KL-div
+    :param n_bins: int: number of bins of discrete belief_list
+    :return: list: representing polarized pdf
+    """
+    pole_value = (1 - ((n_bins - 2) * epsilon)) / 2
+    pdf = [epsilon] * n_bins
+    pdf[0] = pole_value
+    pdf[-1] = pole_value
+
+    return pdf
+
+
+def kl_divergence(belief_list, n_bins=25, n_digits=2):
+    """
+    Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
+    the current belief belief_list of the agents (or a the provided belief_list).
+    :param belief_list: list: listing the belief value of each agent
+    :param n_bins: int: number of bins for discretization of belief_list
+    :return: float: symmetric kl-divergence
+    :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
+    """
+
+    # Discretize belief_list
+    discrete_distribution = discretize(belief_list, n_bins)
+
+    # Transform to probability belief_list (i.e., transform belief_list into a relative belief_list)
+    relative_distribution = [x / sum(discrete_distribution) for x in discrete_distribution]
+
+    # Define the template of a polarized pdf. (Values should not be 0 because of ln(0)=inf in KL-divergence.)
+    polarized_pdf = create_polarized_pdf(epsilon=0.001, n_bins=n_bins)
+
+    # Actual KL-divergence calculation (which is the same as the sum over the relative entropy)
+    direction1 = sum(rel_entr(discrete_distribution, polarized_pdf))
+    direction2 = sum(rel_entr(polarized_pdf, discrete_distribution))
+    symmetric_kl_div = (direction1 + direction2) / 2
+
+    rounded_kl_div = round(symmetric_kl_div, n_digits)
+
+    return rounded_kl_div
+
+
 #   Graph Functions
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 

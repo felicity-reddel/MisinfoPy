@@ -31,7 +31,7 @@ class BaseAgent(Agent):
 
     def sample_number_of_posts(self):
         """
-        Sample number of posts that an agent should share at one instant. It samples with a normal distribution based
+        Sample number of posts that an agent should share at one instant. It samples with a normal belief_list based
         on this agent's vocality parameters (mu and sigma).
         :return:
             nr_of_posts: int
@@ -472,7 +472,7 @@ def rescale(old_value, new_domain=(-100, 100)):
 
 def get_update_strength(prev_belief, mean=50.0, std_dev=30.0):
     """
-    Uses a normal distribution (with the provided parameters)
+    Uses a normal belief_list (with the provided parameters)
     to return the update_strength that corresponds to the provided belief_strength.
     :param prev_belief:     float
     :param mean:                float
