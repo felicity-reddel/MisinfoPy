@@ -40,7 +40,7 @@ class BaseAgent(Agent):
         mu = self.vocality['mu']
         sigma = self.vocality['sigma']
 
-        current_belief = self.beliefs[str(Topic.VAX)]
+        current_belief = self.beliefs[Topic.VAX]
         if current_belief < 15 or current_belief > 85:
             # factor = current_belief / 10
             mu += 2
@@ -70,7 +70,6 @@ class BaseAgent(Agent):
         for i in range(nr_of_posts):
             post = self.create_post()
             posts.append(post)
-            # print(f'post value: {post.stances[str(Topic.VAX)]}')
 
         # Share post to followers
         for follower in self.followers:
@@ -115,7 +114,7 @@ class BaseAgent(Agent):
         # Prepare updates dict (to update after each seen post)
         updates = {}
         for topic in Topic:
-            updates[str(topic)] = 0
+            updates[topic] = 0
 
         # Calculate updates
         for topic, post_value in post.stances.items():
@@ -343,7 +342,7 @@ class NormalUser(BaseAgent):
         Initialize for each topic a random belief.
         """
         for topic in Topic:
-            self.beliefs[str(topic)] = self.random.randint(0, 100)
+            self.beliefs[topic] = self.random.randint(0, 100)
 
     def update_beliefs_stage(self):
         """
@@ -422,7 +421,7 @@ class Disinformer(BaseAgent):
         Initialize for each topic a random extreme belief. Currently always at the lower end of [0,100].
         """
         for topic in Topic:
-            self.beliefs[str(topic)] = self.random.randint(0, 10)
+            self.beliefs[topic] = self.random.randint(0, 10)
 
     def update_beliefs_stage(self):
         """

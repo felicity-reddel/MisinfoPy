@@ -12,12 +12,6 @@ class Topic(Enum):
     # MASKS = 1
     # EVOLUTION = 2
 
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
-
     @staticmethod
     def get_random():
         """
@@ -40,12 +34,6 @@ class FactCheckResult(Enum):
     FALSE = 0.5
     TRUE = 1
     # MISLEADING = 0.75
-
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
 
     @staticmethod
     def get_random():
@@ -86,7 +74,7 @@ class FactCheckResult(Enum):
         :param based_on_topic:  Topic
         :return:                float, [0,1)
         """
-        topic = str(based_on_topic)
+        topic = based_on_topic
         value = stances[topic]
 
         if value <= 20:
@@ -103,12 +91,6 @@ class MediaLiteracy(Enum):
     """
     Media Literacy Levels
     """
-
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False
 
     LOW = 0
     HIGH = 1
@@ -132,8 +114,3 @@ class SelectAgentsBy(Enum):
     # HIGH_AGE = 1
     # LOW_AGE = 2
 
-    def __eq__(self, o: object) -> bool:
-        if self.value is o.value:
-            return True
-        else:
-            return False

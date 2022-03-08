@@ -34,7 +34,7 @@ class Post:
         for _ in range(n_topics):
 
             # Pick topic
-            topic = str(Topic.get_random())  # Ext: could adjust weights for diff. topics
+            topic = Topic.get_random()  # Ext: could adjust weights for diff. topics
 
             # Sample value on topic
             if based_on_agent is None:

@@ -238,33 +238,33 @@ class MisinfoPy(Model):
         Returns a list of beliefs that includes all agents' belief on Topic.VAX.
         :return: list
         """
-        return [agent.beliefs[str(Topic.VAX)] for agent in self.schedule.agents]
+        return [agent.beliefs[Topic.VAX] for agent in self.schedule.agents]
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # DataCollector functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-    def get_avg_vax_belief(self, dummy=None) -> float:  # dummy parameter: to avoid error
+    def get_avg_vax_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Return average belief of all agents on a given topic. For the DataCollector.
+        :param topic:   Topic
+        :param dummy:   None: just to avoid error (.ipynb files)
         :return:        float
         """
-        topic = str(Topic.VAX)
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         avg_belief = sum(agent_beliefs) / len(agent_beliefs)
 
         return avg_belief
 
-    def get_vax_category_sizes(self, dummy=None) -> tuple:  # dummy parameter: to avoid error
+    def get_vax_category_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
         """
         Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
-        # :param threshold:   float  # to make it more programmatic later
-        # :param topic:       Topic  # to make it more programmatic later
+        :param topic:       Topic
+        :param threshold:   float
+        :param dummy:       None: just to avoid error  (.ipynb files)
         :return:            tuple
         """
-        topic = Topic.VAX
-        threshold = 50.0
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
@@ -272,42 +272,45 @@ class MisinfoPy(Model):
 
         return n_above, n_below
 
-    def get_above_vax_threshold(self, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
+    def get_above_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
-        # :param threshold_dict:   dict {Topic: float}  # to make it more programmatic later. Not sure whether possible.
+        :param topic:       Topic
+        :param threshold:   float
+        :param dummy:       None: just to avoid error  (.ipynb files)
         :return: int
         """
-        topic = str(Topic.VAX)  # TODO: remove str() after solving "unhashable error" (from __eq__())
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
 
         return n_above
 
-    def get_below_vax_threshold(self, threshold=50, dummy=None) -> int:  # dummy parameter: to avoid error
+    def get_below_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
         """
-        Returns how many agents' belief on a given topic is above and below the provided threshold.
+        Returns how many agents' belief on a given topic are below the provided threshold.
          For the DataCollector.
-        # :param threshold:   float  # to make it more programmatic later
-        # :param topic:       Topic  # to make it more programmatic later
-        :return:            tuple
+        :param topic:       Topic
+        :param threshold:   float
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: n_below    int
         """
-        topic = Topic.VAX
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         n_below = sum([1 for a_belief in agent_beliefs if a_belief < threshold])
 
         return n_below
 
-    def get_avg_above_vax_threshold(self, threshold=50, dummy=None) -> float:
+    def get_avg_above_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
-        :return: float
+        :param topic:       Topic
+        :param threshold:   float
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: avg:       float
         """
-        topic = str(Topic.VAX)
 
         beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
         if len(beliefs_above_threshold) == 0:
@@ -316,13 +319,15 @@ class MisinfoPy(Model):
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
 
-    def get_avg_below_vax_threshold(self, threshold=50, dummy=None) -> float:
+    def get_avg_below_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
-        :return: float
+        :param topic:       Topic
+        :param threshold:   float
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: avg:       float
         """
-        topic = str(Topic.VAX)
 
         beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
 
@@ -333,24 +338,26 @@ class MisinfoPy(Model):
 
         return avg
 
-    def get_vax_beliefs(self) -> list:
+    def get_vax_beliefs(self, topic=Topic.VAX) -> list:  # TODO: change into "get_topic_beliefs"
         """
         Returns list of vax-belief of all agents.
         For the DataCollector.
-        :return: list (of floats)
+        :param topic:           Topic
+        :return: vax_beliefs:   list (of floats)
         """
-        topic = str(Topic.VAX)
         vax_beliefs = [agent.beliefs[topic] for agent in self.schedule.agents]
 
         return vax_beliefs
 
-    def get_indiv_vax_beliefs(self, agent_ids_list) -> dict:
+    def get_indiv_vax_beliefs(self, topic=Topic.VAX, agent_ids_list=None) -> dict:
         """
         Returns a dictionary of the current get_vax_beliefs of the agents with the unique_ids listed in agent_ids_list.
+        :param topic:       Topic
         :param agent_ids_list: list of agent.unique_id's
         :return: dict, {unique_id: vax_belief}
         """
-        topic = str(Topic.VAX)
+        if agent_ids_list is None:
+            agent_ids_list = [a.unique_id for a in self.schedule.agents]
         vax_beliefs: dict[str, float] = {}
         agents = [a for a in self.schedule.agents if a.unique_id in agent_ids_list]
         for agent in agents:
@@ -359,134 +366,133 @@ class MisinfoPy(Model):
 
         return vax_beliefs
 
-    def get_vax_belief_0(self, dummy=None) -> float:
+    def get_vax_belief_0(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief of agent 0 at current tick.
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_10(self, dummy=None) -> float:
+    def get_vax_belief_10(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 10% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.1][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_20(self, dummy=None) -> float:
+    def get_vax_belief_20(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 20% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.2][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_30(self, dummy=None) -> float:
+    def get_vax_belief_30(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 30% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.3][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_40(self, dummy=None) -> float:
+    def get_vax_belief_40(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 40% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.4][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_50(self, dummy=None) -> float:
+    def get_vax_belief_50(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 50% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.5][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_60(self, dummy=None) -> float:
+    def get_vax_belief_60(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 60% of unique_ids.)
-        For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.6][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_70(self, dummy=None) -> float:
+    def get_vax_belief_70(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 70% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.7][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_80(self, dummy=None) -> float:
+    def get_vax_belief_80(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 80% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.8][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_90(self, dummy=None) -> float:
+    def get_vax_belief_90(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 90% of unique_ids.)
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.9][0]
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_100(self, dummy=None) -> float:
+    def get_vax_belief_100(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 100% of unique_ids (i.e., last agent))
         For data_collector2.
-        :param dummy:   to avoid error
-        :return:        float
+        :param topic:       Topic
+        :param dummy:       None: just to avoid error  (.ipynb files)
+        :return: belief:    float
         """
-        topic = str(Topic.VAX)
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents - 1][0]
         belief = agent_i.beliefs[topic]
         return belief
