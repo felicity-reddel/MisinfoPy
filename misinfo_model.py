@@ -272,7 +272,7 @@ class MisinfoPy(Model):
 
         return n_above, n_below
 
-    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
+    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
@@ -314,7 +314,7 @@ class MisinfoPy(Model):
 
         beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
         if len(beliefs_above_threshold) == 0:
-            avg = self.get_avg_belief_below_threshold(self)  # If nobody above threshold, take avg of below threshold.
+            avg = self.get_avg_belief_below_threshold()  # If nobody above threshold, take avg of below threshold.
         else:
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
@@ -332,7 +332,7 @@ class MisinfoPy(Model):
         beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
 
         if len(beliefs_below_threshold) == 0:
-            avg = self.get_avg_belief_above_threshold(self)  # If nobody below threshold, take avg of above threshold.
+            avg = self.get_avg_belief_above_threshold()  # If nobody below threshold, take avg of above threshold.
         else:
             avg = sum(beliefs_below_threshold) / len(beliefs_below_threshold)
 
