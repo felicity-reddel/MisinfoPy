@@ -526,13 +526,14 @@ def create_polarized_pdf(epsilon=0.001, n_bins=25):
     return pdf
 
 
-def kl_divergence(belief_list=None, model=None, n_bins=25, n_digits=2):
+def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_digits=2):
     """
     Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
     the current belief belief_list of the agents (or a the provided belief_list).
     If both, belief_list and model, are not specified, no KL divergence can be calculated and the function returns: None
     :param belief_list: list: listing the belief value of each agent
     :param model: MisinfoPy model
+    :param template_pdf: list: discrete probability density function as a list of length n_bins
     :param n_bins: int: number of bins for discretization of belief_list
     :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
     :return: float: symmetric kl-divergence
@@ -547,11 +548,12 @@ def kl_divergence(belief_list=None, model=None, n_bins=25, n_digits=2):
     relative_distribution = [x / sum(discrete_distribution) for x in discrete_distribution]
 
     # Define the template of a polarized pdf. (Values should not be 0 because of ln(0)=inf in KL-divergence.)
-    polarized_pdf = create_polarized_pdf(epsilon=0.001, n_bins=n_bins)
+    if template_pdf is None:
+        template_pdf = create_polarized_pdf(epsilon=0.001, n_bins=n_bins)
 
     # Actual KL-divergence calculation (which is the same as the sum over the relative entropy)
-    direction1 = sum(rel_entr(discrete_distribution, polarized_pdf))
-    direction2 = sum(rel_entr(polarized_pdf, discrete_distribution))
+    direction1 = sum(rel_entr(discrete_distribution, template_pdf))
+    direction2 = sum(rel_entr(template_pdf, discrete_distribution))
     symmetric_kl_div = (direction1 + direction2) / 2
 
     rounded_kl_div = round(symmetric_kl_div, n_digits)
@@ -570,7 +572,7 @@ def variance(belief_list=None, model=None, n_digits=2):
     """
     belief_list = init_belief_list(belief_list, model)
 
-    var = round(statistics.variance(belief_list))
+    var = round(statistics.variance(belief_list), n_digits)
 
     return var
 
