@@ -119,11 +119,11 @@ class MisinfoPy(Model):
             print(f'Run time: {run_time} seconds')
 
         # Calculate metrics for this run
-        # n_agents_above_belief_threshold = 0  # TODO: implement here
-        # polarization_variance = self.variance()
-        # polarization_kl_divergence_from_polarized = self.kl_divergence()
+        n_agents_above_belief_threshold = self.get_above_vax_threshold()
+        polarization_variance = variance(model=self)
+        polarization_kl_divergence_from_polarized = kl_divergence(model=self)
 
-        # return n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized
+        return n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -233,10 +233,17 @@ class MisinfoPy(Model):
 
         return selected_agents
 
+    def get_beliefs(self):
+        """
+        Returns a list of beliefs that includes all agents' belief on Topic.VAX.
+        :return: list
+        """
+        return [agent.beliefs[str(Topic.VAX)] for agent in self.schedule.agents]
+
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # DataCollector functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-    def get_avg_vax_belief(self, dummy) -> float:  # dummy parameter: to avoid error
+    def get_avg_vax_belief(self, dummy=None) -> float:  # dummy parameter: to avoid error
         """
         Return average belief of all agents on a given topic. For the DataCollector.
         :return:        float
@@ -248,7 +255,7 @@ class MisinfoPy(Model):
 
         return avg_belief
 
-    def get_vax_category_sizes(self, dummy) -> tuple:  # dummy parameter: to avoid error
+    def get_vax_category_sizes(self, dummy=None) -> tuple:  # dummy parameter: to avoid error
         """
         Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
@@ -265,22 +272,21 @@ class MisinfoPy(Model):
 
         return n_above, n_below
 
-    def get_above_vax_threshold(self, dummy) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
+    def get_above_vax_threshold(self, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
         # :param threshold_dict:   dict {Topic: float}  # to make it more programmatic later. Not sure whether possible.
         :return: int
         """
-        topic = Topic.VAX
-        threshold = 50.0
+        topic = str(Topic.VAX)  # TODO: remove str() after solving "unhashable error" (from __eq__())
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
 
         return n_above
 
-    def get_below_vax_threshold(self, dummy) -> int:  # dummy parameter: to avoid error
+    def get_below_vax_threshold(self, threshold=50, dummy=None) -> int:  # dummy parameter: to avoid error
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
@@ -289,21 +295,19 @@ class MisinfoPy(Model):
         :return:            tuple
         """
         topic = Topic.VAX
-        threshold = 50.0
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
         n_below = sum([1 for a_belief in agent_beliefs if a_belief < threshold])
 
         return n_below
 
-    def get_avg_above_vax_threshold(self, dummy) -> float:
+    def get_avg_above_vax_threshold(self, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
         :return: float
         """
         topic = str(Topic.VAX)
-        threshold = 50.0
 
         beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
         if len(beliefs_above_threshold) == 0:
@@ -312,14 +316,13 @@ class MisinfoPy(Model):
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
 
-    def get_avg_below_vax_threshold(self, dummy) -> float:
+    def get_avg_below_vax_threshold(self, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
         :return: float
         """
         topic = str(Topic.VAX)
-        threshold = 50.0
 
         beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
 
@@ -356,7 +359,7 @@ class MisinfoPy(Model):
 
         return vax_beliefs
 
-    def get_vax_belief_0(self, dummy) -> float:
+    def get_vax_belief_0(self, dummy=None) -> float:
         """
         Returns the belief of agent 0 at current tick.
         For data_collector2.
@@ -368,7 +371,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_10(self, dummy) -> float:
+    def get_vax_belief_10(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 10% of unique_ids.)
         For data_collector2.
@@ -380,7 +383,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_20(self, dummy) -> float:
+    def get_vax_belief_20(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 20% of unique_ids.)
         For data_collector2.
@@ -392,7 +395,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_30(self, dummy) -> float:
+    def get_vax_belief_30(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 30% of unique_ids.)
         For data_collector2.
@@ -404,7 +407,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_40(self, dummy) -> float:
+    def get_vax_belief_40(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 40% of unique_ids.)
         For data_collector2.
@@ -416,7 +419,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_50(self, dummy) -> float:
+    def get_vax_belief_50(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 50% of unique_ids.)
         For data_collector2.
@@ -428,7 +431,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_60(self, dummy) -> float:
+    def get_vax_belief_60(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 60% of unique_ids.)
         For data_collector2.
@@ -440,7 +443,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_70(self, dummy) -> float:
+    def get_vax_belief_70(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 70% of unique_ids.)
         For data_collector2.
@@ -452,7 +455,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_80(self, dummy) -> float:
+    def get_vax_belief_80(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 80% of unique_ids.)
         For data_collector2.
@@ -464,7 +467,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_90(self, dummy) -> float:
+    def get_vax_belief_90(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 90% of unique_ids.)
         For data_collector2.
@@ -476,7 +479,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_100(self, dummy) -> float:
+    def get_vax_belief_100(self, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 100% of unique_ids (i.e., last agent))
         For data_collector2.
@@ -528,15 +531,19 @@ def create_polarized_pdf(epsilon=0.001, n_bins=25):
     return pdf
 
 
-def kl_divergence(belief_list, n_bins=25, n_digits=2):
+def kl_divergence(belief_list=None, model=None, n_bins=25, n_digits=2):
     """
     Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
     the current belief belief_list of the agents (or a the provided belief_list).
+    If both, belief_list and model, are not specified, no KL divergence can be calculated and the function returns: None
     :param belief_list: list: listing the belief value of each agent
+    :param model: MisinfoPy model
     :param n_bins: int: number of bins for discretization of belief_list
-    :return: float: symmetric kl-divergence
     :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
+    :return: float: symmetric kl-divergence
     """
+
+    belief_list = init_belief_list(belief_list, model)
 
     # Discretize belief_list
     discrete_distribution = discretize(belief_list, n_bins)
@@ -555,6 +562,40 @@ def kl_divergence(belief_list, n_bins=25, n_digits=2):
     rounded_kl_div = round(symmetric_kl_div, n_digits)
 
     return rounded_kl_div
+
+
+def variance(belief_list=None, model=None, n_digits=2):
+    """
+    Calculates the variance between the template of a polarized belief_list and
+    the current belief belief_list of the agents (or a the provided belief_list).
+    :param belief_list: list: listing the belief value of each agent
+    :param model: MisinfoPy model
+    :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
+    :return: float: variance
+    """
+    belief_list = init_belief_list(belief_list, model)
+
+    var = round(statistics.variance(belief_list))
+
+    return var
+
+
+def init_belief_list(belief_list=None, model=None):
+    """
+    Makes sure there is a belief_list (either provided, or belief_list from the model's schedule),
+    e.g., before calculating polarization metrics KL-divergence & variance, or belief metric
+    :param belief_list: list: listing the belief value of each agent
+    :param model: MisinfoPy model
+    :return: list
+    """
+
+    if belief_list is None:
+        if model is None:
+            print("Error: No list of beliefs has been provided.")
+        else:
+            belief_list = model.get_beliefs()
+
+    return belief_list
 
 
 #   Graph Functions
