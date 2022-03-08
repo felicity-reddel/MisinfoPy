@@ -58,23 +58,23 @@ class MisinfoPy(Model):
         self.ranking_intervention = ranking_intervention
 
         self.data_collector = DataCollector(model_reporters={
-            "Avg Vax-Belief": self.get_avg_vax_belief,
-            "Avg Vax-Belief above threshold": self.get_avg_above_vax_threshold,
-            "Avg Vax-Belief below threshold": self.get_avg_below_vax_threshold})
+            "Avg Vax-Belief": self.get_avg_belief,
+            "Avg Vax-Belief above threshold": self.get_avg_belief_above_threshold,
+            "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold})
 
         # DataCollector2: follow individual agents
         self.data_collector2 = DataCollector(model_reporters={
-            f"Agent 0": self.get_vax_belief_0,
-            f"Agent 1": self.get_vax_belief_10,
-            f"Agent 2": self.get_vax_belief_20,
-            f"Agent 3": self.get_vax_belief_30,
-            f"Agent 4": self.get_vax_belief_40,
-            f"Agent 5": self.get_vax_belief_50,
-            f"Agent 6": self.get_vax_belief_60,
-            f"Agent 7": self.get_vax_belief_70,
-            f"Agent 8": self.get_vax_belief_80,
-            f"Agent 9": self.get_vax_belief_90,
-            f"Agent 10": self.get_vax_belief_100,
+            f"Agent 0": self.get_belief_a0,
+            f"Agent 1": self.get_belief_a10,
+            f"Agent 2": self.get_belief_a20,
+            f"Agent 3": self.get_belief_a30,
+            f"Agent 4": self.get_belief_a40,
+            f"Agent 5": self.get_belief_a50,
+            f"Agent 6": self.get_belief_a60,
+            f"Agent 7": self.get_belief_a70,
+            f"Agent 8": self.get_belief_a80,
+            f"Agent 9": self.get_belief_a90,
+            f"Agent 10": self.get_belief_a100,
         })
 
         if show_plot:
@@ -119,7 +119,7 @@ class MisinfoPy(Model):
             print(f'Run time: {run_time} seconds')
 
         # Calculate metrics for this run
-        n_agents_above_belief_threshold = self.get_above_vax_threshold()
+        n_agents_above_belief_threshold = self.get_n_above_belief_threshold()
         polarization_variance = variance(model=self)
         polarization_kl_divergence_from_polarized = kl_divergence(model=self)
 
@@ -243,7 +243,7 @@ class MisinfoPy(Model):
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # DataCollector functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-    def get_avg_vax_belief(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Return average belief of all agents on a given topic. For the DataCollector.
         :param topic:   Topic
@@ -256,7 +256,7 @@ class MisinfoPy(Model):
 
         return avg_belief
 
-    def get_vax_category_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
+    def get_topic_above_below_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
         """
         Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
@@ -272,14 +272,14 @@ class MisinfoPy(Model):
 
         return n_above, n_below
 
-    def get_above_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
+    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:  # adjust code later: threshold_dict={Topic.VAX: 50.0}?
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
         :param topic:       Topic
         :param threshold:   float
         :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: int
+        :return: n_above:   int
         """
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
@@ -287,7 +287,7 @@ class MisinfoPy(Model):
 
         return n_above
 
-    def get_below_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
+    def get_n_below_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
         """
         Returns how many agents' belief on a given topic are below the provided threshold.
          For the DataCollector.
@@ -302,7 +302,7 @@ class MisinfoPy(Model):
 
         return n_below
 
-    def get_avg_above_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_above_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
@@ -314,12 +314,12 @@ class MisinfoPy(Model):
 
         beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
         if len(beliefs_above_threshold) == 0:
-            avg = self.get_avg_below_vax_threshold(self)  # If nobody above threshold, take avg of below threshold.
+            avg = self.get_avg_belief_below_threshold(self)  # If nobody above threshold, take avg of below threshold.
         else:
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
 
-    def get_avg_below_vax_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_below_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
@@ -332,26 +332,15 @@ class MisinfoPy(Model):
         beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
 
         if len(beliefs_below_threshold) == 0:
-            avg = self.get_avg_above_vax_threshold(self)  # If nobody below threshold, take avg of above threshold.
+            avg = self.get_avg_belief_above_threshold(self)  # If nobody below threshold, take avg of above threshold.
         else:
             avg = sum(beliefs_below_threshold) / len(beliefs_below_threshold)
 
         return avg
 
-    def get_vax_beliefs(self, topic=Topic.VAX) -> list:  # TODO: change into "get_topic_beliefs"
+    def get_indiv_beliefs(self, topic=Topic.VAX, agent_ids_list=None) -> dict:
         """
-        Returns list of vax-belief of all agents.
-        For the DataCollector.
-        :param topic:           Topic
-        :return: vax_beliefs:   list (of floats)
-        """
-        vax_beliefs = [agent.beliefs[topic] for agent in self.schedule.agents]
-
-        return vax_beliefs
-
-    def get_indiv_vax_beliefs(self, topic=Topic.VAX, agent_ids_list=None) -> dict:
-        """
-        Returns a dictionary of the current get_vax_beliefs of the agents with the unique_ids listed in agent_ids_list.
+        Returns a dictionary of the current get_beliefs of the agents with the unique_ids listed in agent_ids_list.
         :param topic:       Topic
         :param agent_ids_list: list of agent.unique_id's
         :return: dict, {unique_id: vax_belief}
@@ -366,7 +355,7 @@ class MisinfoPy(Model):
 
         return vax_beliefs
 
-    def get_vax_belief_0(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a0(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief of agent 0 at current tick.
         For data_collector2.
@@ -378,7 +367,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_10(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a10(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 10% of unique_ids.)
         For data_collector2.
@@ -390,7 +379,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_20(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a20(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 20% of unique_ids.)
         For data_collector2.
@@ -402,7 +391,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_30(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a30(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 30% of unique_ids.)
         For data_collector2.
@@ -414,7 +403,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_40(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a40(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 40% of unique_ids.)
         For data_collector2.
@@ -426,7 +415,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_50(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a50(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 50% of unique_ids.)
         For data_collector2.
@@ -438,7 +427,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_60(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a60(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 60% of unique_ids.)
         :param topic:       Topic
@@ -449,7 +438,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_70(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a70(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 70% of unique_ids.)
         For data_collector2.
@@ -461,7 +450,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_80(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a80(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 80% of unique_ids.)
         For data_collector2.
@@ -473,7 +462,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_90(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a90(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 90% of unique_ids.)
         For data_collector2.
@@ -485,7 +474,7 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def get_vax_belief_100(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief_a100(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 100% of unique_ids (i.e., last agent))
         For data_collector2.
