@@ -25,6 +25,7 @@ class MisinfoPy(Model):
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_intervention=False,
+                 belief_update_fn=BeliefUpdate.M3_NBC_HETERO,
                  show_plot=False):
         """
         Initializes the MisinfoPy

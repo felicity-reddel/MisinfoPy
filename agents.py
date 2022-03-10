@@ -361,11 +361,26 @@ class NormalUser(BaseAgent):
 
                 # For each seen post, which is judged as truthful: update beliefs.
                 if post_judged_as_truthful:
-                    # Update beliefs
-                    self.update_beliefs_simple_sit(post)
+                    # Update beliefs with required belief update function
+                    self.update_beliefs()
+                    # self.update_beliefs_simple_sit(post)
 
         # empty received_posts again
         self.received_posts = []
+
+    def update_beliefs(self):
+        match self.model.belief_update_fn:
+            case BeliefUpdate.M0_BC_HOMO:
+                print(f'Updating beliefs via {self.model.belief_update_fn}')  # TODO: write actual functions
+            case BeliefUpdate.M1_NBC_HOMO:
+                print(f'Updating beliefs via {self.model.belief_update_fn}')
+            case BeliefUpdate.M2_BC_HETERO:
+                print(f'Updating beliefs via {self.model.belief_update_fn}')
+            case BeliefUpdate.M3_NBC_HETERO:
+                print(f'Updating beliefs via {self.model.belief_update_fn}')
+            case _:
+                raise ValueError("Not a defined belief update function.")
+
 
     def judge_truthfulness_simple(self, post):
         """

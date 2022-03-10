@@ -114,3 +114,20 @@ class SelectAgentsBy(Enum):
     # HIGH_AGE = 1
     # LOW_AGE = 2
 
+
+class BeliefUpdate(Enum):
+    """
+    Different options for updating beliefs. In order to explore structural uncertainty of the belief update function.
+
+    Abbreviations for the characteristics of the belief update function:
+    - M(i):     Name of the model incorporating the belief update function
+    - BC:       Bounded Confidence
+    - NBC:      No Bounded Confidence
+    - HOMO:     homogeneous μ (update parameter)
+    - HETERO:   heterogeneous μ (update parameter)
+    """
+
+    M0_BC_HOMO = 0
+    M1_NBC_HOMO = 1
+    M2_BC_HETERO = 2
+    M3_NBC_HETERO = 3
