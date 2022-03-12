@@ -25,7 +25,7 @@ class MisinfoPy(Model):
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_intervention=False,
-                 belief_update_fn=BeliefUpdate.M3_NBC_HETERO,
+                 belief_update_fn=BeliefUpdate.M3,
                  show_plot=False):
         """
         Initializes the MisinfoPy
@@ -54,6 +54,7 @@ class MisinfoPy(Model):
                             'n_following_range': (0, 0)}
         self.init_agents(agent_ratio)
         self.init_followers_and_following()
+        self.belief_update_fn = belief_update_fn
 
         self.apply_media_literacy_intervention(media_literacy_intervention)
         self.ranking_intervention = ranking_intervention

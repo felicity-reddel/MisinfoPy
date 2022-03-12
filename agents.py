@@ -362,25 +362,63 @@ class NormalUser(BaseAgent):
                 # For each seen post, which is judged as truthful: update beliefs.
                 if post_judged_as_truthful:
                     # Update beliefs with required belief update function
-                    self.update_beliefs()
-                    # self.update_beliefs_simple_sit(post)
+                    self.update_beliefs(post)
 
         # empty received_posts again
         self.received_posts = []
 
-    def update_beliefs(self):
+    def update_beliefs(self, post):
+        """
+        Updates the beliefs with the required belief update function.
+        :param post: Post
+        """
         match self.model.belief_update_fn:
-            case BeliefUpdate.M0_BC_HOMO:
-                print(f'Updating beliefs via {self.model.belief_update_fn}')  # TODO: write actual functions
-            case BeliefUpdate.M1_NBC_HOMO:
-                print(f'Updating beliefs via {self.model.belief_update_fn}')
-            case BeliefUpdate.M2_BC_HETERO:
-                print(f'Updating beliefs via {self.model.belief_update_fn}')
-            case BeliefUpdate.M3_NBC_HETERO:
-                print(f'Updating beliefs via {self.model.belief_update_fn}')
+            case BeliefUpdate.M0:
+                self.update_beliefs_m0(post)
+            case BeliefUpdate.M1:
+                self.update_beliefs_m1(post)
+            case BeliefUpdate.M2:
+                self.update_beliefs_m2(post)
+            case BeliefUpdate.M3:
+                self.update_beliefs_m3(post)
             case _:
                 raise ValueError("Not a defined belief update function.")
 
+    def update_beliefs_m0(self, post):
+        """
+        Updates the agent's belief with the belief update function of model 0.
+        - Characteristics:        Bounded Confidence      +       homogeneous μ (update parameter)
+        - Example:                Al Atiqi et al. (2018)
+        :param post:    Post
+        """
+        print(f'Would update beliefs via {self.model.belief_update_fn}')
+
+    def update_beliefs_m1(self, post):
+        """
+        Updates the agent's belief with the belief update function of model 1.
+        - Characteristics:        No Bounded Confidence   +       homogeneous μ (update parameter)
+        - Example:                Du et al. (2021), Beskow & Carley (2019), Rajabi et al. (2020)
+        :param post:    Post
+        """
+        print(f'Would update beliefs via {self.model.belief_update_fn}')
+
+    def update_beliefs_m2(self, post):
+        """
+        Updates the agent's belief with the belief update function of model 2.
+        - Characteristics:        Bounded Confidence      +       heterogeneous μ (update parameter)
+        - Example:                Mason et al. (2020)
+        :param post:    Post
+        """
+        print(f'Would update beliefs via {self.model.belief_update_fn}')
+
+    def update_beliefs_m3(self, post):
+        """
+        Updates the agent's belief with the belief update function of model 3.
+        - Characteristics:        No Bounded Confidence   +       heterogeneous μ (update parameter)
+        - Example:                Reddel (2021)
+        :param post:    Post
+        """
+        self.update_beliefs_simple_sit(post)
 
     def judge_truthfulness_simple(self, post):
         """
