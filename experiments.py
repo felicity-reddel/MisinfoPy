@@ -38,21 +38,23 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
 
 if __name__ == '__main__':
 
-    n_agents = 1000
+    n_agents = 50  # 1000
     n_edges = 3
-    max_run_length = 60
-    n_replications = 12
+    max_run_length = 5  # 60
+    n_replications = 1  # 12
 
     # Scenarios are different agent_ratios
     scenarios = [{NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
-                 {NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
-                 {NormalUser.__name__: 0.8, Disinformer.__name__: 0.2},
-                 {NormalUser.__name__: 0.25, Disinformer.__name__: 0.75}]
+                 # {NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
+                 # {NormalUser.__name__: 0.8, Disinformer.__name__: 0.2},
+                 # {NormalUser.__name__: 0.25, Disinformer.__name__: 0.75}
+                 ]
 
     # Policies are combinations of intervention values
     media_literacy_intervention_values = [(0.0, SelectAgentsBy.RANDOM),
-                                          (0.1, SelectAgentsBy.RANDOM),
-                                          (0.25, SelectAgentsBy.RANDOM)]
+                                          # (0.1, SelectAgentsBy.RANDOM),
+                                          # (0.25, SelectAgentsBy.RANDOM)
+                                          ]
     ranking_intervention_values = [True, False]
 
     policies = list(itertools.product(media_literacy_intervention_values, ranking_intervention_values))
@@ -98,6 +100,8 @@ if __name__ == '__main__':
                 # save data from this replication
                 replication_data = (agents_belief_before, agents_belief_after)
                 df_column.append(replication_data)
+
+                seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
 
                 # Printing
                 print(f"replication {replication} done")

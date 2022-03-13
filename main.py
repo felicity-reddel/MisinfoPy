@@ -7,10 +7,10 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = False
-    n_agents = 1000
+    visualize = True
+    n_agents = 10  # 1000
     agent_ratio = {NormalUser.__name__: 0.99, Disinformer.__name__: 0.01}
-    n_edges = 3
+    n_edges = 2  # 3
     media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
     ranking_intervention = False
 

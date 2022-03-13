@@ -23,6 +23,7 @@ class BaseAgent(Agent):
         self.followers = []
         self.following = []
         self.received_posts = []
+        self.n_seen_posts = []
         self.last_posts = []  # currently: all posts
 
     # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -352,6 +353,7 @@ class NormalUser(BaseAgent):
         if len(self.received_posts) > 0:
             # Sample which of the received posts are actually seen (depends on ranking).
             seen_posts = self.sample_seen_posts()
+            self.n_seen_posts.append(len(seen_posts))
 
             # For each seen post: judge truthfulness, then update beliefs (if post is judged as truthful).
             for post in seen_posts:
@@ -363,6 +365,8 @@ class NormalUser(BaseAgent):
                 if post_judged_as_truthful:
                     # Update beliefs with required belief update function
                     self.update_beliefs(post)
+        else:
+            self.n_seen_posts.append(0)
 
         # empty received_posts again
         self.received_posts = []
@@ -480,7 +484,10 @@ class Disinformer(BaseAgent):
         """
         Second part of the Disinformer agent's step function. Disinformers don't update their beliefs
         """
-        pass
+        # To include disinformers into the profit metric of n_seen_posts:
+        seen_posts = self.sample_seen_posts()
+        self.n_seen_posts.append(len(seen_posts))
+        # pass
 
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––

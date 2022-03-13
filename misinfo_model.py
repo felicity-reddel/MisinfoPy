@@ -26,7 +26,8 @@ class MisinfoPy(Model):
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_intervention=False,
                  belief_update_fn=BeliefUpdate.M3,
-                 show_plot=False):
+                 show_n_seen_posts=False,
+                 show_n_connections=False):
         """
         Initializes the MisinfoPy
         :param agent_ratio: dictionary {String: float}
@@ -58,11 +59,13 @@ class MisinfoPy(Model):
 
         self.apply_media_literacy_intervention(media_literacy_intervention)
         self.ranking_intervention = ranking_intervention
+        self.show_n_seen_posts = show_n_seen_posts
 
         self.data_collector = DataCollector(model_reporters={
             "Avg Vax-Belief": self.get_avg_belief,
             "Avg Vax-Belief above threshold": self.get_avg_belief_above_threshold,
-            "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold})
+            "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold,
+            "Total seen posts": self.get_total_seen_posts})
 
         # DataCollector2: follow individual agents
         self.data_collector2 = DataCollector(model_reporters={
@@ -79,7 +82,7 @@ class MisinfoPy(Model):
             f"Agent 10": self.get_belief_a100,
         })
 
-        if show_plot:
+        if show_n_connections:
             # Overview of how many agents have how many connections
             data = [len(agent.followers) for agent in self.schedule.agents]
 
@@ -99,6 +102,20 @@ class MisinfoPy(Model):
         self.schedule.step()
         self.data_collector.collect(self)
         self.data_collector2.collect(self)
+
+        if self.show_n_seen_posts:
+            data = [x.n_seen_posts for x in self.schedule.agents]
+
+            bins = np.linspace(math.ceil(min(data)),
+                               math.floor(max(data)),
+                               40)  # a fixed number of bins
+
+            plt.xlim([min(data) - 5, max(data) + 5])
+
+            plt.hist(data, bins=bins, alpha=0.5)
+            plt.xlabel(f'Number of seen posts (highest: {max(data)})')
+            plt.ylabel('Agent count')
+            plt.show()
 
     def run(self, steps=60, time_tracking=False, debug=False):
         """
@@ -257,6 +274,17 @@ class MisinfoPy(Model):
         avg_belief = sum(agent_beliefs) / len(agent_beliefs)
 
         return avg_belief
+
+    def get_total_seen_posts(self):
+        """
+        Returns the total number of seen posts, summed over all agents.
+        :return: total: int
+        """
+
+        per_agent = [sum(x.n_seen_posts) for x in self.schedule.agents]
+        total = sum(per_agent)
+
+        return total
 
     def get_topic_above_below_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
         """

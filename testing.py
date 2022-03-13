@@ -6,12 +6,18 @@ model = MisinfoPy(n_agents=1000,
                   n_edges=3,
                   agent_ratio={NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
                   media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                  ranking_intervention=False)
+                  ranking_intervention=True,
+                  show_n_seen_posts=False)
 
 model.run(steps=max_run_length)
 
 
 beliefs = model.get_beliefs()
+total_seen_posts = model.get_total_seen_posts()
+seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
+
+print(total_seen_posts)
+print(len(seen_posts_per_agent))
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # dummy error from above --> for now just continue testing with belief_distributions_before_after.csv
@@ -23,28 +29,28 @@ beliefs = model.get_beliefs()
 # # --> 100 agents' beliefs
 
 
-# Test discretize(): Transform a list of (belief values) into a discretized distribution
-discretized_distribution = discretize(beliefs)
-print(f'discretized_distribution: \n{discretized_distribution}')
-print(f'sum(): {sum(discretized_distribution)}\n')
-
-
-# Test create_polarized_pdf()
-polarized_pdf = create_polarized_pdf()
-print(f'create_polarized_pdf: \n{polarized_pdf}')
-print(f'len(): {len(polarized_pdf)}')
-print(f'sum(): {sum(polarized_pdf)}\n')
-
-
-# Test variance
-# variance = MisinfoPy.variance(distribution=beliefs)  # Not worth it if self gives an error. Only maybe for rounding.
-variance = round(statistics.variance(beliefs))
-print(f'variance: {variance}')
-
-
-# Test kl_divergence
-kl_div = kl_divergence(belief_list=beliefs)
-print(kl_div)
+# # Test discretize(): Transform a list of (belief values) into a discretized distribution
+# discretized_distribution = discretize(beliefs)
+# print(f'discretized_distribution: \n{discretized_distribution}')
+# print(f'sum(): {sum(discretized_distribution)}\n')
+#
+#
+# # Test create_polarized_pdf()
+# polarized_pdf = create_polarized_pdf()
+# print(f'create_polarized_pdf: \n{polarized_pdf}')
+# print(f'len(): {len(polarized_pdf)}')
+# print(f'sum(): {sum(polarized_pdf)}\n')
+#
+#
+# # Test variance
+# # variance = MisinfoPy.variance(distribution=beliefs)  # Not worth it if self gives an error. Only maybe for rounding.
+# variance = round(statistics.variance(beliefs))
+# print(f'variance: {variance}')
+#
+#
+# # Test kl_divergence
+# kl_div = kl_divergence(belief_list=beliefs)
+# print(kl_div)
 
 
 

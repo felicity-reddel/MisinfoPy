@@ -14,7 +14,7 @@ def get_node_color(agent):
     :param agent:   Agent
     :return: c_val, tuple: (r,g,b)  all three are floats
     """
-    belief = agent.beliefs[str(Topic.VAX)]
+    belief = agent.beliefs[Topic.VAX]
     # Map belief value to color value
     # with PiYG, a diverging colormap:
     #       100 --> green
@@ -80,7 +80,8 @@ def show_visualization(model,
         portrayal['nodes'] = [{"shape": "circle",
                                "color": f'rgb{get_node_color(agent)}',
                                "size": 5,
-                               "tooltip": f"{round(agent.unique_id)}"
+                               # "tooltip": f"{round(agent.unique_id)}"
+                               "tooltip": f"{sum(agent.n_seen_posts)}"
                                }
                               for (id, agent) in G.nodes.data("agent")]
 
