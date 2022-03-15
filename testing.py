@@ -9,8 +9,12 @@ model = MisinfoPy(n_agents=1000,
                   ranking_intervention=True,
                   show_n_seen_posts=False)
 
-kpis = model.run(steps=max_run_length)  # kpis:  n_above_threshold, variance, kl_divergence, engagement
-print(kpis)
+n_above_threshold, variance, kl_divergence, engagement = model.run(steps=max_run_length)
+print(f"KPIs: \n"
+      f"- n_above_threshold: {n_above_threshold} \n"
+      f"- variance: {variance} \n"
+      f"- kl_divergence: {kl_divergence} \n"
+      f"- engagement: {engagement}")
 
 # beliefs = model.get_beliefs()
 # total_seen_posts = model.get_total_seen_posts()
