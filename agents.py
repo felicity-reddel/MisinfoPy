@@ -433,7 +433,7 @@ class NormalUser(BaseAgent):
         :return: boolean, whether the post is judged as true or false
         """
         judged_truthfulness = True
-        if self.media_literacy.__eq__(MediaLiteracy.HIGH) and post.factcheck_result.__eq__(FactCheckResult.FALSE):
+        if self.media_literacy == MediaLiteracy.HIGH and post.factcheck_result == FactCheckResult.FALSE:
             judged_truthfulness = False
 
         return judged_truthfulness
@@ -447,8 +447,8 @@ class NormalUser(BaseAgent):
         """
 
         # get probability of updating to the post, dependent on media literacy
-        if self.media_literacy.__eq__(MediaLiteracy.HIGH):
-            if post.factcheck_result.__eq__(FactCheckResult.TRUE):
+        if self.media_literacy == MediaLiteracy.HIGH:
+            if post.factcheck_result == FactCheckResult.TRUE:
                 p_judged_as_truthful = 0.8
             else:
                 p_judged_as_truthful = 0.2
