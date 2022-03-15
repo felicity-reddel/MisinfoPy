@@ -141,8 +141,12 @@ class MisinfoPy(Model):
         n_agents_above_belief_threshold = self.get_n_above_belief_threshold()
         polarization_variance = variance(model=self)
         polarization_kl_divergence_from_polarized = kl_divergence(model=self)
+        engagement = self.get_total_seen_posts()
 
-        return n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized
+        return n_agents_above_belief_threshold, \
+               polarization_variance, \
+               polarization_kl_divergence_from_polarized, \
+               engagement
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -536,7 +540,7 @@ def discretize(belief_list, n_bins=25):
 
     # Make more robust (to avoid cases of existing empty bins, which would make KL-div=infinity)
     if 0 in discrete_distribution:
-        discrete_distribution = [x+1 for x in discrete_distribution]
+        discrete_distribution = [x + 1 for x in discrete_distribution]
 
     return discrete_distribution
 

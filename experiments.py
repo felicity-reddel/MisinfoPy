@@ -40,8 +40,8 @@ if __name__ == '__main__':
 
     n_agents = 50  # 1000
     n_edges = 3
-    max_run_length = 5  # 60
-    n_replications = 1  # 12
+    max_run_length = 60
+    n_replications = 3  # 12
 
     # Scenarios are different agent_ratios
     scenarios = [{NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
@@ -72,6 +72,7 @@ if __name__ == '__main__':
     for i, scenario in enumerate(scenarios):  # Each scenario is 1 ratio of agent types
         # Set up data structures
         data = pd.DataFrame({"Replication": list(range(0, n_replications))})
+        engagement = {}
 
         for j, policy in enumerate(policies):
             # Unpack policy
@@ -80,6 +81,7 @@ if __name__ == '__main__':
             # Set up data structure
             df_column = []
 
+            replications_n_seen_posts = []
             for replication in range(n_replications):
                 # Set up the model
                 model = MisinfoPy(n_agents=n_agents,
@@ -89,20 +91,19 @@ if __name__ == '__main__':
                                   ranking_intervention=ranking_intervention)
 
                 # Save start data
-                agents_belief_before = [agent.beliefs[str(Topic.VAX)] for agent in model.schedule.agents]
+                agents_belief_before = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
 
                 # Run the model
                 for tick in range(max_run_length):
                     model.step()
 
                 # Save end data
-                agents_belief_after = [agent.beliefs[str(Topic.VAX)] for agent in model.schedule.agents]
+                agents_belief_after = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
                 # save data from this replication
                 replication_data = (agents_belief_before, agents_belief_after)
                 df_column.append(replication_data)
 
-                seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
-
+                replications_n_seen_posts.append(model.get_total_seen_posts())
                 # Printing
                 print(f"replication {replication} done")
 
@@ -110,6 +111,8 @@ if __name__ == '__main__':
             policy_column = pd.Series(df_column, name=str(policy))
             # Save policy column into the dataframe
             data = data.join(policy_column)
+
+            engagement[policy] = replications_n_seen_posts
 
             # Printing
             print(f"policy {j} done")
@@ -120,12 +123,14 @@ if __name__ == '__main__':
 
         file_name = "belief_distr_" + str(scenario) + ".csv"
         data.to_csv(path + file_name)
+        for key, value in engagement.items():
+            print(f"Ranking: {key[1]}, n's: {value}, avg: {sum(value)/len(value)}")
 
-    # Printing
-    end_time = time.localtime(time.time())
-    human_understandable_time = time.strftime('%Y-%m-%d %H:%M:%S', end_time)
-    print(f"Ending at time: {human_understandable_time}")
-    run_time = round(time.time() - start_time_seconds, 2)
-    print(
-        f"\nWith {max_run_length} steps, runtime is {run_time} seconds "
-        f"--> roughly {round(run_time / 60 / 60, 2)} hours")
+    # # Printing
+    # end_time = time.localtime(time.time())
+    # human_understandable_time = time.strftime('%Y-%m-%d %H:%M:%S', end_time)
+    # print(f"Ending at time: {human_understandable_time}")
+    # run_time = round(time.time() - start_time_seconds, 2)
+    # print(
+    #     f"\nWith {max_run_length} steps, runtime is {run_time} seconds "
+    #     f"--> roughly {round(run_time / 60 / 60, 2)} hours")

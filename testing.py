@@ -9,15 +9,15 @@ model = MisinfoPy(n_agents=1000,
                   ranking_intervention=True,
                   show_n_seen_posts=False)
 
-model.run(steps=max_run_length)
+kpis = model.run(steps=max_run_length)  # kpis:  n_above_threshold, variance, kl_divergence, engagement
+print(kpis)
 
+# beliefs = model.get_beliefs()
+# total_seen_posts = model.get_total_seen_posts()
+# seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
 
-beliefs = model.get_beliefs()
-total_seen_posts = model.get_total_seen_posts()
-seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
-
-print(total_seen_posts)
-print(len(seen_posts_per_agent))
+# print(total_seen_posts)
+# print(len(seen_posts_per_agent))
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # dummy error from above --> for now just continue testing with belief_distributions_before_after.csv
