@@ -251,7 +251,7 @@ class MisinfoPy(Model):
             selected_agents = random.choices(self.schedule.agents, k=n_select)
         else:
             print(f'ERROR: Selection style not yet implemented. '
-                  f'To sample which agents will be empowered by the media literacy intervention,'
+                  f'To get_groundtruth which agents will be empowered by the media literacy intervention,'
                   f'Please use an agent selection style that has already been implemented. (e.g. random)')
 
         return selected_agents

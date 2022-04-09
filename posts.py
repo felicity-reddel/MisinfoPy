@@ -13,7 +13,8 @@ class Post:
             # stances represented in the post. self.stances is {Topic: int_belief}
             self.stances = self.sample_stances(based_on_agent=self.source)
         self.visibility = self.estimate_visibility()
-        self.factcheck_result = FactCheckResult.sample(stances=self.stances)  # currently: TRUE or FALSE
+        self.ground_truth = GroundTruth.get_groundtruth(stances=self.stances)
+        self.factcheck_result = self.factcheck_algorithm()
         self.visibility_ranking_intervention = self.get_adjusted_visibility()
 
     @staticmethod
@@ -47,6 +48,44 @@ class Post:
             stances[topic] = value
 
         return stances
+
+    def factcheck_algorithm(self, accuracy=0.8):
+        """
+        Simulates the factcheck algorithm.
+        Accuracy is the probability that the post's ground_truth and the overall leaning of the factcheck_result agree.
+        The overall leaning of the factcheck_result:
+            is TRUE if: p_false < 0.5
+            is FALSE if: p_false >= 0.5
+
+        Consequently,
+        If GroundTruth.TRUE: return with 'accuracy'-probability: p_false in range [0.0, 0.5).
+                                    and with 1-'accuracy': p_false in range [0.5, 1.0).
+        If GroundTruth.FALSE: return with 'accuracy'-probability: p_false in range [0.5, 1.0).
+                                    and with 1-'accuracy': p_false in range [0.0, 0.5).
+
+        :return: float, in range [0,1]
+        """
+        correct_category = True if random.uniform(0.0, 1.0) < accuracy else False
+
+        # Categorized as misinfo -> p_false: [0.5, 1.0)
+        if ((self.ground_truth == GroundTruth.FALSE and correct_category) or
+                (self.ground_truth == GroundTruth.TRUE and not correct_category)):
+            lower, higher = 0.5, 1.0
+
+        # Categorized as true -> p_false: [0.0, 0.5)
+        elif ((self.ground_truth == GroundTruth.TRUE and correct_category) or
+              (self.ground_truth == GroundTruth.FALSE and not correct_category)):
+            lower, higher = 0.0, 0.5
+
+        # Catch-all
+        else:
+            print("The factcheck_algorithm can currently on handle GroundTruth.TRUE and GroundTruth.FALSE.")
+
+        p_false = random.uniform(lower, higher)
+
+        return p_false
+
+        # TODO: continue implementation
 
     def estimate_visibility(self):
         """
@@ -82,11 +121,11 @@ class Post:
     def get_adjusted_visibility(self):
         """
         If the ranking intervention is applied, this method adjusts the visibility of the posts.
-        This adjustment is dependent on the Post's FactCheckResult:
+        This adjustment is dependent on the Post's GroundTruth:
             if TRUE     -> same visibility
             if FALSE    -> visibility reduced by 50%
         :return:  float, [0,1)
         """
-        adjusted_visibility = self.visibility * self.factcheck_result.value
+        adjusted_visibility = self.visibility * self.ground_truth.value
 
         return adjusted_visibility

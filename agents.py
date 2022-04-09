@@ -123,7 +123,7 @@ class BaseAgent(Agent):
             prev_belief = self.beliefs[topic]
 
             # Calculate SIT components
-            strength = self.calculate_strength(post)  # avg(relative n_followers, belief_similarity)
+            strength = self.calculate_strength(post)  # avg(relative_n_followers, belief_similarity)
             # belief_similarity: between own_beliefs and source's_beliefs
             immediacy = self.calculate_immediacy(post)  # tie_strength
             n_sources = self.calculate_n_sources()  # (1 / n_following) * 100, [0,100]
@@ -244,11 +244,11 @@ class BaseAgent(Agent):
 
             # probability that a post is seen depends on whether the ranking intvervention is on or not.
             probability = post.visibility
-            # If ranking intervention, use the adjusted visibility (punishment for having FactCheckResult.FALSE)
+            # If ranking intervention, use the adjusted visibility (punishment for having GroundTruth.FALSE)
             if self.model.ranking_intervention:
                 probability = post.visibility_ranking_intervention
-                # post.visibility *= post.factcheck_result.value
-                # print(f'post.factcheck_result.value: {post.factcheck_result.value}')
+                # post.visibility *= post.ground_truth.value
+                # print(f'post.ground_truth.value: {post.ground_truth.value}')
 
             # "Coin toss"
             random_nr = random.random()
@@ -335,7 +335,7 @@ class NormalUser(BaseAgent):
         """
         super().__init__(unique_id, model)
 
-        self.vocality = {'mu': 1, 'sigma': 0.7}  # This is used to sample nr of posts
+        self.vocality = {'mu': 1, 'sigma': 0.7}
         self.media_literacy = MediaLiteracy.get_random()  # {LOW, HIGH}
 
     def init_beliefs(self):
@@ -433,7 +433,7 @@ class NormalUser(BaseAgent):
         :return: boolean, whether the post is judged as true or false
         """
         judged_truthfulness = True
-        if self.media_literacy == MediaLiteracy.HIGH and post.factcheck_result == FactCheckResult.FALSE:
+        if self.media_literacy == MediaLiteracy.HIGH and post.ground_truth == GroundTruth.FALSE:
             judged_truthfulness = False
 
         return judged_truthfulness
@@ -448,7 +448,7 @@ class NormalUser(BaseAgent):
 
         # get probability of updating to the post, dependent on media literacy
         if self.media_literacy == MediaLiteracy.HIGH:
-            if post.factcheck_result == FactCheckResult.TRUE:
+            if post.ground_truth == GroundTruth.TRUE:
                 p_judged_as_truthful = 0.8
             else:
                 p_judged_as_truthful = 0.2
@@ -471,7 +471,7 @@ class Disinformer(BaseAgent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-        self.vocality = {'mu': 10, 'sigma': 0.7}  # This is used to sample nr of posts
+        self.vocality = {'mu': 10, 'sigma': 0.7}
 
     def init_beliefs(self):
         """

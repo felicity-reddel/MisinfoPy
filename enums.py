@@ -22,54 +22,59 @@ class Topic(Enum):
         return result
 
 
-class FactCheckResult(Enum):
+class GroundTruth(Enum):
     """
-    Enumeration representing the a factcheck would have (i.e., the ground truth).
-    Easily extendable to include more options (e.g., MISLEADING)
+    Enumeration representing the ground truth value of a post.
 
-    Each value represents the adjustment in visibility.
-    i.e., if ranking_invervention is on AND FactCheckResult.FALSE --> post has only 50% of its previous visibility.
+    Each value represents the adjustment in visibility.  # TODO: Adjust the comment (wrt the below TODO)
+    i.e., if ranking_invervention is on AND GroundTruth.FALSE --> post has only 50% of its previous visibility.
     """
 
-    FALSE = 0.5
+    FALSE = 0.5  # TODO: Change to 0 (after ranking intervention has been adjusted)
     TRUE = 1
-    # MISLEADING = 0.75
 
     @staticmethod
     def get_random():
         """
-        Samples FactCheckResult completely independent of the post's stance.
-        :return: result: FactCheckResult
+        Samples GroundTruth completely independent of the post's stance.
+        :return: result: GroundTruth
         """
-        result = random.choice(list(FactCheckResult))
+        result = random.choice(list(GroundTruth))
         return result
 
     @staticmethod
-    def sample(stances, based_on_topic=Topic.VAX):
+    def get_groundtruth(stances, based_on_topic=Topic.VAX):
         """
-        Samples FactCheckResult completely dependent on the post's stance.
+        Returns GroundTruth dependent on the post's stance.
         if post's stance is between
                             - 0 and 20:     100% that FALSE, 0% that TRUE
                             - 20 and 80:    50% that FALSE, 50% that TRUE
                             - 80 and 100:   20% that FALSE, 80% that TRUE
         :param based_on_topic:
         :param stances: dict, {Topic: value}
-        :return: FactCheckResult
+        :return: GroundTruth
         """
-        result = FactCheckResult.FALSE
-        probability = FactCheckResult.get_ground_truth_probability(stances, based_on_topic)
+        result = GroundTruth.TRUE
+        p_false = GroundTruth.get_probability_that_false(stances, based_on_topic)
 
         # "Coin toss"
         random_nr = random.random()
-        if random_nr < probability:
-            result = FactCheckResult.TRUE
+        if random_nr < p_false:
+            result = GroundTruth.FALSE
 
         return result
 
     @staticmethod
-    def get_ground_truth_probability(stances, based_on_topic=Topic.VAX):
+    def get_probability_that_false(stances, based_on_topic=Topic.VAX):
         """
-        Returns the probability used for initializing a Post's FactCheckResult.
+        Returns the probability-value used for initializing a Post's GroundTruth.
+        The probability value represents the probability that the post is FALSE.
+        TODO: Grounding the probabilities.
+         Currently: if post's stance is between
+                            - 0 and 20:     100% that FALSE, 0% that TRUE
+                            - 20 and 80:    50% that FALSE, 50% that TRUE
+                            - 80 and 100:   20% that FALSE, 80% that TRUE
+
         :param stances:         dict,  {Topic: value}
         :param based_on_topic:  Topic
         :return:                float, [0,1)
