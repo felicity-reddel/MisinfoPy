@@ -25,14 +25,19 @@ class MisinfoPy(Model):
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_visibility_adjustment=-0.0,
+                 delete_threshold=1.0,
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
         """
         Initializes the MisinfoPy
-        :param agent_ratio: dictionary {String: float}
+        :param agent_ratio: dictionary {String: float},
+                                     String is agent type, float is agent_ratio in range [0.0,1.0]
         :param ranking_intervention: float, range [-0.0, -1.0],
                                      the relative visibility change for posts with GroundTruth.FALSE
+        :param delete_threshold: float, range [0.0, 1.0],
+                                     if above threshold-probability that post is false, post will be deleted.
+                                     Thus, if delete_treshold=1.0, no posts will be deleted.
         :param n_agents: int, how many agents the model should have
         :param n_edges: int, with how many edges gets attached to the already built network
         :param media_literacy_intervention: tuple(float, SelectAgentsBy)
@@ -46,6 +51,9 @@ class MisinfoPy(Model):
 
         if agent_ratio is None:
             agent_ratio = {NormalUser.__name__: 0.9, Disinformer.__name__: 0.1}
+        # Making sure that the agent ratios add up to 1.0
+        if sum(agent_ratio.values()) != 1.0:
+            raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, while they should add up to 1.0.")
 
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
@@ -59,7 +67,6 @@ class MisinfoPy(Model):
         self.belief_update_fn = belief_update_fn
 
         self.apply_media_literacy_intervention(media_literacy_intervention)
-        # self.relative_visibility_ranking_intervention = relative_visibility_ranking_intervention
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
