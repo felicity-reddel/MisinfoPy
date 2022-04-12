@@ -14,7 +14,7 @@ class Post:
             self.stances = self.sample_stances(based_on_agent=self.source)
         self.visibility = self.estimate_visibility()
         self.ground_truth = GroundTruth.get_groundtruth(stances=self.stances)
-        self.factcheck_result = self.factcheck_algorithm()
+        self.p_false = self.factcheck_algorithm()
         self.visibility_ranking_intervention = self.get_adjusted_visibility()
 
     @staticmethod
@@ -52,17 +52,20 @@ class Post:
     def factcheck_algorithm(self, accuracy=0.8):
         """
         Simulates the factcheck algorithm.
-        Accuracy is the probability that the post's ground_truth and the overall leaning of the factcheck_result agree.
-        The overall leaning of the factcheck_result:
-            is TRUE if: p_false < 0.5
-            is FALSE if: p_false >= 0.5
+        The factcheck algorithm assigns the post a probability of having GroundTruth.FALSE.
+        This probability is returned.
 
-        Consequently,
         If GroundTruth.TRUE: return with 'accuracy'-probability: p_false in range [0.0, 0.5).
                                     and with 1-'accuracy': p_false in range [0.5, 1.0).
         If GroundTruth.FALSE: return with 'accuracy'-probability: p_false in range [0.5, 1.0).
                                     and with 1-'accuracy': p_false in range [0.0, 0.5).
 
+        :param accuracy: float, in range [0.0,1.0]
+                        Accuracy is the probability that
+                        the post's ground_truth and the overall leaning of the p_false agree.
+                        The overall leaning of the p_false:
+                            is TRUE if: p_false < 0.5
+                            is FALSE if: p_false >= 0.5
         :return: float, in range [0,1]
         """
         correct_category = True if random.uniform(0.0, 1.0) < accuracy else False

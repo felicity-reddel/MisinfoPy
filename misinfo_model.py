@@ -71,6 +71,8 @@ class MisinfoPy(Model):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
         self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
+        self.delete_threshold = delete_threshold
+        self.n_posts_deleted = 0
         self.show_n_seen_posts = show_n_seen_posts
 
         self.data_collector = DataCollector(model_reporters={

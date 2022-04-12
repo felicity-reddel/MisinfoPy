@@ -68,7 +68,11 @@ class BaseAgent(Agent):
         # Create posts
         for i in range(nr_of_posts):
             post = self.create_post()
-            posts.append(post)
+            # The agent's post is either deleted or saved.
+            if post.p_false >= self.model.delete_threshold:
+                self.model.n_posts_deleted += 1
+            else:
+                posts.append(post)
 
         # Share post to followers
         for follower in self.followers:
