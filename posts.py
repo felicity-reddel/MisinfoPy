@@ -77,9 +77,9 @@ class Post:
               (self.ground_truth == GroundTruth.FALSE and not correct_category)):
             lower, higher = 0.0, 0.5
 
-        # Catch-all
         else:
-            print("The factcheck_algorithm can currently on handle GroundTruth.TRUE and GroundTruth.FALSE.")
+            raise ValueError(f"The used GroundTruth ({self.ground_truth}) has not yet been fully implemented."
+                             "The factcheck_algorithm can currently on handle GroundTruth.TRUE and GroundTruth.FALSE.")
 
         p_false = random.uniform(lower, higher)
 

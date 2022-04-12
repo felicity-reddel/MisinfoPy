@@ -123,7 +123,7 @@ def show_visualization(model,
                             'n_edges': n_edges,
                             'agent_ratio': agent_ratio,
                             'media_literacy_intervention': media_literacy_intervention,
-                            'ranking_intervention': ranking_intervention})  # model parameters
+                            'relative_visibility_ranking_intervention': ranking_intervention})  # model parameters
 
     server.port = 8521  # The default
     server.launch()

@@ -57,9 +57,7 @@ class GroundTruth(Enum):
         result = GroundTruth.TRUE
         p_false = GroundTruth.get_probability_that_false(stances, based_on_topic)
 
-        # "Coin toss"
-        random_nr = random.random()
-        if random_nr < p_false:
+        if random.random() < p_false:
             result = GroundTruth.FALSE
 
         return result

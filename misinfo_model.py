@@ -24,14 +24,15 @@ class MisinfoPy(Model):
                  n_edges=2,
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                 ranking_intervention=False,
+                 ranking_visibility_adjustment=-0.0,
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
         """
         Initializes the MisinfoPy
         :param agent_ratio: dictionary {String: float}
-        :param ranking_intervention: boolean
+        :param ranking_intervention: float, range [-0.0, -1.0],
+                                     the relative visibility change for posts with GroundTruth.FALSE
         :param n_agents: int, how many agents the model should have
         :param n_edges: int, with how many edges gets attached to the already built network
         :param media_literacy_intervention: tuple(float, SelectAgentsBy)
@@ -58,7 +59,11 @@ class MisinfoPy(Model):
         self.belief_update_fn = belief_update_fn
 
         self.apply_media_literacy_intervention(media_literacy_intervention)
-        self.ranking_intervention = ranking_intervention
+        # self.relative_visibility_ranking_intervention = relative_visibility_ranking_intervention
+        if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
+            raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
+                             f"while it should be in range [-0.0, -1.0]")
+        self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
         self.show_n_seen_posts = show_n_seen_posts
 
         self.data_collector = DataCollector(model_reporters={
@@ -250,9 +255,10 @@ class MisinfoPy(Model):
         if select_by.__eq__(SelectAgentsBy.RANDOM):
             selected_agents = random.choices(self.schedule.agents, k=n_select)
         else:
-            print(f'ERROR: Selection style not yet implemented. '
-                  f'To get_groundtruth which agents will be empowered by the media literacy intervention,'
-                  f'Please use an agent selection style that has already been implemented. (e.g. random)')
+            raise ValueError(f'Selection style {select_by} has not yet been implemented. '
+                             f'To sample which agents will be empowered by the media literacy intervention,'
+                             f'please use an agent selection style that has already been implemented. '
+                             f'(e.g. SelectAgentsBy.RANDOM).')
 
         return selected_agents
 
@@ -622,7 +628,7 @@ def init_belief_list(belief_list=None, model=None):
 
     if belief_list is None:
         if model is None:
-            print("Error: No list of beliefs has been provided.")
+            raise ValueError("The model is not yet initialized and no belief-list has been provided.")
         else:
             belief_list = model.get_beliefs()
 

@@ -55,8 +55,6 @@ class BaseAgent(Agent):
         # rounding and converting to int
         nr_of_posts = round(nr_of_posts)
 
-        # print(f'{mu, sigma}: {nr_of_posts}')
-
         return nr_of_posts
 
     def share_post_stage(self):
@@ -242,17 +240,18 @@ class BaseAgent(Agent):
 
         for post in self.received_posts:
 
-            # probability that a post is seen depends on whether the ranking intvervention is on or not.
-            probability = post.visibility
-            # If ranking intervention, use the adjusted visibility (punishment for having GroundTruth.FALSE)
-            if self.model.ranking_intervention:
-                probability = post.visibility_ranking_intervention
-                # post.visibility *= post.ground_truth.value
-                # print(f'post.ground_truth.value: {post.ground_truth.value}')
+            # Get probability that post is seen (by adjusting the visibility of posts with GroundTruth.FALSE).
+            match post.ground_truth:
+                case GroundTruth.TRUE:
+                    probability = post.visibility
+                case GroundTruth.FALSE:
+                    probability = post.visibility * self.model.relative_visibility_ranking_intervention
+                case _:
+                    raise ValueError(f'The used {post.ground_truth} has not yet been fully implemented. '
+                          f'It is unspecified what the visibility-adjustment within the ranking intervention should be')
 
-            # "Coin toss"
-            random_nr = random.random()
-            if random_nr < probability:
+            # Sample whether post is seen by the agent
+            if random.random() < probability:
                 seen_posts.append(post)
 
         return seen_posts
@@ -455,9 +454,8 @@ class NormalUser(BaseAgent):
         else:
             p_judged_as_truthful = 1.0  # Default value for people with Medialiteracy.LOW. They will always update
 
-        # "Coin toss"
-        random_nr = random.random()
-        if random_nr < p_judged_as_truthful:
+        # Sample whether post is judged as truthful
+        if random.random() < p_judged_as_truthful:
             judged_truthfulness = True
         else:
             judged_truthfulness = False
