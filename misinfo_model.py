@@ -26,7 +26,8 @@ class MisinfoPy(Model):
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_visibility_adjustment=-0.0,  # by default no ranking adjustment
                  p_true_threshold_deleting=-0.1,  # by default no deleting
-                 p_true_threshold_ranking=-0.1,  # by default no ranking
+                 p_true_threshold_ranking=-0.1,   # by default no ranking
+                 p_true_threshold_strikes=-0.1,   # by default no strike system
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
@@ -34,11 +35,17 @@ class MisinfoPy(Model):
         Initializes the MisinfoPy
         :param agent_ratio: dictionary {String: float},
                                      String is agent type, float is agent_ratio in range [0.0,1.0]
-        :param ranking_intervention: float, range [-0.0, -1.0],
+        :param ranking_visibility_adjustment: float, range [-0.0, -1.0],
                                      the relative visibility change for posts with GroundTruth.FALSE
         :param p_true_threshold_deleting: float, range [0.0, 1.0],
                                      if below threshold-probability that post is true, post will be deleted.
                                      Thus, if threshold is negative, no posts will be deleted.
+        :param p_true_threshold_ranking:  float, range [0.0, 1.0],
+                                     if below threshold-probability that post is true, post will be down-ranked.
+                                     Thus, if threshold is negative, no posts will be down-ranked.
+        :param p_true_threshold_strikes:  float, range [0.0, 1.0],
+                                     if below threshold-probability that post is true, post will cause strikes.
+                                     Thus, if threshold is negative, no posts will cause strikes.
         :param n_agents: int, how many agents the model should have
         :param n_edges: int, with how many edges gets attached to the already built network
         :param media_literacy_intervention: tuple(float, SelectAgentsBy)
@@ -75,6 +82,7 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
         self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
+        self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts
 
         self.data_collector = DataCollector(model_reporters={

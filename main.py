@@ -13,8 +13,9 @@ if __name__ == '__main__':
     n_edges = 2  # 3
     media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
     ranking_visibility_adjustment = -0.0
-    p_true_threshold_deleting = -0.1
+    p_true_threshold_deleting = 0.1
     p_true_threshold_ranking = -0.1
+    p_true_threshold_strikes = -0.1
 
     if visualize:
 
@@ -26,7 +27,8 @@ if __name__ == '__main__':
                            media_literacy_intervention=media_literacy_intervention,
                            ranking_visibility_adjustment=ranking_visibility_adjustment,
                            p_true_threshold_deleting=p_true_threshold_deleting,
-                           p_true_threshold_ranking=p_true_threshold_ranking)
+                           p_true_threshold_ranking=p_true_threshold_ranking,
+                           p_true_threshold_strikes=p_true_threshold_strikes)
 
     else:
 
@@ -38,7 +40,8 @@ if __name__ == '__main__':
                           media_literacy_intervention=media_literacy_intervention,
                           ranking_visibility_adjustment=ranking_visibility_adjustment,
                           p_true_threshold_deleting=p_true_threshold_deleting,
-                          p_true_threshold_ranking=p_true_threshold_ranking)
+                          p_true_threshold_ranking=p_true_threshold_ranking,
+                          p_true_threshold_strikes=p_true_threshold_strikes)
 
         print(f"Starting")
         start_time = time.time()

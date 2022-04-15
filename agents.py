@@ -73,14 +73,18 @@ class BaseAgent(Agent):
             # Create posts
             for i in range(nr_of_posts):
                 post = self.create_post(p_true_threshold_ranking=self.model.p_true_threshold_ranking)
-                # Posts that have a very low probability of being true might be deleted and yield a strike:
-                if (post.p_true <= self.model.p_true_threshold_deleting) and post.detected_as_misinfo:
 
+                # Deleting: Posts that have a very low probability of being true might be deleted
+                if (post.p_true <= self.model.p_true_threshold_deleting) and post.detected_as_misinfo:
                     # Delete post by not appending it and advancing the delete-counter
                     self.model.n_posts_deleted += 1
+                else:
+                    posts.append(post)
+
+                # Strike system: Posts that have a very low probability of being true might yield a strike
+                if (post.p_true <= self.model.p_true_threshold_strikes) and post.detected_as_misinfo:
                     # Strike
                     self.n_strikes += 1
-
                     # Apply strike consequences
                     match self.n_strikes:
                         case 1:
@@ -92,16 +96,14 @@ class BaseAgent(Agent):
                         case 4:
                             self.blocked_until = self.model.schedule.time + 7
                             print(f"7 tick-block, –––––––––––––––––––– "
-                                  f"{post.p_true} <= {self.model.p_true_threshold_deleting}")
+                                  f"{post.p_true} <= {self.model.p_true_threshold_strikes}")
                             break
                         case self.n_strikes if self.n_strikes >= 5:
                             self.blocked_until = math.inf
                             print(f"INFINITY-block – since tick {self.model.schedule.time}")
                             break
 
-                else:
-                    posts.append(post)
-            # Share posts to followers
+            # Share successful posts to followers
             for follower in self.followers:
                 follower.received_posts += posts
 

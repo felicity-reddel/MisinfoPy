@@ -56,6 +56,7 @@ def show_visualization(model,
                        media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                        p_true_threshold_deleting=-0.1,  # by default no deleting
                        p_true_threshold_ranking=-0.1,   # by default no ranking
+                       p_true_threshold_strikes=-0.1,
                        ranking_visibility_adjustment=-0.0):
 
     """
@@ -67,6 +68,7 @@ def show_visualization(model,
     :param media_literacy_intervention:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
     :param p_true_threshold_deleting: float, negative if no deleting, otherwise in range [0.0, 1.0]
     :param p_true_threshold_ranking: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
+    :param p_true_threshold_strikes: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
     :param ranking_visibility_adjustment: float, -0.0 if no adjustment, otherwise in range [-0.0, -1.0]
     """
 
@@ -130,6 +132,7 @@ def show_visualization(model,
                             'media_literacy_intervention': media_literacy_intervention,
                             'p_true_threshold_deleting': p_true_threshold_deleting,
                             'p_true_threshold_ranking': p_true_threshold_ranking,
+                            'p_true_threshold_strikes': p_true_threshold_strikes,
                             'ranking_visibility_adjustment': ranking_visibility_adjustment})  # model parameters
 
     server.port = 8521  # The default
