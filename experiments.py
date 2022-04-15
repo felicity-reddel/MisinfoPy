@@ -12,10 +12,10 @@ def calculate_avg_belief(misinfo_model):
     :param misinfo_model: MisinfoPy
     :return: avg_belief: float
     """
-    topic_name = str(Topic.VAX)
+    topic = Topic.VAX
     beliefs = []
     for agent in misinfo_model.schedule.agents:
-        agent_belief_on_topic = agent.beliefs[topic_name]
+        agent_belief_on_topic = agent.beliefs[topic]
         beliefs.append(agent_belief_on_topic)
 
     avg_belief = sum(beliefs) / len(beliefs)
@@ -30,7 +30,7 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     :param threshold: float
     :return: float
     """
-    agent_beliefs = [a.beliefs[str(Topic.VAX)] for a in misinfo_model.schedule.agents]
+    agent_beliefs = [a.beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
     n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above

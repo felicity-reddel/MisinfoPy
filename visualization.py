@@ -54,7 +54,10 @@ def show_visualization(model,
                        n_edges=3,
                        agent_ratio=None,
                        media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                       ranking_intervention=False):
+                       p_true_threshold_deleting=-0.1,  # by default no deleting
+                       p_true_threshold_ranking=-0.1,   # by default no ranking
+                       ranking_visibility_adjustment=-0.0):
+
     """
     Internal function to show the visualization.
     :param model:       MisinfoPy
@@ -62,7 +65,9 @@ def show_visualization(model,
     :param n_edges:     int
     :param agent_ratio: dict {user_type: percentage}
     :param media_literacy_intervention:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
-    :param ranking_intervention:         boolean
+    :param p_true_threshold_deleting: float, negative if no deleting, otherwise in range [0.0, 1.0]
+    :param p_true_threshold_ranking: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
+    :param ranking_visibility_adjustment: float, -0.0 if no adjustment, otherwise in range [-0.0, -1.0]
     """
 
     if agent_ratio is None:
@@ -123,7 +128,9 @@ def show_visualization(model,
                             'n_edges': n_edges,
                             'agent_ratio': agent_ratio,
                             'media_literacy_intervention': media_literacy_intervention,
-                            'relative_visibility_ranking_intervention': ranking_intervention})  # model parameters
+                            'p_true_threshold_deleting': p_true_threshold_deleting,
+                            'p_true_threshold_ranking': p_true_threshold_ranking,
+                            'ranking_visibility_adjustment': ranking_visibility_adjustment})  # model parameters
 
     server.port = 8521  # The default
     server.launch()

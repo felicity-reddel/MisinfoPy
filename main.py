@@ -8,21 +8,25 @@ if __name__ == '__main__':
 
     # Parameters
     visualize = True
-    n_agents = 10  # 1000
+    n_agents = 100  # 1000
     agent_ratio = {NormalUser.__name__: 0.99, Disinformer.__name__: 0.01}
     n_edges = 2  # 3
     media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
-    ranking_intervention = False
+    ranking_visibility_adjustment = -0.0
+    p_true_threshold_deleting = -0.1
+    p_true_threshold_ranking = -0.1
 
     if visualize:
 
         # Only needs the line below. Runs model in the browser.
-        show_visualization(MisinfoPy,
-                           n_agents,
-                           n_edges,
-                           agent_ratio,
-                           media_literacy_intervention,
-                           ranking_intervention)
+        show_visualization(model=MisinfoPy,
+                           n_agents=n_agents,
+                           n_edges=n_edges,
+                           agent_ratio=agent_ratio,
+                           media_literacy_intervention=media_literacy_intervention,
+                           ranking_visibility_adjustment=ranking_visibility_adjustment,
+                           p_true_threshold_deleting=p_true_threshold_deleting,
+                           p_true_threshold_ranking=p_true_threshold_ranking)
 
     else:
 
@@ -32,7 +36,9 @@ if __name__ == '__main__':
                           n_edges=n_edges,
                           agent_ratio=agent_ratio,
                           media_literacy_intervention=media_literacy_intervention,
-                          ranking_intervention=ranking_intervention)
+                          ranking_visibility_adjustment=ranking_visibility_adjustment,
+                          p_true_threshold_deleting=p_true_threshold_deleting,
+                          p_true_threshold_ranking=p_true_threshold_ranking)
 
         print(f"Starting")
         start_time = time.time()

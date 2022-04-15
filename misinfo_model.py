@@ -24,8 +24,9 @@ class MisinfoPy(Model):
                  n_edges=2,
                  agent_ratio=None,
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                 ranking_visibility_adjustment=-0.0,
-                 delete_threshold=1.0,
+                 ranking_visibility_adjustment=-0.0,  # by default no ranking adjustment
+                 p_true_threshold_deleting=-0.1,  # by default no deleting
+                 p_true_threshold_ranking=-0.1,  # by default no ranking
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
@@ -35,9 +36,9 @@ class MisinfoPy(Model):
                                      String is agent type, float is agent_ratio in range [0.0,1.0]
         :param ranking_intervention: float, range [-0.0, -1.0],
                                      the relative visibility change for posts with GroundTruth.FALSE
-        :param delete_threshold: float, range [0.0, 1.0],
-                                     if above threshold-probability that post is false, post will be deleted.
-                                     Thus, if delete_treshold=1.0, no posts will be deleted.
+        :param p_true_threshold_deleting: float, range [0.0, 1.0],
+                                     if below threshold-probability that post is true, post will be deleted.
+                                     Thus, if threshold is negative, no posts will be deleted.
         :param n_agents: int, how many agents the model should have
         :param n_edges: int, with how many edges gets attached to the already built network
         :param media_literacy_intervention: tuple(float, SelectAgentsBy)
@@ -70,9 +71,10 @@ class MisinfoPy(Model):
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
-        self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
-        self.delete_threshold = delete_threshold
+        self.p_true_threshold_deleting = p_true_threshold_deleting
         self.n_posts_deleted = 0
+        self.p_true_threshold_ranking = p_true_threshold_ranking
+        self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
         self.show_n_seen_posts = show_n_seen_posts
 
         self.data_collector = DataCollector(model_reporters={
@@ -144,12 +146,18 @@ class MisinfoPy(Model):
 
         for i in range(steps):
             if debug:
-                print(f'Step: {i}')
+                print(f'––––––––––––––––––––––––––––––––––––––– Step: {i} –––––––––––––––––––––––––––––––––––––––')
             self.step()
 
         if time_tracking:
             run_time = round(time.time() - start_time, 2)
             print(f'Run time: {run_time} seconds')
+
+        if debug:
+            n_inf_blocked = sum([1 for x in self.schedule.agents if x.blocked_until == math.inf])
+            print()
+            print(f"{n_inf_blocked}/{self.n_agents} blocked permanently")
+            print(f"n_disinformers: {sum([1 for x in self.schedule.agents if isinstance(x, Disinformer)])}")
 
         # Calculate metrics for this run
         n_agents_above_belief_threshold = self.get_n_above_belief_threshold()

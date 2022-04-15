@@ -1,15 +1,17 @@
 from misinfo_model import *
 
-max_run_length = 3
+max_run_length = 60
 
-model = MisinfoPy(n_agents=1000,
+model = MisinfoPy(n_agents=100,
                   n_edges=3,
-                  agent_ratio={NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
+                  agent_ratio={NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
                   media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+                  p_true_threshold_deleting=0.1,
                   ranking_visibility_adjustment=-0.0,
+                  p_true_threshold_ranking=0.0,
                   show_n_seen_posts=False)
 
-n_above_threshold, variance, kl_divergence, engagement = model.run(steps=max_run_length)
+n_above_threshold, variance, kl_divergence, engagement = model.run(steps=max_run_length, debug=True)
 print(f"KPIs: \n"
       f"- n_above_threshold: {n_above_threshold} \n"
       f"- variance: {variance} \n"

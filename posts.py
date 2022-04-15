@@ -4,7 +4,7 @@ from enums import *
 
 class Post:
 
-    def __init__(self, unique_id, source, stances=None, p_true_threshold_ranking=0.1):
+    def __init__(self, unique_id, source, stances=None, p_true_threshold_ranking=0.0):
         self.unique_id = unique_id
         self.source = source
         if stances is None:
@@ -12,10 +12,10 @@ class Post:
         else:
             # stances represented in the post. self.stances is {Topic: int_belief}
             self.stances = self.sample_stances(based_on_agent=self.source)
-        self.visibility = self.estimate_visibility()
         self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.stances[Topic.VAX])
         self.p_true = self.factcheck_algorithm()
-        self.visibility_ranking_intervention = self.get_adjusted_visibility(p_true_threshold_ranking)
+        self.detected_as_misinfo = self.detected_as_misinfo()
+        self.visibility = self.get_visibility(p_true_threshold_ranking)
 
     @staticmethod
     def sample_stances(max_n_topics=1, based_on_agent=None) -> dict:
@@ -91,17 +91,42 @@ class Post:
 
         return avg_extremeness
 
-    def get_adjusted_visibility(self, p_true_threshold_ranking=0.1):
+    def get_visibility(self, p_true_threshold_ranking=0.1):
         """
         The ranking intervention is applied. This method adjusts the visibility of the posts if the factcheck result
         is of sufficient certainty that the post is false (i.e., post has a sufficiently low p_true).
         This adjustment is dependent on the Post's GroundTruth:
             if TRUE     -> same visibility
             if FALSE    -> visibility reduced by 50%
+        :param p_true_threshold_ranking: float, range [0.0, 1.0]
         :return:  float, [0,1)
         """
-        adjusted_visibility = self.visibility
-        if self.stances[Topic.VAX] <= p_true_threshold_ranking:
-            adjusted_visibility = self.visibility * self.ground_truth.value
+        visibility = self.estimate_visibility()
+        # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
+        # source: brennen_2020 (see below)
+        if (self.stances[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
+            visibility *= self.ground_truth.value
 
-        return adjusted_visibility
+        return visibility
+
+    @staticmethod
+    def detected_as_misinfo(p_detected=0.41):
+        """
+        Determines whether a misinfo-post is detected as such.
+
+        Default p_detected based on Brennen et al., 2020. (59% stays up)
+        @misc{brennen_2020,
+            title={Types, sources, and claims of covid-19 misinformation},
+            url={https://reutersinstitute.politics.ox.ac.uk/types-sources-and-claims-covid-19-misinformation},
+            journal={Reuters Institute for the Study of Journalism},
+            author={Brennen, Scott and Simon, Felix M and Howard, Philip N and Kleis Nielsen, Rasmus},
+            year={2020},
+            month={Apr}
+        }
+
+        :param p_detected: float, in range [0.0, 1.0]
+        :return: Boolean
+        """
+        detected = random.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
+
+        return detected

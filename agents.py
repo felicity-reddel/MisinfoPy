@@ -25,6 +25,8 @@ class BaseAgent(Agent):
         self.received_posts = []
         self.n_seen_posts = []
         self.last_posts = []  # currently: all posts
+        self.n_strikes = 0
+        self.blocked_until = 0  # Block excluding this number -> Can post on this tick again.
 
     # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     #   Step function: in two Stages.
@@ -62,24 +64,49 @@ class BaseAgent(Agent):
         First part of the agent's step function. The first stage what all agents do in a time tick.
         """
 
-        nr_of_posts = self.sample_number_of_posts()
-        posts = []
+        # Normal posting stage only if the agent is currently not blocked
+        if self.blocked_until <= self.model.schedule.time:
 
-        # Create posts
-        for i in range(nr_of_posts):
-            post = self.create_post()
-            # The agent's post is either deleted or saved.
-            if post.p_false >= self.model.delete_threshold:
-                self.model.n_posts_deleted += 1
-            else:
-                posts.append(post)
+            nr_of_posts = self.sample_number_of_posts()
+            posts = []
 
-        # Share post to followers
-        for follower in self.followers:
-            follower.received_posts += posts
+            # Create posts
+            for i in range(nr_of_posts):
+                post = self.create_post(p_true_threshold_ranking=self.model.p_true_threshold_ranking)
+                # Posts that have a very low probability of being true might be deleted and yield a strike:
+                if (post.p_true <= self.model.p_true_threshold_deleting) and post.detected_as_misinfo:
 
-        # Save own posts
-        self.last_posts += posts
+                    # Delete post by not appending it and advancing the delete-counter
+                    self.model.n_posts_deleted += 1
+                    # Strike
+                    self.n_strikes += 1
+
+                    # Apply strike consequences
+                    match self.n_strikes:
+                        case 1:
+                            # print(f'{self.n_strikes} strike, should CONTINUE the loop')
+                            pass
+                        case (2 | 3):
+                            # print(f'{self.n_strikes} strikes, should STOP the loop')
+                            break
+                        case 4:
+                            self.blocked_until = self.model.schedule.time + 7
+                            print(f"7 tick-block, –––––––––––––––––––– "
+                                  f"{post.p_true} <= {self.model.p_true_threshold_deleting}")
+                            break
+                        case self.n_strikes if self.n_strikes >= 5:
+                            self.blocked_until = math.inf
+                            print(f"INFINITY-block – since tick {self.model.schedule.time}")
+                            break
+
+                else:
+                    posts.append(post)
+            # Share posts to followers
+            for follower in self.followers:
+                follower.received_posts += posts
+
+            # Save own posts
+            self.last_posts += posts
 
     def update_beliefs_stage(self):
         """
@@ -214,7 +241,7 @@ class BaseAgent(Agent):
         """
         pass
 
-    def create_post(self, based_on_beliefs=True):
+    def create_post(self, based_on_beliefs=True, p_true_threshold_ranking=0.1):
         """
         Creates a new post. Either random or based on own stances.
         :return: Post
@@ -230,7 +257,7 @@ class BaseAgent(Agent):
             stances = Post.sample_stances()
 
         # Create post
-        post = Post(id, source=self, stances=stances)
+        post = Post(id, source=self, stances=stances, p_true_threshold_ranking=p_true_threshold_ranking)
 
         return post
 
