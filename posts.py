@@ -13,7 +13,7 @@ class Post:
             # stances represented in the post. self.stances is {Topic: int_belief}
             self.stances = self.sample_stances(based_on_agent=self.source)
         self.visibility = self.estimate_visibility()
-        self.ground_truth = GroundTruth.get_groundtruth(stances=self.stances)
+        self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.stances[Topic.VAX])
         self.p_false = self.factcheck_algorithm()
         self.visibility_ranking_intervention = self.get_adjusted_visibility()
 
@@ -49,46 +49,16 @@ class Post:
 
         return stances
 
-    def factcheck_algorithm(self, accuracy=0.8):
+    def factcheck_algorithm(self, topic=Topic.VAX):
         """
         Simulates the factcheck algorithm.
-        The factcheck algorithm assigns the post a probability of having GroundTruth.FALSE.
+        The factcheck algorithm assigns the post a probability of having GroundTruth.TRUE by using the post's belief.
         This probability is returned.
-
-        If GroundTruth.TRUE: return with 'accuracy'-probability: p_false in range [0.0, 0.5).
-                                    and with 1-'accuracy': p_false in range [0.5, 1.0).
-        If GroundTruth.FALSE: return with 'accuracy'-probability: p_false in range [0.5, 1.0).
-                                    and with 1-'accuracy': p_false in range [0.0, 0.5).
-
-        :param accuracy: float, in range [0.0,1.0]
-                        Accuracy is the probability that
-                        the post's ground_truth and the overall leaning of the p_false agree.
-                        The overall leaning of the p_false:
-                            is TRUE if: p_false < 0.5
-                            is FALSE if: p_false >= 0.5
+        :param topic: Topic
         :return: float, in range [0,1]
         """
-        correct_category = True if random.uniform(0.0, 1.0) < accuracy else False
-
-        # Categorized as misinfo -> p_false: [0.5, 1.0)
-        if ((self.ground_truth == GroundTruth.FALSE and correct_category) or
-                (self.ground_truth == GroundTruth.TRUE and not correct_category)):
-            lower, higher = 0.5, 1.0
-
-        # Categorized as true -> p_false: [0.0, 0.5)
-        elif ((self.ground_truth == GroundTruth.TRUE and correct_category) or
-              (self.ground_truth == GroundTruth.FALSE and not correct_category)):
-            lower, higher = 0.0, 0.5
-
-        else:
-            raise ValueError(f"The used GroundTruth ({self.ground_truth}) has not yet been fully implemented."
-                             "The factcheck_algorithm can currently on handle GroundTruth.TRUE and GroundTruth.FALSE.")
-
-        p_false = random.uniform(lower, higher)
-
-        return p_false
-
-        # TODO: continue implementation
+        p_true = self.stances[topic]/100
+        return p_true
 
     def estimate_visibility(self):
         """

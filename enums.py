@@ -43,51 +43,25 @@ class GroundTruth(Enum):
         return result
 
     @staticmethod
-    def get_groundtruth(stances, based_on_topic=Topic.VAX):
+    def get_groundtruth(post_belief=50.0):
         """
-        Returns GroundTruth dependent on the post's stance.
-        if post's stance is between
-                            - 0 and 20:     100% that FALSE, 0% that TRUE
-                            - 20 and 80:    50% that FALSE, 50% that TRUE
-                            - 80 and 100:   20% that FALSE, 80% that TRUE
-        :param based_on_topic:
-        :param stances: dict, {Topic: value}
+        Simple implementation to sample the groundtruth of a post by using the post's belief as the probability that
+        GroundTruth.TRUE.
+
+        Assumes:
+        – GroundTruth has only two possible values (TRUE, FALSE)
+        – higher post_beliefs are more likely to be true
+
+        :param post_belief: float, range [0.0, 100.0]
         :return: GroundTruth
         """
-        result = GroundTruth.TRUE
-        p_false = GroundTruth.get_probability_that_false(stances, based_on_topic)
+        # Transform belief into probability
+        p_true = post_belief/100
 
-        if random.random() < p_false:
-            result = GroundTruth.FALSE
+        # Weighted sampling to set groundtruth of post
+        groundtruth = random.choices(population=[GroundTruth.TRUE, GroundTruth.FALSE], weights=[p_true, 1-p_true])[0]
 
-        return result
-
-    @staticmethod
-    def get_probability_that_false(stances, based_on_topic=Topic.VAX):
-        """
-        Returns the probability-value used for initializing a Post's GroundTruth.
-        The probability value represents the probability that the post is FALSE.
-        TODO: Grounding the probabilities.
-         Currently: if post's stance is between
-                            - 0 and 20:     100% that FALSE, 0% that TRUE
-                            - 20 and 80:    50% that FALSE, 50% that TRUE
-                            - 80 and 100:   20% that FALSE, 80% that TRUE
-
-        :param stances:         dict,  {Topic: value}
-        :param based_on_topic:  Topic
-        :return:                float, [0,1)
-        """
-        topic = based_on_topic
-        value = stances[topic]
-
-        if value <= 20:
-            probability = 0.0
-        elif value <= 80:
-            probability = 0.5
-        else:
-            probability = 0.8
-
-        return probability
+        return groundtruth
 
 
 class MediaLiteracy(Enum):

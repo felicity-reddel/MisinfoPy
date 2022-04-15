@@ -6,7 +6,7 @@ model = MisinfoPy(n_agents=1000,
                   n_edges=3,
                   agent_ratio={NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
                   media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                  ranking_intervention=True,
+                  ranking_visibility_adjustment=-0.0,
                   show_n_seen_posts=False)
 
 n_above_threshold, variance, kl_divergence, engagement = model.run(steps=max_run_length)
