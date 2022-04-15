@@ -4,7 +4,7 @@ from enums import *
 
 class Post:
 
-    def __init__(self, unique_id, source, stances=None):
+    def __init__(self, unique_id, source, stances=None, p_true_threshold_ranking=0.1):
         self.unique_id = unique_id
         self.source = source
         if stances is None:
@@ -14,8 +14,8 @@ class Post:
             self.stances = self.sample_stances(based_on_agent=self.source)
         self.visibility = self.estimate_visibility()
         self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.stances[Topic.VAX])
-        self.p_false = self.factcheck_algorithm()
-        self.visibility_ranking_intervention = self.get_adjusted_visibility()
+        self.p_true = self.factcheck_algorithm()
+        self.visibility_ranking_intervention = self.get_adjusted_visibility(p_true_threshold_ranking)
 
     @staticmethod
     def sample_stances(max_n_topics=1, based_on_agent=None) -> dict:
@@ -91,14 +91,17 @@ class Post:
 
         return avg_extremeness
 
-    def get_adjusted_visibility(self):
+    def get_adjusted_visibility(self, p_true_threshold_ranking=0.1):
         """
-        If the ranking intervention is applied, this method adjusts the visibility of the posts.
+        The ranking intervention is applied. This method adjusts the visibility of the posts if the factcheck result
+        is of sufficient certainty that the post is false (i.e., post has a sufficiently low p_true).
         This adjustment is dependent on the Post's GroundTruth:
             if TRUE     -> same visibility
             if FALSE    -> visibility reduced by 50%
         :return:  float, [0,1)
         """
-        adjusted_visibility = self.visibility * self.ground_truth.value
+        adjusted_visibility = self.visibility
+        if self.stances[Topic.VAX] <= p_true_threshold_ranking:
+            adjusted_visibility = self.visibility * self.ground_truth.value
 
         return adjusted_visibility
