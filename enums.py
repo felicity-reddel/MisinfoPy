@@ -8,7 +8,6 @@ class Topic(Enum):
     Easily extendable to include more topics (e.g., MASKS, EVOLUTION, etc.)
     """
     VAX = 0
-
     # MASKS = 1
     # EVOLUTION = 2
 
@@ -24,13 +23,9 @@ class Topic(Enum):
 
 class GroundTruth(Enum):
     """
-    Enumeration representing the ground truth value of a post.
-
-    Each value represents the adjustment in visibility.  # TODO: Adjust the comment (wrt the below TODO)
-    i.e., if ranking_invervention is on AND GroundTruth.FALSE --> post has only 50% of its previous visibility.
+    Enumeration representing the groundtruth value of a post.
     """
-
-    FALSE = 0.5  # TODO: Change to 0 (after ranking intervention has been adjusted)
+    FALSE = 0
     TRUE = 1
 
     @staticmethod
@@ -68,7 +63,6 @@ class MediaLiteracy(Enum):
     """
     Media Literacy Levels
     """
-
     LOW = 0
     HIGH = 1
 
@@ -102,7 +96,6 @@ class BeliefUpdate(Enum):
     - M2:       Bounded Confidence      +       heterogeneous μ (update parameter)
     - M3:       No Bounded Confidence   +       heterogeneous μ (update parameter)
     """
-
     M0 = 0
     M1 = 1
     M2 = 2

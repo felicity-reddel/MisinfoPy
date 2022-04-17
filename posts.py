@@ -105,7 +105,7 @@ class Post:
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
         if (self.stances[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
-            visibility *= self.ground_truth.value
+            visibility *= self.source.model.relative_visibility_ranking_intervention
 
         return visibility
 

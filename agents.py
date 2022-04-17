@@ -427,7 +427,7 @@ class NormalUser(BaseAgent):
         - Example:                Al Atiqi et al. (2018)
         :param post:    Post
         """
-        print(f'Would update beliefs via {self.model.belief_update_fn}')
+        # print(f'Would update beliefs via {self.model.belief_update_fn}')
 
     def update_beliefs_m1(self, post):
         """
@@ -436,7 +436,7 @@ class NormalUser(BaseAgent):
         - Example:                Du et al. (2021), Beskow & Carley (2019), Rajabi et al. (2020)
         :param post:    Post
         """
-        print(f'Would update beliefs via {self.model.belief_update_fn}')
+        # print(f'Would update beliefs via {self.model.belief_update_fn}')
 
     def update_beliefs_m2(self, post):
         """
@@ -445,7 +445,7 @@ class NormalUser(BaseAgent):
         - Example:                Mason et al. (2020)
         :param post:    Post
         """
-        print(f'Would update beliefs via {self.model.belief_update_fn}')
+        # print(f'Would update beliefs via {self.model.belief_update_fn}')
 
     def update_beliefs_m3(self, post):
         """

@@ -26,8 +26,8 @@ class MisinfoPy(Model):
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                  ranking_visibility_adjustment=-0.0,  # by default no ranking adjustment
                  p_true_threshold_deleting=-0.1,  # by default no deleting
-                 p_true_threshold_ranking=-0.1,   # by default no ranking
-                 p_true_threshold_strikes=-0.1,   # by default no strike system
+                 p_true_threshold_ranking=-0.1,  # by default no ranking
+                 p_true_threshold_strikes=-0.1,  # by default no strike system
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
@@ -61,7 +61,8 @@ class MisinfoPy(Model):
             agent_ratio = {NormalUser.__name__: 0.9, Disinformer.__name__: 0.1}
         # Making sure that the agent ratios add up to 1.0
         if sum(agent_ratio.values()) != 1.0:
-            raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, while they should add up to 1.0.")
+            raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, "
+                             f"while they should add up to 1.0.")
 
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])

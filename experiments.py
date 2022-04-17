@@ -31,7 +31,7 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     :return: float
     """
     agent_beliefs = [a.beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
-    n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
+    n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
 
@@ -55,12 +55,23 @@ if __name__ == '__main__':
                                           # (0.1, SelectAgentsBy.RANDOM),
                                           # (0.25, SelectAgentsBy.RANDOM)
                                           ]
-    ranking_intervention_values = [True, False]
 
-    policies = list(itertools.product(media_literacy_intervention_values, ranking_intervention_values))
+    ranking_visibility_adjustment_values = [-0.0]  # by default no ranking adjustment
+    p_true_threshold_deleting_values = [-0.1]  # by default no deleting
+    p_true_threshold_ranking_values = [-0.1]  # by default no ranking
+    p_true_threshold_strikes_values = [-0.1]  # by default no strike system
+    belief_update_fn_values = [BeliefUpdate(e.value) for e in BeliefUpdate]
 
+    policies = list(itertools.product(media_literacy_intervention_values,
+                                      ranking_visibility_adjustment_values,
+                                      p_true_threshold_deleting_values,
+                                      p_true_threshold_ranking_values,
+                                      p_true_threshold_strikes_values,
+                                      belief_update_fn_values))
+
+    print("Policies:")
     for policy in policies:
-        print(f'policy: {str(policy)}')
+        print(f'– {policy}')
 
     # Printing
     start_time_seconds = time.time()
@@ -75,8 +86,13 @@ if __name__ == '__main__':
         engagement = {}
 
         for j, policy in enumerate(policies):
-            # Unpack policy
-            media_literacy_intervention, ranking_intervention = policy
+            # Unpack policy (over multiple lines -> into a list)
+            [media_literacy_intervention,
+             ranking_visibility_adjustment,
+             p_true_threshold_deleting,
+             p_true_threshold_ranking,
+             p_true_threshold_strikes,
+             belief_update_fn] = policy
 
             # Set up data structure
             df_column = []
@@ -88,7 +104,11 @@ if __name__ == '__main__':
                                   n_edges=n_edges,
                                   agent_ratio=scenario,
                                   media_literacy_intervention=media_literacy_intervention,
-                                  ranking_intervention=ranking_intervention)
+                                  ranking_visibility_adjustment=ranking_visibility_adjustment,
+                                  p_true_threshold_deleting=p_true_threshold_deleting,
+                                  p_true_threshold_ranking=p_true_threshold_ranking,
+                                  p_true_threshold_strikes=p_true_threshold_strikes,
+                                  belief_update_fn=belief_update_fn)
 
                 # Save start data
                 agents_belief_before = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
@@ -124,7 +144,7 @@ if __name__ == '__main__':
         file_name = "belief_distr_" + str(scenario) + ".csv"
         data.to_csv(path + file_name)
         for key, value in engagement.items():
-            print(f"Ranking: {key[1]}, n's: {value}, avg: {sum(value)/len(value)}")
+            print(f"Ranking: {key[1]}, n's: {value}, avg: {sum(value) / len(value)}")
 
     # # Printing
     # end_time = time.localtime(time.time())
