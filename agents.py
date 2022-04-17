@@ -18,12 +18,14 @@ class BaseAgent(Agent):
         self.beliefs = {}
         self.init_beliefs()
         self.media_literacy = MediaLiteracy.LOW
+        self.received_media_literacy_intervention = False
 
         self.vocality = {}
         self.followers = []
         self.following = []
         self.received_posts = []
         self.n_seen_posts = []
+        self.n_total_seen_posts = 0
         self.last_posts = []  # currently: all posts
         self.n_strikes = 0
         self.blocked_until = 0  # Block excluding this number -> Can post on this tick again.
@@ -373,6 +375,7 @@ class NormalUser(BaseAgent):
             # Sample which of the received posts are actually seen (depends on ranking).
             seen_posts = self.sample_seen_posts()
             self.n_seen_posts.append(len(seen_posts))
+            self.n_total_seen_posts += len(seen_posts)
 
             # For each seen post: judge truthfulness, then update beliefs (if post is judged as truthful).
             for post in seen_posts:

@@ -23,11 +23,14 @@ class MisinfoPy(Model):
                  n_agents=1000,
                  n_edges=2,
                  agent_ratio=None,
+
                  media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+                 media_literacy_intervention_durations=None,
                  ranking_visibility_adjustment=-0.0,  # by default no ranking adjustment
                  p_true_threshold_deleting=-0.1,  # by default no deleting
                  p_true_threshold_ranking=-0.1,  # by default no ranking
                  p_true_threshold_strikes=-0.1,  # by default no strike system
+
                  belief_update_fn=BeliefUpdate.M3,
                  show_n_seen_posts=False,
                  show_n_connections=False):
@@ -64,6 +67,11 @@ class MisinfoPy(Model):
             raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, "
                              f"while they should add up to 1.0.")
 
+        if media_literacy_intervention_durations is None:
+            media_literacy_intervention_durations = {"game duration": 300,
+                                                     "MediaLiteracy.LOW": 3,
+                                                     "MediaLiteracy.HIGH": 30}
+
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
         self.G = random_graph(n_nodes=n_agents, m=n_edges)  # n_nodes = n_agents, exactly 1 agent per node
@@ -79,6 +87,7 @@ class MisinfoPy(Model):
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
+        self.media_literacy_intervention_durations = media_literacy_intervention_durations
         self.p_true_threshold_deleting = p_true_threshold_deleting
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
@@ -91,7 +100,8 @@ class MisinfoPy(Model):
             "Avg Vax-Belief above threshold": self.get_avg_belief_above_threshold,
             "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold,
             "Total seen posts": self.get_total_seen_posts,
-            "Free speech constraint": self.free_speech_constraint})
+            "Free speech constraint": self.get_free_speech_constraint,
+            "User effort": self.get_avg_user_effort})
 
         # DataCollector2: follow individual agents
         self.data_collector2 = DataCollector(model_reporters={
@@ -174,13 +184,15 @@ class MisinfoPy(Model):
         polarization_variance = variance(model=self)
         polarization_kl_divergence_from_polarized = kl_divergence(model=self)
         engagement = self.get_total_seen_posts()
-        free_speech_constraint = self.free_speech_constraint()
+        free_speech_constraint = self.get_free_speech_constraint()
+        avg_user_effort = self.get_avg_user_effort()
 
         return n_agents_above_belief_threshold, \
                polarization_variance, \
                polarization_kl_divergence_from_polarized, \
                engagement, \
-               free_speech_constraint
+               free_speech_constraint, \
+               avg_user_effort
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -267,11 +279,9 @@ class MisinfoPy(Model):
             n_select = int(len(self.schedule.agents) * percentage)
             selected_agents = self.select_agents_for_media_literacy_intervention(n_select, select_by)
 
-            # Benefiting agents (only agents with low media literacy can benefit from the intervention)
-            benefiting_agents = [agent for agent in selected_agents if agent.media_literacy.__eq__(MediaLiteracy.LOW)]
-
-            for agent in benefiting_agents:
+            for agent in selected_agents:
                 agent.media_literacy = MediaLiteracy.HIGH
+                agent.received_media_literacy_intervention = True
 
     def select_agents_for_media_literacy_intervention(self, n_select=0, select_by=SelectAgentsBy.RANDOM):
         """
@@ -301,9 +311,9 @@ class MisinfoPy(Model):
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # DataCollector functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-    def free_speech_constraint(self):
+    def get_free_speech_constraint(self):
         """
-        Calculated an estimate of the restriction to freedom of speech. The float represents the number of
+        Calculates an estimate of the restriction to freedom of speech. The float represents the number of
         "deleted" posts, compared to the number of posts that the agents wanted to post.
         It is aggregated over the whold population, i.e., total "deleted" posts divided by the
         total number of how many posts the agents wanted to post.
@@ -320,6 +330,29 @@ class MisinfoPy(Model):
         rel_constraint = constraint / total_posts
 
         return rel_constraint
+
+    def get_avg_user_effort(self):
+        """
+        Calculates an estimate of the effort a user has for
+            - judging the posts' truthfulness (summed over all posts)
+            - partaking in the media literacy interventions (once)
+        The effort is measured in minutes. The average effort per user is returned.
+
+        :return: float, cannot be lower than zero
+        """
+        effort_per_agent = []
+        for agent in self.schedule.agents:
+            game_duration = int(agent.received_media_literacy_intervention) * \
+                            self.media_literacy_intervention_durations["game duration"]
+            judging_all_posts = agent.n_total_seen_posts * \
+                                self.media_literacy_intervention_durations[str(agent.media_literacy)]
+            effort = game_duration + judging_all_posts
+            effort_per_agent.append(effort)
+
+        avg_effort_seconds = sum(effort_per_agent) / len(self.schedule.agents)
+        avg_effort_minutes = avg_effort_seconds / 60.0
+
+        return avg_effort_minutes
 
     def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """

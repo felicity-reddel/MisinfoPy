@@ -6,6 +6,9 @@ model = MisinfoPy(n_agents=100,
                   n_edges=3,
                   agent_ratio={NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
                   media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+                  media_literacy_intervention_durations={"game duration": 300,
+                                                         "MediaLiteracy.LOW": 3,
+                                                         "MediaLiteracy.HIGH": 30},
                   ranking_visibility_adjustment=-0.0,  # negative value: no ranking adjustment
                   p_true_threshold_deleting=-0.1,  # negative value: no deleting
                   p_true_threshold_ranking=-0.2,  # negative value: no ranking
@@ -18,14 +21,16 @@ model = MisinfoPy(n_agents=100,
  variance,
  kl_divergence,
  engagement,
- free_speech_constraint] = model.run(steps=max_run_length, debug=True)
+ free_speech_constraint,
+ avg_user_effort] = model.run(steps=max_run_length, debug=True)
 
 print(f"KPIs: \n"
       # f"- n_above_threshold: {n_above_threshold} \n"
       # f"- variance: {variance} \n"
       # f"- kl_divergence: {kl_divergence} \n"
       # f"- engagement: {engagement} \n"
-      f"- free speech constraint: {free_speech_constraint}")
+      f"- free speech constraint: {free_speech_constraint} \n"
+      f"- avg user effort: {avg_user_effort}")
 
 # beliefs = model.get_beliefs()
 # total_seen_posts = model.get_total_seen_posts()

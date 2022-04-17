@@ -61,10 +61,11 @@ class GroundTruth(Enum):
 
 class MediaLiteracy(Enum):
     """
-    Media Literacy Levels
+    Media Literacy Levels.
+    The value represents the duration of a user for judging the truthfulness of a post (on average, time in seconds).
     """
-    LOW = 0
-    HIGH = 1
+    LOW = 3
+    HIGH = 30
 
     @staticmethod
     def get_random():
