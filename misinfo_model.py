@@ -82,7 +82,7 @@ class MisinfoPy(Model):
         self.p_true_threshold_deleting = p_true_threshold_deleting
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
-        self.relative_visibility_ranking_intervention = 1.0 + ranking_visibility_adjustment
+        self.ranking_visibility_adjustment = ranking_visibility_adjustment
         self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts
 
@@ -90,7 +90,8 @@ class MisinfoPy(Model):
             "Avg Vax-Belief": self.get_avg_belief,
             "Avg Vax-Belief above threshold": self.get_avg_belief_above_threshold,
             "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold,
-            "Total seen posts": self.get_total_seen_posts})
+            "Total seen posts": self.get_total_seen_posts,
+            "Free speech constraint": self.free_speech_constraint})
 
         # DataCollector2: follow individual agents
         self.data_collector2 = DataCollector(model_reporters={
@@ -173,11 +174,13 @@ class MisinfoPy(Model):
         polarization_variance = variance(model=self)
         polarization_kl_divergence_from_polarized = kl_divergence(model=self)
         engagement = self.get_total_seen_posts()
+        free_speech_constraint = self.free_speech_constraint()
 
         return n_agents_above_belief_threshold, \
                polarization_variance, \
                polarization_kl_divergence_from_polarized, \
-               engagement
+               engagement, \
+               free_speech_constraint
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -298,6 +301,26 @@ class MisinfoPy(Model):
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # DataCollector functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
+    def free_speech_constraint(self):
+        """
+        Calculated an estimate of the restriction to freedom of speech. The float represents the number of
+        "deleted" posts, compared to the number of posts that the agents wanted to post.
+        It is aggregated over the whold population, i.e., total "deleted" posts divided by the
+        total number of how many posts the agents wanted to post.
+        "deleted" includes downranked posts – If a post was downranked by 20%, it counts as 0.2 posts deleted.
+        :return: float, range [0.0, 1.0]
+        """
+
+        total_posts = sum([a.preferred_n_posts for a in self.schedule.agents])
+        n_posted = sum([len(a.last_posts) for a in self.schedule.agents])
+        n_prevented = total_posts - n_posted
+        n_downranked = sum([a.n_downranked for a in self.schedule.agents])
+
+        constraint = n_prevented + (n_downranked * abs(self.ranking_visibility_adjustment))
+        rel_constraint = constraint / total_posts
+
+        return rel_constraint
+
     def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Return average belief of all agents on a given topic. For the DataCollector.

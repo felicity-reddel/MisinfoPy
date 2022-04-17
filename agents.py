@@ -27,6 +27,8 @@ class BaseAgent(Agent):
         self.last_posts = []  # currently: all posts
         self.n_strikes = 0
         self.blocked_until = 0  # Block excluding this number -> Can post on this tick again.
+        self.preferred_n_posts = 0
+        self.n_downranked = 0
 
     # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     #   Step function: in two Stages.
@@ -63,11 +65,12 @@ class BaseAgent(Agent):
         """
         First part of the agent's step function. The first stage what all agents do in a time tick.
         """
+        nr_of_posts = self.sample_number_of_posts()
+        self.preferred_n_posts += nr_of_posts
 
         # Normal posting stage only if the agent is currently not blocked
         if self.blocked_until <= self.model.schedule.time:
 
-            nr_of_posts = self.sample_number_of_posts()
             posts = []
 
             # Create posts
@@ -269,23 +272,7 @@ class BaseAgent(Agent):
         Result depends on the ranking implementation and whether the ranking intervention is applied.
         :return: list of seen posts: [Post]
         """
-        seen_posts = []
-
-        for post in self.received_posts:
-
-            # Get probability that post is seen (by adjusting the visibility of posts with GroundTruth.FALSE).
-            match post.ground_truth:
-                case GroundTruth.TRUE:
-                    probability = post.visibility
-                case GroundTruth.FALSE:
-                    probability = post.visibility * self.model.relative_visibility_ranking_intervention
-                case _:
-                    raise ValueError(f'The used {post.ground_truth} has not yet been fully implemented. '
-                          f'It is unspecified what the visibility-adjustment within the ranking intervention should be')
-
-            # Sample whether post is seen by the agent
-            if random.random() < probability:
-                seen_posts.append(post)
+        seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
 
         return seen_posts
 
