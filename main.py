@@ -16,6 +16,7 @@ if __name__ == '__main__':
     p_true_threshold_deleting = 0.1
     p_true_threshold_ranking = -0.1
     p_true_threshold_strikes = -0.1
+    belief_update_fn = BeliefUpdate.DEFFUANT
 
     if visualize:
 
@@ -28,7 +29,8 @@ if __name__ == '__main__':
                            ranking_visibility_adjustment=ranking_visibility_adjustment,
                            p_true_threshold_deleting=p_true_threshold_deleting,
                            p_true_threshold_ranking=p_true_threshold_ranking,
-                           p_true_threshold_strikes=p_true_threshold_strikes)
+                           p_true_threshold_strikes=p_true_threshold_strikes,
+                           belief_update_fn=belief_update_fn)
 
     else:
 
@@ -41,7 +43,8 @@ if __name__ == '__main__':
                           ranking_visibility_adjustment=ranking_visibility_adjustment,
                           p_true_threshold_deleting=p_true_threshold_deleting,
                           p_true_threshold_ranking=p_true_threshold_ranking,
-                          p_true_threshold_strikes=p_true_threshold_strikes)
+                          p_true_threshold_strikes=p_true_threshold_strikes,
+                          belief_update_fn=belief_update_fn)
 
         print(f"Starting")
         start_time = time.time()

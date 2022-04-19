@@ -31,7 +31,7 @@ class MisinfoPy(Model):
                  p_true_threshold_ranking=-0.1,  # by default no ranking
                  p_true_threshold_strikes=-0.1,  # by default no strike system
 
-                 belief_update_fn=BeliefUpdate.M3,
+                 belief_update_fn=BeliefUpdate.SIT,
                  show_n_seen_posts=False,
                  show_n_connections=False):
         """
@@ -661,7 +661,7 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
     :return: float: symmetric kl-divergence
     """
 
-    belief_list = init_belief_list(belief_list, model)
+    belief_list = get_belief_list(belief_list, model)
 
     # Discretize belief_list
     discrete_distribution = discretize(belief_list, n_bins)
@@ -685,21 +685,21 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
 
 def variance(belief_list=None, model=None, n_digits=2):
     """
-    Calculates the variance between the template of a polarized belief_list and
+    Calculates the variance of
     the current belief belief_list of the agents (or a the provided belief_list).
     :param belief_list: list: listing the belief value of each agent
     :param model: MisinfoPy model
     :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
     :return: float: variance
     """
-    belief_list = init_belief_list(belief_list, model)
-
+    belief_list = get_belief_list(belief_list, model)
+    print()
     var = round(statistics.variance(belief_list), n_digits)
 
     return var
 
 
-def init_belief_list(belief_list=None, model=None):
+def get_belief_list(belief_list=None, model=None):
     """
     Makes sure there is a belief_list (either provided, or belief_list from the model's schedule),
     e.g., before calculating polarization metrics KL-divergence & variance, or belief metric

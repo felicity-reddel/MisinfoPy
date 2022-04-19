@@ -13,7 +13,7 @@ model = MisinfoPy(n_agents=100,
                   p_true_threshold_deleting=-0.1,  # negative value: no deleting
                   p_true_threshold_ranking=-0.2,  # negative value: no ranking
                   p_true_threshold_strikes=-0.01,  # negative value: no strike system
-                  belief_update_fn=BeliefUpdate.M3,
+                  belief_update_fn=BeliefUpdate.DEFFUANT,
                   show_n_seen_posts=False)
 
 # Run model and save KPIs
@@ -26,7 +26,7 @@ model = MisinfoPy(n_agents=100,
 
 print(f"KPIs: \n"
       # f"- n_above_threshold: {n_above_threshold} \n"
-      # f"- variance: {variance} \n"
+      f"- variance: {variance} \n"
       # f"- kl_divergence: {kl_divergence} \n"
       # f"- engagement: {engagement} \n"
       f"- free speech constraint: {free_speech_constraint} \n"

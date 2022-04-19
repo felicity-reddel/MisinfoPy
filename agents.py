@@ -1,4 +1,6 @@
 import math
+import random
+
 from mesa import Agent
 from posts import *
 from enums import *
@@ -39,12 +41,12 @@ class BaseAgent(Agent):
     def sample_number_of_posts(self):
         """
         Sample number of posts that an agent should share at one instant. It samples with a normal belief_list based
-        on this agent's vocality parameters (mu and sigma).
+        on this agent's vocality parameters (p_update and sigma).
         :return:
             nr_of_posts: int
         """
 
-        mu = self.vocality['mu']
+        mu = self.vocality['p_update']
         sigma = self.vocality['sigma']
 
         current_belief = self.beliefs[Topic.VAX]
@@ -54,7 +56,7 @@ class BaseAgent(Agent):
         elif current_belief < 30 or current_belief > 70:
             mu += 1
         # elif current_belief < 40 or current_belief > 60:
-        #     mu += 1
+        #     p_update += 1
 
         nr_of_posts = max(0, np.random.normal(mu, sigma, 1)[0])
 
@@ -122,24 +124,8 @@ class BaseAgent(Agent):
         pass
 
     # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-    #  Simple SIT Belief-update
+    #  SIT Belief-update
     # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-
-    def update_beliefs_simple_sit(self, post):
-        """
-        Updates the beliefs of the agent based on a post.
-        (The post which is passed is assumed to be seen by the agent.
-        It is also assumed that the agent actually updates beliefs based on the post. I.e., in the current
-        implementation, it is assumed that the agent judged the post to be truthful.)
-        :param post:    Post, a seen post
-        """
-
-        # Calculate how the agent will update its beliefs
-        updates = self.calculate_belief_update(post)
-
-        # Update own beliefs  (after each seen post)
-        for topic, update in updates.items():
-            self.beliefs[topic] += update
 
     def calculate_belief_update(self, post) -> dict:
         """
@@ -356,7 +342,7 @@ class NormalUser(BaseAgent):
         """
         super().__init__(unique_id, model)
 
-        self.vocality = {'mu': 1, 'sigma': 0.7}
+        self.vocality = {'p_update': 1, 'sigma': 0.7}
         self.media_literacy = MediaLiteracy.get_random()  # {LOW, HIGH}
 
     def init_beliefs(self):
@@ -399,52 +385,59 @@ class NormalUser(BaseAgent):
         :param post: Post
         """
         match self.model.belief_update_fn:
-            case BeliefUpdate.M0:
-                self.update_beliefs_m0(post)
-            case BeliefUpdate.M1:
-                self.update_beliefs_m1(post)
-            case BeliefUpdate.M2:
-                self.update_beliefs_m2(post)
-            case BeliefUpdate.M3:
-                self.update_beliefs_m3(post)
+            case BeliefUpdate.SAMPLE:
+                self.update_beliefs_sample(post)
+            case BeliefUpdate.DEFFUANT:
+                self.update_beliefs_deffuant(post)
+            case BeliefUpdate.SIT:
+                self.update_beliefs_sit(post)
             case _:
                 raise ValueError("Not a defined belief update function.")
 
-    def update_beliefs_m0(self, post):
+    def update_beliefs_sample(self, post, p_update=0.02):
         """
-        Updates the agent's belief with the belief update function of model 0.
-        - Characteristics:        Bounded Confidence      +       homogeneous μ (update parameter)
-        - Example:                Al Atiqi et al. (2018)
-        :param post:    Post
+        Updates the agent's belief with the SAMPLE belief update function.
+        :param post:        Post
+        :param p_update:    float, probability that the agent will update
         """
-        # print(f'Would update beliefs via {self.model.belief_update_fn}')
+        old = self.beliefs[Topic.VAX]
+        post_belief = post.stances[Topic.VAX]
+        if random.random() <= p_update:
+            new = (old + post_belief) / 2
+            self.beliefs[Topic.VAX] = new
 
-    def update_beliefs_m1(self, post):
+    def update_beliefs_deffuant(self, post, mu=0.02):
         """
-        Updates the agent's belief with the belief update function of model 1.
-        - Characteristics:        No Bounded Confidence   +       homogeneous μ (update parameter)
-        - Example:                Du et al. (2021), Beskow & Carley (2019), Rajabi et al. (2020)
+        Updates the agent's belief with the DEFFUANT belief update function. (Currently only wrt Topic.VAX)
+        Examples: Du et al. (2021), Rajabi et al. (2020), Mason et al. (2020)
         :param post:    Post
+        :param mu:      float, updating parameter, indicates how strongly the belief is updated towards the
+                        post's belief. If mu=0.1, the update is 10% towards the post's belief.
         """
-        # print(f'Would update beliefs via {self.model.belief_update_fn}')
+        old = self.beliefs[Topic.VAX]
+        post_belief = post.stances[Topic.VAX]
 
-    def update_beliefs_m2(self, post):
-        """
-        Updates the agent's belief with the belief update function of model 2.
-        - Characteristics:        Bounded Confidence      +       heterogeneous μ (update parameter)
-        - Example:                Mason et al. (2020)
-        :param post:    Post
-        """
-        # print(f'Would update beliefs via {self.model.belief_update_fn}')
+        new = old + mu * (post_belief - old)
+        self.beliefs[Topic.VAX] = new
 
-    def update_beliefs_m3(self, post):
+    def update_beliefs_sit(self, post):
         """
-        Updates the agent's belief with the belief update function of model 3.
-        - Characteristics:        No Bounded Confidence   +       heterogeneous μ (update parameter)
-        - Example:                Reddel (2021)
-        :param post:    Post
+        Updates the beliefs of the agent based on a post, using the SIT-based belief update function.
+        (i.e., Social Impact Theory based, adjusted to the social media environment by Reddel (2021))
+
+        The post which is passed is assumed to be seen by the agent. It is also assumed that the agent actually
+        updates beliefs based on the post. I.e., in the current implementation, the function is to be used after
+        the agent has decided to judge the post as truthful.
+
+        :param post:    Post, a seen post
         """
-        self.update_beliefs_simple_sit(post)
+
+        # Calculate how the agent will update its beliefs
+        updates = self.calculate_belief_update(post)
+
+        # Update own beliefs  (after each seen post)
+        for topic, update in updates.items():
+            self.beliefs[topic] += update
 
     def judge_truthfulness_simple(self, post):
         """
@@ -492,7 +485,7 @@ class Disinformer(BaseAgent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-        self.vocality = {'mu': 10, 'sigma': 0.7}
+        self.vocality = {'p_update': 10, 'sigma': 0.7}
 
     def init_beliefs(self):
         """
