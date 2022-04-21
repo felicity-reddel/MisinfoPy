@@ -394,7 +394,7 @@ class NormalUser(BaseAgent):
             case _:
                 raise ValueError("Not a defined belief update function.")
 
-    def update_beliefs_sample(self, post, p_update=0.02):
+    def update_beliefs_sample(self, post):
         """
         Updates the agent's belief with the SAMPLE belief update function.
         :param post:        Post
@@ -402,11 +402,12 @@ class NormalUser(BaseAgent):
         """
         old = self.beliefs[Topic.VAX]
         post_belief = post.stances[Topic.VAX]
+        p_update = self.model.sampling_p_update
         if random.random() <= p_update:
             new = (old + post_belief) / 2
             self.beliefs[Topic.VAX] = new
 
-    def update_beliefs_deffuant(self, post, mu=0.02):
+    def update_beliefs_deffuant(self, post):
         """
         Updates the agent's belief with the DEFFUANT belief update function. (Currently only wrt Topic.VAX)
         Examples: Du et al. (2021), Rajabi et al. (2020), Mason et al. (2020)
@@ -416,6 +417,7 @@ class NormalUser(BaseAgent):
         """
         old = self.beliefs[Topic.VAX]
         post_belief = post.stances[Topic.VAX]
+        mu = self.model.deffuant_mu
 
         new = old + mu * (post_belief - old)
         self.beliefs[Topic.VAX] = new

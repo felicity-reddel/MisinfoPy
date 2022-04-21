@@ -7,7 +7,7 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = True
+    visualize = False
     n_agents = 100  # 1000
     agent_ratio = {NormalUser.__name__: 0.99, Disinformer.__name__: 0.01}
     n_edges = 2  # 3
@@ -17,6 +17,8 @@ if __name__ == '__main__':
     p_true_threshold_ranking = -0.1
     p_true_threshold_strikes = -0.1
     belief_update_fn = BeliefUpdate.DEFFUANT
+    sampling_p_update = 0.02
+    deffuant_mu = 0.02
 
     if visualize:
 
@@ -30,11 +32,14 @@ if __name__ == '__main__':
                            p_true_threshold_deleting=p_true_threshold_deleting,
                            p_true_threshold_ranking=p_true_threshold_ranking,
                            p_true_threshold_strikes=p_true_threshold_strikes,
-                           belief_update_fn=belief_update_fn)
+                           belief_update_fn=belief_update_fn,
+                           sampling_p_update=sampling_p_update,
+                           deffuant_mu=deffuant_mu
+                           )
 
     else:
 
-        max_run_length = 3
+        max_run_length = 30
 
         model = MisinfoPy(n_agents=n_agents,
                           n_edges=n_edges,
@@ -44,7 +49,10 @@ if __name__ == '__main__':
                           p_true_threshold_deleting=p_true_threshold_deleting,
                           p_true_threshold_ranking=p_true_threshold_ranking,
                           p_true_threshold_strikes=p_true_threshold_strikes,
-                          belief_update_fn=belief_update_fn)
+                          belief_update_fn=belief_update_fn,
+                          sampling_p_update=sampling_p_update,
+                          deffuant_mu=deffuant_mu
+                          )
 
         print(f"Starting")
         start_time = time.time()

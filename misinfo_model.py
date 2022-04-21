@@ -19,21 +19,26 @@ from matplotlib import pyplot as plt
 class MisinfoPy(Model):
     """Simple model with n agents."""
 
-    def __init__(self,
-                 n_agents=1000,
-                 n_edges=2,
-                 agent_ratio=None,
+    def __init__(
+            self,
+            n_agents=1000,
+            n_edges=2,
+            agent_ratio=None,
 
-                 media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                 media_literacy_intervention_durations=None,
-                 ranking_visibility_adjustment=-0.0,  # by default no ranking adjustment
-                 p_true_threshold_deleting=-0.1,  # by default no deleting
-                 p_true_threshold_ranking=-0.1,  # by default no ranking
-                 p_true_threshold_strikes=-0.1,  # by default no strike system
+            media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+            media_literacy_intervention_durations=None,
+            ranking_visibility_adjustment=-0.0,
+            p_true_threshold_deleting=-0.1,
+            p_true_threshold_ranking=-0.1,
+            p_true_threshold_strikes=-0.1,
 
-                 belief_update_fn=BeliefUpdate.SIT,
-                 show_n_seen_posts=False,
-                 show_n_connections=False):
+            belief_update_fn=BeliefUpdate.SIT,
+            sampling_p_update=0.02,
+            deffuant_mu=0.02,
+
+            show_n_seen_posts=False,
+            show_n_connections=False
+    ):
         """
         Initializes the MisinfoPy
         :param agent_ratio: dictionary {String: float},
@@ -82,6 +87,8 @@ class MisinfoPy(Model):
         self.init_agents(agent_ratio)
         self.init_followers_and_following()
         self.belief_update_fn = belief_update_fn
+        self.sampling_p_update = sampling_p_update
+        self.deffuant_mu = deffuant_mu
 
         self.apply_media_literacy_intervention(media_literacy_intervention)
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):

@@ -54,15 +54,17 @@ def show_visualization(model,
                        n_edges=3,
                        agent_ratio=None,
                        media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                       p_true_threshold_deleting=-0.1,  # by default no deleting
-                       p_true_threshold_ranking=-0.1,   # by default no ranking
+                       p_true_threshold_deleting=-0.1,
+                       p_true_threshold_ranking=-0.1,
                        p_true_threshold_strikes=-0.1,
                        ranking_visibility_adjustment=-0.0,
-                       belief_update_fn=BeliefUpdate.SIT):
+                       belief_update_fn=BeliefUpdate.SIT,
+                       sampling_p_update=0.02,
+                       deffuant_mu=0.02
+                       ):
 
     """
     Internal function to show the visualization.
-    :param belief_update_fn:  BeliefUpdate
     :param model:       MisinfoPy
     :param n_agents:    int
     :param n_edges:     int
@@ -72,6 +74,9 @@ def show_visualization(model,
     :param p_true_threshold_ranking: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
     :param p_true_threshold_strikes: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
     :param ranking_visibility_adjustment: float, -0.0 if no adjustment, otherwise in range [-0.0, -1.0]
+    :param belief_update_fn:  BeliefUpdate
+    :param sampling_p_update: float, probability that agent updates belief based on a seen post
+    :param deffuant_mu: float, "step size" (in percent) with which the agent moves its belief towards the post's belief
     """
 
     if agent_ratio is None:
