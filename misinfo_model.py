@@ -21,10 +21,18 @@ class MisinfoPy(Model):
 
     def __init__(
             self,
+            # ––– Network –––
             n_agents=1000,
             n_edges=2,
             agent_ratio=None,
 
+            # ––– Posting behavior –––
+            sigma=0.7,
+            mean_normal_user=1,
+            mean_disinformer=10,
+            adjustment_based_on_belief=2,
+
+            # ––– Levers –––
             media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
             media_literacy_intervention_durations=None,
             ranking_visibility_adjustment=-0.0,
@@ -32,36 +40,64 @@ class MisinfoPy(Model):
             p_true_threshold_ranking=-0.1,
             p_true_threshold_strikes=-0.1,
 
+            # ––– Belief updating behavior –––
             belief_update_fn=BeliefUpdate.SIT,
             sampling_p_update=0.02,
             deffuant_mu=0.02,
 
+            # ––– Plots –––
             show_n_seen_posts=False,
             show_n_connections=False
     ):
         """
         Initializes the MisinfoPy
-        :param agent_ratio: dictionary {String: float},
-                                     String is agent type, float is agent_ratio in range [0.0,1.0]
-        :param ranking_visibility_adjustment: float, range [-0.0, -1.0],
-                                     the relative visibility change for posts with GroundTruth.FALSE
-        :param p_true_threshold_deleting: float, range [0.0, 1.0],
-                                     if below threshold-probability that post is true, post will be deleted.
-                                     Thus, if threshold is negative, no posts will be deleted.
-        :param p_true_threshold_ranking:  float, range [0.0, 1.0],
-                                     if below threshold-probability that post is true, post will be down-ranked.
-                                     Thus, if threshold is negative, no posts will be down-ranked.
-        :param p_true_threshold_strikes:  float, range [0.0, 1.0],
-                                     if below threshold-probability that post is true, post will cause strikes.
-                                     Thus, if threshold is negative, no posts will cause strikes.
-        :param n_agents: int, how many agents the model should have
-        :param n_edges: int, with how many edges gets attached to the already built network
+
+        ––– Network –––
+        :param n_agents:                    int, how many agents the model should have
+        :param n_edges:                     int, with how many edges gets attached to the already built network
+        :param agent_ratio:                 dictionary {String: float},
+                                            String is agent type, float is agent_ratio in range [0.0,1.0]
+
+        ––– Posting behavior –––
+        :param sigma:                       float, std_dev to sample from a normal distribution how many posts an agent
+                                            want to post in a tick ( n_posts )
+        :param mean_normal_user:            float, mean of normal user for sampling n_posts
+        :param mean_disinformer:            float, mean of normal user for sampling n_posts
+        :param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
+
+        ––– Levers –––
         :param media_literacy_intervention: tuple(float, SelectAgentsBy)
-                float:
+                    float:
                     - domain [0,1)
                     - meaning: Percentage of agents empowered by media literacy intervention.
                                 If 0.0: nobody is empowered by it, i.e., no media literacy intervention.
                                 If 1.0: everybody is empowered by it.
+        :param media_literacy_intervention_durations:   dict, {str: int}
+                    - how long the initial media literacy intervention takes for a user,
+                    - how long a person with HIGH media literacy takes to judge the truthfulness of a post
+                    - how long a person with LOW media literacy takes to judge the truthfulness of a post
+        :param ranking_visibility_adjustment: float, range [-0.0, -1.0],
+                                            the relative visibility change for posts with GroundTruth.FALSE
+        :param p_true_threshold_deleting:   float, range [0.0, 1.0],
+                                            if below threshold-probability that post is true, post will be deleted.
+                                            Thus, if threshold is negative, no posts will be deleted.
+        :param p_true_threshold_ranking:    float, range [0.0, 1.0],
+                                            if below threshold-probability that post is true, post will be down-ranked.
+                                            Thus, if threshold is negative, no posts will be down-ranked.
+        :param p_true_threshold_strikes:    float, range [0.0, 1.0],
+                                            if below threshold-probability that post is true, post will cause strikes.
+                                            Thus, if threshold is negative, no posts will cause strikes.
+
+        ––– Belief updating behavior –––
+        :param belief_update_fn:            BeliefUpdate (enum)
+        :param sampling_p_update:           float, probability that the agent will update
+        :param deffuant_mu:                 float, updating parameter, indicates how strongly the belief is updated
+                                            towards the post's belief. If mu=0.1, the update is 10% towards the
+                                            post's belief.
+
+        ––– Plots –––
+        :param show_n_seen_posts:           boolean
+        :param show_n_connections:          boolean
         """
         super().__init__()
 
@@ -84,6 +120,11 @@ class MisinfoPy(Model):
         self.post_id_counter = 0
         self.agents_data = {'n_followers_range': (0, 0),
                             'n_following_range': (0, 0)}
+        self.sigma = sigma
+        self.mean_normal_user = mean_normal_user
+        self.mean_disinformer = mean_disinformer
+        self.adjustment_based_on_belief = adjustment_based_on_belief
+
         self.init_agents(agent_ratio)
         self.init_followers_and_following()
         self.belief_update_fn = belief_update_fn
@@ -769,3 +810,4 @@ def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
             graph.edges[from_e, to_e]['weight'] = weight
 
     return graph
+

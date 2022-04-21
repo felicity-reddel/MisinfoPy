@@ -4,7 +4,7 @@ import random
 
 class Topic(Enum):
     """
-    Implemented Topics (for stances of posts & beliefs of agents).
+    Implemented Topics (for beliefs of posts & beliefs of agents).
     Easily extendable to include more topics (e.g., MASKS, EVOLUTION, etc.)
     """
     VAX = 0
@@ -15,7 +15,7 @@ class Topic(Enum):
     @staticmethod
     def get_random():
         """
-        Samples Topic completely independent of the post's stance.
+        Samples Topic completely independent of the beliefs represented in the post.
         :return: result: Topic
         """
         result = random.choice(list(Topic))
@@ -32,7 +32,7 @@ class GroundTruth(Enum):
     @staticmethod
     def get_random():
         """
-        Samples GroundTruth completely independent of the post's stance.
+        Samples GroundTruth completely independent of the beliefs represented in the post.
         :return: result: GroundTruth
         """
         result = random.choice(list(GroundTruth))
@@ -71,7 +71,7 @@ class MediaLiteracy(Enum):
     @staticmethod
     def get_random():
         """
-        Samples MediaLiteracy completely independent of the post's stance.
+        Samples MediaLiteracy completely independent of the beliefs represented in the post.
         :return: result: MediaLiteracy
         """
         result = random.choice(list(MediaLiteracy))

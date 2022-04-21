@@ -1,36 +1,38 @@
 import numpy as np
 from enums import *
+from misinfo_model import *
+from utils import *
 
 
 class Post:
 
-    def __init__(self, unique_id, source, stances=None, p_true_threshold_ranking=0.0):
+    def __init__(self, unique_id, source, beliefs=None, p_true_threshold_ranking=0.0):
         self.unique_id = unique_id
         self.source = source
-        if stances is None:
-            self.stances = {}
+        if beliefs is None:
+            self.beliefs = {}
         else:
-            # stances represented in the post. self.stances is {Topic: int_belief}
-            self.stances = self.sample_stances(based_on_agent=self.source)
-        self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.stances[Topic.VAX])
+            # beliefs represented in the post. self.beliefs is {Topic: int_belief}
+            self.beliefs = self.sample_beliefs(based_on_agent=self.source)
+        self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.beliefs[Topic.VAX])
         self.p_true = self.factcheck_algorithm()
         self.detected_as_misinfo = self.detected_as_misinfo()
         self.visibility = self.get_visibility(p_true_threshold_ranking)
 
     @staticmethod
-    def sample_stances(max_n_topics=1, based_on_agent=None) -> dict:
+    def sample_beliefs(max_n_topics=1, based_on_agent=None) -> dict:
         """
-        Generates and returns dict of stances for one post (i.e., topic & value):  {Topic.TOPIC1: int}
+        Generates and returns dict of beliefs for one post (i.e., topic & value):  {Topic.TOPIC1: int}
         :param max_n_topics:    int,    maximal number of topics in one post
         :param based_on_agent:  Agent,  if None: generate random belief,
-                                        if agent: generate post-stances based that agent's beliefs
-        :return: dict of stances (i.e., topics with value)
+                                        if agent: generate post-beliefs based that agent's beliefs
+        :return: dict of beliefs (i.e., topics with value)
         """
         # Sample how many topics should be included in post.
         n_topics = random.randint(1, max_n_topics)  # min. 1 topic per post
 
-        # Sample stances (stance = topic with value)
-        stances = {}
+        # Sample beliefs (belief = topic with value)
+        beliefs = {}
 
         for _ in range(n_topics):
 
@@ -45,9 +47,9 @@ class Post:
                 value = np.random.normal(loc=current_belief, scale=5, size=1)[0]
                 value = max(min(value, 100), 0)
 
-            stances[topic] = value
+            beliefs[topic] = value
 
-        return stances
+        return beliefs
 
     def factcheck_algorithm(self, topic=Topic.VAX):
         """
@@ -57,39 +59,19 @@ class Post:
         :param topic: Topic
         :return: float, in range [0,1]
         """
-        p_true = self.stances[topic]/100
+        p_true = self.beliefs[topic] / 100
         return p_true
 
     def estimate_visibility(self):
         """
         Estimates the visibility of the post.
-        Here: just the extremeness of its stances
+        Here: just the extremeness of its beliefs
         :return:    float
         """
-
-        extremeness = self.calculate_extremeness()
+        extremeness = calculate_extremeness(self.beliefs)
         engagement = extremeness
 
         return engagement
-
-    def calculate_extremeness(self):
-        """
-        Calculates how extreme the post is.
-        Here: the posts extremeness = the average extremeness of all its stances.
-        :return: float  [0,1)
-        """
-        stances = self.stances.values()
-        extremeness_values = []
-        for stance in stances:
-            extremeness = abs(50 - stance)
-            extremeness_values.append(extremeness)
-
-        avg_extremeness = sum(extremeness_values) / len(extremeness_values)
-
-        # Scale to domain [0,1)
-        avg_extremeness /= 50
-
-        return avg_extremeness
 
     def get_visibility(self, p_true_threshold_ranking=0.1):
         """
@@ -104,7 +86,7 @@ class Post:
         visibility = self.estimate_visibility()
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
-        if (self.stances[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
+        if (self.beliefs[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
             visibility *= (1 + self.source.model.ranking_visibility_adjustment)
             self.source.n_downranked += 1
 

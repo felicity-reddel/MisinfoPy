@@ -4,6 +4,7 @@ import random
 from mesa import Agent
 from posts import *
 from enums import *
+from utils import *
 import numpy as np
 
 
@@ -22,7 +23,7 @@ class BaseAgent(Agent):
         self.media_literacy = MediaLiteracy.LOW
         self.received_media_literacy_intervention = False
 
-        self.vocality = {}
+        self.vocality = {"mean": 0, "std_dev": self.model.sigma}
         self.followers = []
         self.following = []
         self.received_posts = []
@@ -47,16 +48,20 @@ class BaseAgent(Agent):
         """
 
         mean = self.vocality['mean']
+        max_mean_increase = self.model.adjustment_based_on_belief
+        current_belief = self.beliefs[Topic.VAX]
+        extremeness = calculate_extremeness(self.beliefs)
+
+        mean += extremeness * max_mean_increase
         std_dev = self.vocality['std_dev']
 
-        current_belief = self.beliefs[Topic.VAX]
-        if current_belief < 15 or current_belief > 85:
-            # factor = current_belief / 10
-            mean += 2
-        elif current_belief < 30 or current_belief > 70:
-            mean += 1
-        # elif current_belief < 40 or current_belief > 60:
+        # if current_belief < 15 or current_belief > 85:
+        #     # factor = current_belief / 10
+        #     mean += 2
+        # elif current_belief < 30 or current_belief > 70:
         #     mean += 1
+        # # elif current_belief < 40 or current_belief > 60:
+        # #     mean += 1
 
         nr_of_posts = max(0, np.random.normal(mean, std_dev, 1)[0])
 
@@ -140,7 +145,7 @@ class BaseAgent(Agent):
             updates[topic] = 0
 
         # Calculate updates
-        for topic, post_value in post.stances.items():
+        for topic, post_value in post.beliefs.items():
             # Save previous beliefs
             prev_belief = self.beliefs[topic]
 
@@ -178,7 +183,7 @@ class BaseAgent(Agent):
         """
         Calculates the strength component for the SIT belief update. In this case a combination of
         the relative number of followers and the belief_similarity between own belief & estimated belief of source.
-        The other person's beliefs are estimated by looking at the stances of their last posts.
+        The other person's beliefs are estimated by looking at the beliefs of their last posts.
         :param post:        current post by other person (i.e., source)
         :return:            strength    float
         """
@@ -219,8 +224,8 @@ class BaseAgent(Agent):
         Simplest update_beliefs function.
         New belief is average between own previous belief and the post's stance on the topic.
         """
-        # Update towards post's stances
-        for topic, value in post.stances.items():
+        # Update towards post's beliefs
+        for topic, value in post.beliefs.items():
             prev_belief = self.beliefs[topic]
             self.beliefs[topic] = (prev_belief + value) / 2
 
@@ -236,21 +241,21 @@ class BaseAgent(Agent):
 
     def create_post(self, based_on_beliefs=True, p_true_threshold_ranking=0.1):
         """
-        Creates a new post. Either random or based on own stances.
+        Creates a new post. Either random or based on own beliefs.
         :return: Post
         """
-        # Get post_id & post's stances
+        # Get post_id & post's beliefs
         id = self.model.post_id_counter
         # Increase post_id_counter
         self.model.post_id_counter += 1
 
         if based_on_beliefs:
-            stances = Post.sample_stances(based_on_agent=self)
+            stances = Post.sample_beliefs(based_on_agent=self)
         else:
-            stances = Post.sample_stances()
+            stances = Post.sample_beliefs()
 
         # Create post
-        post = Post(id, source=self, stances=stances, p_true_threshold_ranking=p_true_threshold_ranking)
+        post = Post(id, source=self, beliefs=stances, p_true_threshold_ranking=p_true_threshold_ranking)
 
         return post
 
@@ -290,18 +295,18 @@ class BaseAgent(Agent):
         # Estimate other person's beliefs (on topics in current post)
         estimated_beliefs = {}
 
-        for topic, value in post.stances.items():
+        for topic, value in post.beliefs.items():
             # Estimate their belief on 'topic' by looking at their last posts
             values = []
             for p in post.source.last_posts:
-                if topic in p.stances:
-                    value = p.stances[topic]
+                if topic in p.beliefs:
+                    value = p.beliefs[topic]
                     values.append(value)
             estimated_beliefs[topic] = sum(values) / len(values)
 
         # Calculate belief similarity (on beliefs in current post)
         similarities = []
-        for topic, _ in post.stances.items():
+        for topic, _ in post.beliefs.items():
             similarity = 100 - abs(self.beliefs[topic] - estimated_beliefs[topic])
             similarities.append(similarity)
         belief_similarity = sum(similarities) / len(similarities)
@@ -341,7 +346,8 @@ class NormalUser(BaseAgent):
         """
         super().__init__(unique_id, model)
 
-        self.vocality = {'mean': 1, 'sigma': 0.7}
+        self.vocality = {'mean': self.model.mean_normal_user,
+                         'std_dev': self.model.sigma}
         self.media_literacy = MediaLiteracy.get_random()  # {LOW, HIGH}
 
     def init_beliefs(self):
@@ -397,10 +403,9 @@ class NormalUser(BaseAgent):
         """
         Updates the agent's belief with the SAMPLE belief update function.
         :param post:        Post
-        :param p_update:    float, probability that the agent will update
         """
         old = self.beliefs[Topic.VAX]
-        post_belief = post.stances[Topic.VAX]
+        post_belief = post.beliefs[Topic.VAX]
         p_update = self.model.sampling_p_update
         if random.random() <= p_update:
             new = (old + post_belief) / 2
@@ -415,7 +420,7 @@ class NormalUser(BaseAgent):
                         post's belief. If mu=0.1, the update is 10% towards the post's belief.
         """
         old = self.beliefs[Topic.VAX]
-        post_belief = post.stances[Topic.VAX]
+        post_belief = post.beliefs[Topic.VAX]
         mu = self.model.deffuant_mu
 
         new = old + mu * (post_belief - old)
@@ -486,7 +491,8 @@ class Disinformer(BaseAgent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-        self.vocality = {'mean': 10, 'sigma': 0.7}
+        self.vocality = {'mean': self.model.mean_disinformer,
+                         'std_dev': self.model.sigma}
 
     def init_beliefs(self):
         """
