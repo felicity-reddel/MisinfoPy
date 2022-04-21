@@ -40,25 +40,25 @@ class BaseAgent(Agent):
 
     def sample_number_of_posts(self):
         """
-        Sample number of posts that an agent should share at one instant. It samples with a normal belief_list based
-        on this agent's vocality parameters (p_update and sigma).
+        Sample number of posts that an agent should share at one instant. It samples with a normal distribution based
+        on this agent's vocality parameters (mean and std_dev).
         :return:
             nr_of_posts: int
         """
 
-        mu = self.vocality['p_update']
-        sigma = self.vocality['sigma']
+        mean = self.vocality['mean']
+        std_dev = self.vocality['std_dev']
 
         current_belief = self.beliefs[Topic.VAX]
         if current_belief < 15 or current_belief > 85:
             # factor = current_belief / 10
-            mu += 2
+            mean += 2
         elif current_belief < 30 or current_belief > 70:
-            mu += 1
+            mean += 1
         # elif current_belief < 40 or current_belief > 60:
-        #     p_update += 1
+        #     mean += 1
 
-        nr_of_posts = max(0, np.random.normal(mu, sigma, 1)[0])
+        nr_of_posts = max(0, np.random.normal(mean, std_dev, 1)[0])
 
         # rounding and converting to int
         nr_of_posts = round(nr_of_posts)
@@ -309,24 +309,23 @@ class BaseAgent(Agent):
         return belief_similarity
 
     @staticmethod
-    def calculate_update_elasticity(prev_belief, std_dev=15.0):
+    def calculate_update_elasticity(prev_belief, std_dev=15.0, neutral_belief=50):
         """
         Calculates the update elasticity of an agent given its previous belief.
         Needed because it takes more until someone updates away from a belief in which they have high confidence
         (i.e., belief close extremes of the belief_domain). Beliefs don't update from e.g., 99 --> 20 due to one post.
-        Analogously, when someone has low confidence in a belief (i.e., close to middle of belief_domain),
-        it makes sense that they update more per post.
+        Analogously, when someone has low confidence in their belief (i.e., close to middle of belief_domain),
+        it makes sense that they update more per seen post.
 
         :param prev_belief:             float, previous belief of an agent  (domain: belief_domain)
         :param std_dev:                 float or int                        (domain: belief_domain)
         :return: update_elasticity:     float                               (domain: [0,1])
+        :param neutral_belief:          float or int                        (domain: belief_domain)
         """
-        mean = 50
-
-        update_strength = get_update_strength(prev_belief=prev_belief, mean=mean, std_dev=std_dev)
+        update_strength = get_update_strength(prev_belief=prev_belief, mean=neutral_belief, std_dev=std_dev)
 
         # Rescale update_strength, such that at middle (e.g., 50), the update elasticity is 1:
-        max_elasticity = get_update_strength(prev_belief=mean, mean=mean, std_dev=std_dev)
+        max_elasticity = get_update_strength(prev_belief=neutral_belief, mean=neutral_belief, std_dev=std_dev)
         update_elasticity = update_strength / max_elasticity
 
         return update_elasticity
@@ -342,7 +341,7 @@ class NormalUser(BaseAgent):
         """
         super().__init__(unique_id, model)
 
-        self.vocality = {'p_update': 1, 'sigma': 0.7}
+        self.vocality = {'mean': 1, 'sigma': 0.7}
         self.media_literacy = MediaLiteracy.get_random()  # {LOW, HIGH}
 
     def init_beliefs(self):
@@ -487,7 +486,7 @@ class Disinformer(BaseAgent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-        self.vocality = {'p_update': 10, 'sigma': 0.7}
+        self.vocality = {'mean': 10, 'sigma': 0.7}
 
     def init_beliefs(self):
         """
@@ -547,12 +546,12 @@ def rescale(old_value, new_domain=(-100, 100)):
 
 def get_update_strength(prev_belief, mean=50.0, std_dev=30.0):
     """
-    Uses a normal belief_list (with the provided parameters)
+    Uses a normal distribution (with the provided parameters)
     to return the update_strength that corresponds to the provided belief_strength.
     :param prev_belief:     float
     :param mean:                float
     :param std_dev:             float
-    :return: update_strength    float
+    :return: update_strength:    float
     """
 
     dividend = math.exp((((prev_belief - mean) / std_dev) ** 2 * (-0.5)))
