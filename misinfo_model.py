@@ -73,7 +73,7 @@ class MisinfoPy(Model):
                              f"while they should add up to 1.0.")
 
         if media_literacy_intervention_durations is None:
-            media_literacy_intervention_durations = {"game duration": 300,
+            media_literacy_intervention_durations = {"initial investment": 3600,
                                                      "MediaLiteracy.LOW": 3,
                                                      "MediaLiteracy.HIGH": 30}
 
@@ -342,22 +342,22 @@ class MisinfoPy(Model):
         """
         Calculates an estimate of the effort a user has for
             - judging the posts' truthfulness (summed over all posts)
-            - partaking in the media literacy interventions (once)
+            - partaking in the media literacy intervention, i.e., the initial investment (once)
         The effort is measured in minutes. The average effort per user is returned.
 
         :return: float, cannot be lower than zero
         """
         effort_per_agent = []
         for agent in self.schedule.agents:
-            game_duration = int(agent.received_media_literacy_intervention) * \
-                            self.media_literacy_intervention_durations["game duration"]
+            initial_investment = int(agent.received_media_literacy_intervention) * \
+                            self.media_literacy_intervention_durations["initial investment"]
             judging_all_posts = agent.n_total_seen_posts * \
                                 self.media_literacy_intervention_durations[str(agent.media_literacy)]
-            effort = game_duration + judging_all_posts
+            effort = initial_investment + judging_all_posts
             effort_per_agent.append(effort)
 
         avg_effort_seconds = sum(effort_per_agent) / len(self.schedule.agents)
-        avg_effort_minutes = avg_effort_seconds / 60.0
+        avg_effort_minutes = round(avg_effort_seconds / 60.0, 2)
 
         return avg_effort_minutes
 
