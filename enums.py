@@ -4,7 +4,7 @@ import random
 
 class Topic(Enum):
     """
-    Implemented Topics (for beliefs of posts & beliefs of agents).
+    Implemented Topics (for tweet_beliefs of posts & tweet_beliefs of agents).
     Easily extendable to include more topics (e.g., MASKS, EVOLUTION, etc.)
     """
     VAX = 0
@@ -15,7 +15,7 @@ class Topic(Enum):
     @staticmethod
     def get_random():
         """
-        Samples Topic completely independent of the beliefs represented in the post.
+        Samples Topic completely independent of the tweet_beliefs represented in the post.
         :return: result: Topic
         """
         result = random.choice(list(Topic))
@@ -32,14 +32,14 @@ class GroundTruth(Enum):
     @staticmethod
     def get_random():
         """
-        Samples GroundTruth completely independent of the beliefs represented in the post.
+        Samples GroundTruth completely independent of the tweet_beliefs represented in the post.
         :return: result: GroundTruth
         """
         result = random.choice(list(GroundTruth))
         return result
 
     @staticmethod
-    def get_groundtruth(post_belief=50.0):
+    def get_groundtruth(tweet_belief=50.0):
         """
         Simple implementation to sample the groundtruth of a post by using the post's belief as the probability that
         GroundTruth.TRUE.
@@ -48,11 +48,11 @@ class GroundTruth(Enum):
         – GroundTruth has only two possible values (TRUE, FALSE)
         – higher post_beliefs are more likely to be true
 
-        :param post_belief: float, range [0.0, 100.0]
+        :param tweet_belief: float, range [0.0, 100.0]
         :return: GroundTruth
         """
         # Transform belief into probability
-        p_true = post_belief / 100
+        p_true = tweet_belief / 100
 
         # Weighted sampling to set groundtruth of post
         groundtruth = random.choices(population=[GroundTruth.TRUE, GroundTruth.FALSE], weights=[p_true, 1 - p_true])[0]
@@ -71,7 +71,7 @@ class MediaLiteracy(Enum):
     @staticmethod
     def get_random():
         """
-        Samples MediaLiteracy completely independent of the beliefs represented in the post.
+        Samples MediaLiteracy completely independent of the tweet_beliefs represented in the post.
         :return: result: MediaLiteracy
         """
         result = random.choice(list(MediaLiteracy))
@@ -90,7 +90,7 @@ class SelectAgentsBy(Enum):
 
 class BeliefUpdate(Enum):
     """
-    Different options for updating beliefs. In order to explore structural uncertainty of the belief update function.
+    Different options for updating tweet_beliefs. In order to explore structural uncertainty of the belief update function.
     """
     SAMPLE = 0  # Sampling, used by e.g., Sari et al. (2021), Wang et al. (2019), and Gausen et al. (2021)
     DEFFUANT = 1  # Deffuant, used by e.g., Du et al. (2021), Rajabi et al. (2020), and Mason et al. (2020)

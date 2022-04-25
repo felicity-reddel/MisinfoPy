@@ -6,33 +6,40 @@ from utils import *
 
 class Post:
 
-    def __init__(self, unique_id, source, beliefs=None, p_true_threshold_ranking=0.0):
+    def __init__(self, unique_id, source, tweet_beliefs=None, p_true_threshold_ranking=0.0):
+        """
+        :param unique_id: int
+        :param source: Agent (NormalUser or Disinformer)
+        :param tweet_beliefs: dict, {Topic: int_belief}, tweet_beliefs to be represented in the post. (TODO: yes?)
+        :param p_true_threshold_ranking: float, below which the ranking intervention decreases the post's visibility
+        """
         self.unique_id = unique_id
         self.source = source
-        if beliefs is None:
-            self.beliefs = {}
+
+        if tweet_beliefs is None:
+            self.tweet_beliefs = self.sample_beliefs(agent=self.source)
         else:
-            # beliefs represented in the post. self.beliefs is {Topic: int_belief}
-            self.beliefs = self.sample_beliefs(based_on_agent=self.source)
-        self.ground_truth = GroundTruth.get_groundtruth(post_belief=self.beliefs[Topic.VAX])
+            self.tweet_beliefs = tweet_beliefs
+
+        self.ground_truth = GroundTruth.get_groundtruth(tweet_belief=self.tweet_beliefs[Topic.VAX])
         self.p_true = self.factcheck_algorithm()
         self.detected_as_misinfo = self.detected_as_misinfo()
         self.visibility = self.get_visibility(p_true_threshold_ranking)
 
     @staticmethod
-    def sample_beliefs(max_n_topics=1, based_on_agent=None) -> dict:
+    def sample_beliefs(max_n_topics=1, agent=None) -> dict:
         """
-        Generates and returns dict of beliefs for one post (i.e., topic & value):  {Topic.TOPIC1: int}
+        Generates and returns dict of tweet_beliefs for one post (i.e., topic & value):  {Topic.TOPIC1: int}
         :param max_n_topics:    int,    maximal number of topics in one post
-        :param based_on_agent:  Agent,  if None: generate random belief,
-                                        if agent: generate post-beliefs based that agent's beliefs
-        :return: dict of beliefs (i.e., topics with value)
+        :param agent:  Agent,  if None: generate random belief,
+                               if Agent: generate post-tweet_beliefs based that agent's tweet_beliefs
+        :return: dict of tweet_beliefs (i.e., topics with value)
         """
         # Sample how many topics should be included in post.
         n_topics = random.randint(1, max_n_topics)  # min. 1 topic per post
 
-        # Sample beliefs (belief = topic with value)
-        beliefs = {}
+        # Sample tweet_beliefs (belief = topic with value)
+        tweet_beliefs = {}
 
         for _ in range(n_topics):
 
@@ -40,16 +47,16 @@ class Post:
             topic = Topic.get_random()  # Ext: could adjust weights for diff. topics
 
             # Sample value on topic
-            if based_on_agent is None:
-                value = random.randint(0, 100)
+            if agent is None:
+                tweet_belief = random.randint(0, 100)
             else:
-                current_belief = based_on_agent.beliefs[topic]
-                value = np.random.normal(loc=current_belief, scale=5, size=1)[0]
-                value = max(min(value, 100), 0)
+                current_agent_belief = agent.beliefs[topic]
+                tweet_belief = np.random.normal(loc=current_agent_belief, scale=5, size=1)[0]
+                tweet_belief = max(min(tweet_belief, 100), 0)
 
-            beliefs[topic] = value
+            tweet_beliefs[topic] = tweet_belief
 
-        return beliefs
+        return tweet_beliefs
 
     def factcheck_algorithm(self, topic=Topic.VAX):
         """
@@ -59,16 +66,16 @@ class Post:
         :param topic: Topic
         :return: float, in range [0,1]
         """
-        p_true = self.beliefs[topic] / 100
+        p_true = self.tweet_beliefs[topic] / 100
         return p_true
 
     def estimate_visibility(self):
         """
         Estimates the visibility of the post.
-        Here: just the extremeness of its beliefs
+        Here: just the extremeness of its tweet_beliefs
         :return:    float
         """
-        extremeness = calculate_extremeness(self.beliefs)
+        extremeness = calculate_extremeness(self.tweet_beliefs)
         engagement = extremeness
 
         return engagement
@@ -86,7 +93,7 @@ class Post:
         visibility = self.estimate_visibility()
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
-        if (self.beliefs[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
+        if (self.tweet_beliefs[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
             visibility *= (1 + self.source.model.ranking_visibility_adjustment)
             self.source.n_downranked += 1
 

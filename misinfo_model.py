@@ -45,6 +45,10 @@ class MisinfoPy(Model):
             sampling_p_update=0.02,
             deffuant_mu=0.02,
 
+            # ––– For additional calibration of agent vocality –––
+            top_10_target=138,
+            bottom_90_target=2,
+
             # ––– Plots –––
             show_n_seen_posts=False,
             show_n_connections=False
@@ -107,11 +111,11 @@ class MisinfoPy(Model):
         if sum(agent_ratio.values()) != 1.0:
             raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, "
                              f"while they should add up to 1.0.")
-
-        if media_literacy_intervention_durations is None:
-            media_literacy_intervention_durations = {"initial investment": 3600,
-                                                     "MediaLiteracy.LOW": 3,
-                                                     "MediaLiteracy.HIGH": 30}
+        self.media_literacy_intervention_durations = media_literacy_intervention_durations
+        if self.media_literacy_intervention_durations is None:
+            self.media_literacy_intervention_durations = {"initial investment": 3600,
+                                                          "MediaLiteracy.LOW": 3,
+                                                          "MediaLiteracy.HIGH": 30}
 
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
@@ -135,7 +139,6 @@ class MisinfoPy(Model):
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
-        self.media_literacy_intervention_durations = media_literacy_intervention_durations
         self.p_true_threshold_deleting = p_true_threshold_deleting
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
@@ -351,7 +354,7 @@ class MisinfoPy(Model):
 
     def get_beliefs(self):
         """
-        Returns a list of beliefs that includes all agents' belief on Topic.VAX.
+        Returns a list of tweet_beliefs that includes all agents' belief on Topic.VAX.
         :return: list
         """
         return [agent.beliefs[Topic.VAX] for agent in self.schedule.agents]
@@ -370,7 +373,7 @@ class MisinfoPy(Model):
         """
 
         total_posts = sum([a.preferred_n_posts for a in self.schedule.agents])
-        n_posted = sum([len(a.last_posts) for a in self.schedule.agents])
+        n_posted = sum([len(a.visible_posts) for a in self.schedule.agents])
         n_prevented = total_posts - n_posted
         n_downranked = sum([a.n_downranked for a in self.schedule.agents])
 
@@ -391,7 +394,7 @@ class MisinfoPy(Model):
         effort_per_agent = []
         for agent in self.schedule.agents:
             initial_investment = int(agent.received_media_literacy_intervention) * \
-                            self.media_literacy_intervention_durations["initial investment"]
+                                 self.media_literacy_intervention_durations["initial investment"]
             judging_all_posts = agent.n_total_seen_posts * \
                                 self.media_literacy_intervention_durations[str(agent.media_literacy)]
             effort = initial_investment + judging_all_posts
@@ -401,6 +404,48 @@ class MisinfoPy(Model):
         avg_effort_minutes = round(avg_effort_seconds / 60.0, 2)
 
         return avg_effort_minutes
+
+    def get_posts_per_month(self):
+        """
+        For additonal calibration of agent vocality.
+        Returns a list of how many posts each agent has been posting over the whole run.
+        :return: list of floats
+        """
+        post_totals = [len(a.visible_posts) for a in self.schedule.agents]
+        n_days = self.schedule.time
+        n_months = n_days / 30
+
+        posts_per_month = [total / n_months for total in post_totals]
+
+        return posts_per_month
+
+    def get_median_errors(self):
+        """
+        For additonal calibration of agent vocality.
+        Calculates the error with respect to the
+        'median number of posts within the agents that posted the most posts (top-10%)' and
+        'median number of posts within the agents that did not post the most posts (bottom-90%)'.
+
+        :return: 2-tuple of floats, both in domain [0.0, math.inf)
+        """
+        # Gather data & make sure the list is in ascending order
+        posts_per_month = self.get_posts_per_month()
+        posts_per_month.sort()  # by default in ascending order
+
+        # Find the cutoff index & split the list into two
+        cutoff = round(len(posts_per_month) * 0.9)  # TODO: Maybe floor(/ceil) instead?
+        top_10 = posts_per_month[cutoff:]
+        bottom_90 = posts_per_month[:cutoff]
+
+        # Get the median within both lists
+        top_10_median = np.median(top_10)
+        bottom_90_median = np.median(bottom_90)
+
+        # Calculate the two errors
+        top_10_error = abs(self.top_10_target - top_10_median)
+        bottom_90_error = abs(self.bottom_90_target - bottom_90_median)
+
+        return top_10_error, bottom_90_error
 
     def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """
@@ -810,4 +855,3 @@ def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
             graph.edges[from_e, to_e]['weight'] = weight
 
     return graph
-

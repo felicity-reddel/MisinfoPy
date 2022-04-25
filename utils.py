@@ -1,8 +1,8 @@
 def calculate_extremeness(beliefs):
     """
     Calculates how extreme the post is.
-    Here: the posts extremeness = the average extremeness of all its beliefs.
-    :param beliefs: dictionary of beliefs {Topic: float}. This can be from an agent or from a post.
+    Here: the posts extremeness = the average extremeness of all its tweet_beliefs.
+    :param beliefs: dictionary of tweet_beliefs {Topic: float}. This can be from an agent or from a post.
     :return: float: in domain [0,1)
     """
     extremeness_values = []

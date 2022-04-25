@@ -1,12 +1,12 @@
 from misinfo_model import *
 
-max_run_length = 60
+max_run_length = 5
 
 model = MisinfoPy(n_agents=100,
                   n_edges=3,
                   agent_ratio={NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
                   media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                  media_literacy_intervention_durations={"game duration": 300,
+                  media_literacy_intervention_durations={"initial investment": 3600,
                                                          "MediaLiteracy.LOW": 3,
                                                          "MediaLiteracy.HIGH": 30},
                   ranking_visibility_adjustment=-0.0,  # negative value: no ranking adjustment
@@ -32,7 +32,7 @@ print(f"KPIs: \n"
       f"- free speech constraint: {free_speech_constraint} \n"
       f"- avg user effort: {avg_user_effort}")
 
-# beliefs = model.get_beliefs()
+# tweet_beliefs = model.get_beliefs()
 # total_seen_posts = model.get_total_seen_posts()
 # seen_posts_per_agent = [sum(agent.n_seen_posts) for agent in model.schedule.agents]
 
@@ -45,7 +45,7 @@ print(f"KPIs: \n"
 
 
 # # Get a simple belief list (from belief_distributions_before_after.csv)
-# beliefs = [79.72770665896219, 82.69618715268301, 85.24117953778078, 97.0714936146096, 83.33612257312177,
+# tweet_beliefs = [79.72770665896219, 82.69618715268301, 85.24117953778078, 97.0714936146096, 83.33612257312177,
 #            84.64837682680201, 45.0531456484707, 85.76322615127073, 83.69789871981297, 79.44403788580144,
 #            4.402316588208926, 4.126986794549279, 24.29952694332167, 64.85775653398102, 1.2037789279697713,
 #            91.40432858917828, 65.8810691812474, 86.40571316122025, 81.35184159382301, 84.61168720518631,
@@ -65,11 +65,11 @@ print(f"KPIs: \n"
 #            17.40846975600161, 88.79327710290885, 84.39695704564875, 60.09846920794175, 78.88450982812758,
 #            76.60626297773308, 86.87018097849364, 2, 79.7862688320401, 70.3192482329987, 92.77222698992175,
 #            13.140601766793882, 82.60630257023193, 77.41254851241526]
-# # --> 100 agents' beliefs
+# # --> 100 agents' tweet_beliefs
 
 
 # # Test discretize(): Transform a list of (belief values) into a discretized distribution
-# discretized_distribution = discretize(beliefs)
+# discretized_distribution = discretize(tweet_beliefs)
 # print(f'discretized_distribution: \n{discretized_distribution}')
 # print(f'sum(): {sum(discretized_distribution)}\n')
 #
@@ -82,11 +82,12 @@ print(f"KPIs: \n"
 #
 #
 # # Test variance
-# # variance = MisinfoPy.variance(distribution=beliefs)  # Not worth it if self gives an error. Only maybe for rounding.
-# variance = round(statistics.variance(beliefs))
+# # variance = MisinfoPy.variance(distribution=tweet_beliefs)
+# Not worth it if self gives an error. Only maybe for rounding.
+# variance = round(statistics.variance(tweet_beliefs))
 # print(f'variance: {variance}')
 #
 #
 # # Test kl_divergence
-# kl_div = kl_divergence(belief_list=beliefs)
+# kl_div = kl_divergence(belief_list=tweet_beliefs)
 # print(kl_div)

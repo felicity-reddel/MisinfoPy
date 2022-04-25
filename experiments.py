@@ -15,7 +15,7 @@ def calculate_avg_belief(misinfo_model):
     topic = Topic.VAX
     beliefs = []
     for agent in misinfo_model.schedule.agents:
-        agent_belief_on_topic = agent.beliefs[topic]
+        agent_belief_on_topic = agent.tweet_beliefs[topic]
         beliefs.append(agent_belief_on_topic)
 
     avg_belief = sum(beliefs) / len(beliefs)
@@ -30,7 +30,7 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     :param threshold: float
     :return: float
     """
-    agent_beliefs = [a.beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
+    agent_beliefs = [a.tweet_beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
     n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
@@ -111,14 +111,14 @@ if __name__ == '__main__':
                                   belief_update_fn=belief_update_fn)
 
                 # Save start data
-                agents_belief_before = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
+                agents_belief_before = [agent.tweet_beliefs[Topic.VAX] for agent in model.schedule.agents]
 
                 # Run the model
                 for tick in range(max_run_length):
                     model.step()
 
                 # Save end data
-                agents_belief_after = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
+                agents_belief_after = [agent.tweet_beliefs[Topic.VAX] for agent in model.schedule.agents]
                 # save data from this replication
                 replication_data = (agents_belief_before, agents_belief_after)
                 df_column.append(replication_data)

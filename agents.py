@@ -29,7 +29,7 @@ class BaseAgent(Agent):
         self.received_posts = []
         self.n_seen_posts = []
         self.n_total_seen_posts = 0
-        self.last_posts = []  # currently: all posts
+        self.visible_posts = []  # currently: all posts
         self.n_strikes = 0
         self.blocked_until = 0  # Block excluding this number -> Can post on this tick again.
         self.preferred_n_posts = 0
@@ -120,7 +120,7 @@ class BaseAgent(Agent):
                 follower.received_posts += posts
 
             # Save own posts
-            self.last_posts += posts
+            self.visible_posts += posts
 
     def update_beliefs_stage(self):
         """
@@ -145,8 +145,8 @@ class BaseAgent(Agent):
             updates[topic] = 0
 
         # Calculate updates
-        for topic, post_value in post.beliefs.items():
-            # Save previous beliefs
+        for topic, post_value in post.tweet_beliefs.items():
+            # Save previous tweet_beliefs
             prev_belief = self.beliefs[topic]
 
             # Calculate SIT components
@@ -183,7 +183,7 @@ class BaseAgent(Agent):
         """
         Calculates the strength component for the SIT belief update. In this case a combination of
         the relative number of followers and the belief_similarity between own belief & estimated belief of source.
-        The other person's beliefs are estimated by looking at the beliefs of their last posts.
+        The other person's tweet_beliefs are estimated by looking at the tweet_beliefs of their last posts.
         :param post:        current post by other person (i.e., source)
         :return:            strength    float
         """
@@ -208,7 +208,7 @@ class BaseAgent(Agent):
     def calculate_n_sources(self):
         """
         For the immediacy component of the SIT belief update, calculates the factor n_sources. The more accounts a user
-        is following, the less they will update their beliefs based on each single one of them.
+        is following, the less they will update their tweet_beliefs based on each single one of them.
         :return:    float
         """
         n_following = len(self.following)
@@ -222,10 +222,10 @@ class BaseAgent(Agent):
     def update_beliefs_avg(self, post):
         """
         Simplest update_beliefs function.
-        New belief is average between own previous belief and the post's stance on the topic.
+        New belief is average between own previous belief and the tweet_belief on the topic.
         """
-        # Update towards post's beliefs
-        for topic, value in post.beliefs.items():
+        # Update towards post's tweet_beliefs
+        for topic, value in post.tweet_beliefs.items():
             prev_belief = self.beliefs[topic]
             self.beliefs[topic] = (prev_belief + value) / 2
 
@@ -241,21 +241,21 @@ class BaseAgent(Agent):
 
     def create_post(self, based_on_beliefs=True, p_true_threshold_ranking=0.1):
         """
-        Creates a new post. Either random or based on own beliefs.
+        Creates a new post. Either random or based on own tweet_beliefs.
         :return: Post
         """
-        # Get post_id & post's beliefs
+        # Get post_id & post's tweet_beliefs
         id = self.model.post_id_counter
         # Increase post_id_counter
         self.model.post_id_counter += 1
 
         if based_on_beliefs:
-            stances = Post.sample_beliefs(based_on_agent=self)
+            tweet_beliefs = Post.sample_beliefs(agent=self)
         else:
-            stances = Post.sample_beliefs()
+            tweet_beliefs = Post.sample_beliefs()
 
         # Create post
-        post = Post(id, source=self, beliefs=stances, p_true_threshold_ranking=p_true_threshold_ranking)
+        post = Post(id, source=self, tweet_beliefs=tweet_beliefs, p_true_threshold_ranking=p_true_threshold_ranking)
 
         return post
 
@@ -292,21 +292,21 @@ class BaseAgent(Agent):
         :param post:    Post
         :return:        float, similarity estimate
         """
-        # Estimate other person's beliefs (on topics in current post)
+        # Estimate other person's tweet_beliefs (on topics in current post)
         estimated_beliefs = {}
 
-        for topic, value in post.beliefs.items():
+        for topic, value in post.tweet_beliefs.items():
             # Estimate their belief on 'topic' by looking at their last posts
             values = []
-            for p in post.source.last_posts:
-                if topic in p.beliefs:
-                    value = p.beliefs[topic]
+            for p in post.source.visible_posts:
+                if topic in p.tweet_beliefs:
+                    value = p.tweet_beliefs[topic]
                     values.append(value)
             estimated_beliefs[topic] = sum(values) / len(values)
 
-        # Calculate belief similarity (on beliefs in current post)
+        # Calculate belief similarity (on tweet_beliefs in current post)
         similarities = []
-        for topic, _ in post.beliefs.items():
+        for topic, _ in post.tweet_beliefs.items():
             similarity = 100 - abs(self.beliefs[topic] - estimated_beliefs[topic])
             similarities.append(similarity)
         belief_similarity = sum(similarities) / len(similarities)
@@ -361,22 +361,22 @@ class NormalUser(BaseAgent):
         """
         Second part of the agent's step function. The second stage what all agents do in an instant.
         """
-        # Agent can only update beliefs if it received posts in the first stage of the time tick
+        # Agent can only update tweet_beliefs if it received posts in the first stage of the time tick
         if len(self.received_posts) > 0:
             # Sample which of the received posts are actually seen (depends on ranking).
             seen_posts = self.sample_seen_posts()
             self.n_seen_posts.append(len(seen_posts))
             self.n_total_seen_posts += len(seen_posts)
 
-            # For each seen post: judge truthfulness, then update beliefs (if post is judged as truthful).
+            # For each seen post: judge truthfulness, then update tweet_beliefs (if post is judged as truthful).
             for post in seen_posts:
 
                 # For each seen post: judge whether it is truthful.
                 post_judged_as_truthful = self.judge_truthfulness_realistic(post)
 
-                # For each seen post, which is judged as truthful: update beliefs.
+                # For each seen post, which is judged as truthful: update tweet_beliefs.
                 if post_judged_as_truthful:
-                    # Update beliefs with required belief update function
+                    # Update tweet_beliefs with required belief update function
                     self.update_beliefs(post)
         else:
             self.n_seen_posts.append(0)
@@ -386,7 +386,7 @@ class NormalUser(BaseAgent):
 
     def update_beliefs(self, post):
         """
-        Updates the beliefs with the required belief update function.
+        Updates the tweet_beliefs with the required belief update function.
         :param post: Post
         """
         match self.model.belief_update_fn:
@@ -405,10 +405,10 @@ class NormalUser(BaseAgent):
         :param post:        Post
         """
         old = self.beliefs[Topic.VAX]
-        post_belief = post.beliefs[Topic.VAX]
+        tweet_belief = post.tweet_beliefs[Topic.VAX]
         p_update = self.model.sampling_p_update
         if random.random() <= p_update:
-            new = (old + post_belief) / 2
+            new = (old + tweet_belief) / 2
             self.beliefs[Topic.VAX] = new
 
     def update_beliefs_deffuant(self, post):
@@ -420,28 +420,28 @@ class NormalUser(BaseAgent):
                         post's belief. If mu=0.1, the update is 10% towards the post's belief.
         """
         old = self.beliefs[Topic.VAX]
-        post_belief = post.beliefs[Topic.VAX]
+        tweet_belief = post.tweet_beliefs[Topic.VAX]
         mu = self.model.deffuant_mu
 
-        new = old + mu * (post_belief - old)
+        new = old + mu * (tweet_belief - old)
         self.beliefs[Topic.VAX] = new
 
     def update_beliefs_sit(self, post):
         """
-        Updates the beliefs of the agent based on a post, using the SIT-based belief update function.
+        Updates the tweet_beliefs of the agent based on a post, using the SIT-based belief update function.
         (i.e., Social Impact Theory based, adjusted to the social media environment by Reddel (2021))
 
         The post which is passed is assumed to be seen by the agent. It is also assumed that the agent actually
-        updates beliefs based on the post. I.e., in the current implementation, the function is to be used after
+        updates tweet_beliefs based on the post. I.e., in the current implementation, the function is to be used after
         the agent has decided to judge the post as truthful.
 
         :param post:    Post, a seen post
         """
 
-        # Calculate how the agent will update its beliefs
+        # Calculate how the agent will update its tweet_beliefs
         updates = self.calculate_belief_update(post)
 
-        # Update own beliefs  (after each seen post)
+        # Update own tweet_beliefs  (after each seen post)
         for topic, update in updates.items():
             self.beliefs[topic] += update
 
@@ -503,7 +503,7 @@ class Disinformer(BaseAgent):
 
     def update_beliefs_stage(self):
         """
-        Second part of the Disinformer agent's step function. Disinformers don't update their beliefs
+        Second part of the Disinformer agent's step function. Disinformers don't update their tweet_beliefs
         """
         # To include disinformers into the profit metric of n_seen_posts:
         seen_posts = self.sample_seen_posts()
