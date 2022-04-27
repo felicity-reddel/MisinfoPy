@@ -29,16 +29,16 @@ class Post:
     @staticmethod
     def sample_beliefs(max_n_topics=1, agent=None) -> dict:
         """
-        Generates and returns dict of tweet_beliefs for one post (i.e., topic & value):  {Topic.TOPIC1: int}
+        Generates and returns dict of tweet_beliefs for one post (i.e., topic & n_seen_posts_repl):  {Topic.TOPIC1: int}
         :param max_n_topics:    int,    maximal number of topics in one post
         :param agent:  Agent,  if None: generate random belief,
                                if Agent: generate post-tweet_beliefs based that agent's tweet_beliefs
-        :return: dict of tweet_beliefs (i.e., topics with value)
+        :return: dict of tweet_beliefs (i.e., topics with n_seen_posts_repl)
         """
         # Sample how many topics should be included in post.
         n_topics = random.randint(1, max_n_topics)  # min. 1 topic per post
 
-        # Sample tweet_beliefs (belief = topic with value)
+        # Sample tweet_beliefs (belief = topic with n_seen_posts_repl)
         tweet_beliefs = {}
 
         for _ in range(n_topics):
@@ -46,7 +46,7 @@ class Post:
             # Pick topic
             topic = Topic.get_random()  # Ext: could adjust weights for diff. topics
 
-            # Sample value on topic
+            # Sample n_seen_posts_repl on topic
             if agent is None:
                 tweet_belief = random.randint(0, 100)
             else:

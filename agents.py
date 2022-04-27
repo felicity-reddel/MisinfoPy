@@ -47,6 +47,7 @@ class BaseAgent(Agent):
             nr_of_posts: int
         """
 
+        # TODO: Decide which version to take (this or original one (below, commented out))
         mean = self.vocality['mean']
         max_mean_increase = self.model.adjustment_based_on_belief
         current_belief = self.beliefs[Topic.VAX]
@@ -196,7 +197,7 @@ class BaseAgent(Agent):
     def calculate_immediacy(self, post):
         """
         Calculates immediacy component for the SIT belief update as  tie strength (i.e., edge weight).
-        :return:            immediacy value
+        :return:            immediacy n_seen_posts_repl
         """
 
         tie_strength = self.model.G.edges[self.unique_id, post.source.unique_id, 0]['weight']  # Always key=0 because
@@ -474,7 +475,7 @@ class NormalUser(BaseAgent):
             else:
                 p_judged_as_truthful = 0.2
         else:
-            p_judged_as_truthful = 1.0  # Default value for people with Medialiteracy.LOW. They will always update
+            p_judged_as_truthful = 1.0  # Default n_seen_posts_repl for people with Medialiteracy.LOW. They will always update
 
         # Sample whether post is judged as truthful
         if random.random() < p_judged_as_truthful:
@@ -518,7 +519,7 @@ class Disinformer(BaseAgent):
 
 def rescale(old_value, new_domain=(-100, 100)):
     """
-    Rescales a value from one range to another.
+    Rescales a n_seen_posts_repl from one range to another.
     By default from range [-100ˆ3,100ˆ3] to [-100,100].
 
     :param old_value:   float

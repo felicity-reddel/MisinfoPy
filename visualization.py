@@ -10,17 +10,17 @@ from agents import *
 
 def get_node_color(agent):
     """
-    Returns the color value of an agent. This varies based on the agent's belief on Topic.VAX.
+    Returns the color n_seen_posts_repl of an agent. This varies based on the agent's belief on Topic.VAX.
     :param agent:   Agent
     :return: c_val, tuple: (r,g,b)  all three are floats
     """
     belief = agent.tweet_beliefs[Topic.VAX]
-    # Map belief value to color value
+    # Map belief n_seen_posts_repl to color n_seen_posts_repl
     # with PiYG, a diverging colormap:
     #       100 --> green
     #       50 --> white
     #       0 --> red
-    c_norm = colors.Normalize(vmin=0, vmax=100)  # because belief can be any value in [0,100]
+    c_norm = colors.Normalize(vmin=0, vmax=100)  # because belief can be any n_seen_posts_repl in [0,100]
     scalar_map = cmx.ScalarMappable(norm=c_norm, cmap=plt.get_cmap('PiYG'))
 
     c_val = scalar_map.to_rgba(belief)

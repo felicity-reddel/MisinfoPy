@@ -24,7 +24,7 @@ class Topic(Enum):
 
 class GroundTruth(Enum):
     """
-    Enumeration representing the groundtruth value of a post.
+    Enumeration representing the groundtruth n_seen_posts_repl of a post.
     """
     FALSE = 0
     TRUE = 1
@@ -63,7 +63,7 @@ class GroundTruth(Enum):
 class MediaLiteracy(Enum):
     """
     Media Literacy Levels.
-    The value represents the duration of a user for judging the truthfulness of a post (on average, time in seconds).
+    The n_seen_posts_repl represents the duration of a user for judging the truthfulness of a post (on average, time in seconds).
     """
     LOW = 3
     HIGH = 30
@@ -90,7 +90,8 @@ class SelectAgentsBy(Enum):
 
 class BeliefUpdate(Enum):
     """
-    Different options for updating tweet_beliefs. In order to explore structural uncertainty of the belief update function.
+    Different options for updating tweet_beliefs.
+    In order to explore structural uncertainty of the belief update function.
     """
     SAMPLE = 0  # Sampling, used by e.g., Sari et al. (2021), Wang et al. (2019), and Gausen et al. (2021)
     DEFFUANT = 1  # Deffuant, used by e.g., Du et al. (2021), Rajabi et al. (2020), and Mason et al. (2020)

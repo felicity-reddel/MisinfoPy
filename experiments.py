@@ -15,7 +15,7 @@ def calculate_avg_belief(misinfo_model):
     topic = Topic.VAX
     beliefs = []
     for agent in misinfo_model.schedule.agents:
-        agent_belief_on_topic = agent.tweet_beliefs[topic]
+        agent_belief_on_topic = agent.beliefs[topic]
         beliefs.append(agent_belief_on_topic)
 
     avg_belief = sum(beliefs) / len(beliefs)
@@ -30,7 +30,7 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     :param threshold: float
     :return: float
     """
-    agent_beliefs = [a.tweet_beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
+    agent_beliefs = [a.beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
     n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     p_true_threshold_deleting_values = [-0.1]  # by default no deleting
     p_true_threshold_ranking_values = [-0.1]  # by default no ranking
     p_true_threshold_strikes_values = [-0.1]  # by default no strike system
-    belief_update_fn_values = [BeliefUpdate(e.value) for e in BeliefUpdate]
+    belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(media_literacy_intervention_values,
                                       ranking_visibility_adjustment_values,
@@ -100,25 +100,41 @@ if __name__ == '__main__':
             replications_n_seen_posts = []
             for replication in range(n_replications):
                 # Set up the model
-                model = MisinfoPy(n_agents=n_agents,
-                                  n_edges=n_edges,
-                                  agent_ratio=scenario,
-                                  media_literacy_intervention=media_literacy_intervention,
-                                  ranking_visibility_adjustment=ranking_visibility_adjustment,
-                                  p_true_threshold_deleting=p_true_threshold_deleting,
-                                  p_true_threshold_ranking=p_true_threshold_ranking,
-                                  p_true_threshold_strikes=p_true_threshold_strikes,
-                                  belief_update_fn=belief_update_fn)
+                model = MisinfoPy(
+                    # ––– Network –––
+                    n_agents=n_agents,
+                    n_edges=n_edges,
+                    agent_ratio=scenario,
+
+                    # # ––– Posting behavior –––
+                    # sigma=0.7,
+                    # mean_normal_user=1,
+                    # mean_disinformer=10,
+                    # adjustment_based_on_belief=2,
+
+                    # ––– Levers –––
+                    media_literacy_intervention=media_literacy_intervention,
+                    media_literacy_intervention_durations=None,
+                    ranking_visibility_adjustment=ranking_visibility_adjustment,
+                    p_true_threshold_deleting=p_true_threshold_deleting,
+                    p_true_threshold_ranking=p_true_threshold_ranking,
+                    p_true_threshold_strikes=p_true_threshold_strikes,
+
+                    # ––– Belief updating behavior –––
+                    belief_update_fn=belief_update_fn,
+                    # sampling_p_update=0.02,
+                    # deffuant_mu=0.02,
+                )
 
                 # Save start data
-                agents_belief_before = [agent.tweet_beliefs[Topic.VAX] for agent in model.schedule.agents]
+                agents_belief_before = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
 
                 # Run the model
                 for tick in range(max_run_length):
                     model.step()
 
                 # Save end data
-                agents_belief_after = [agent.tweet_beliefs[Topic.VAX] for agent in model.schedule.agents]
+                agents_belief_after = [agent.beliefs[Topic.VAX] for agent in model.schedule.agents]
                 # save data from this replication
                 replication_data = (agents_belief_before, agents_belief_after)
                 df_column.append(replication_data)
@@ -135,16 +151,19 @@ if __name__ == '__main__':
             engagement[policy] = replications_n_seen_posts
 
             # Printing
-            print(f"policy {j} done")
+            print(f"policy {j} done: {policy}")
 
         # Save scenario data into a csv file
         directory = os.getcwd()
         path = directory + '/results/'
 
         file_name = "belief_distr_" + str(scenario) + ".csv"
+        # noinspection PyTypeChecker
         data.to_csv(path + file_name)
-        for key, value in engagement.items():
-            print(f"Ranking: {key[1]}, n's: {value}, avg: {sum(value) / len(value)}")
+        for lever_combination, n_seen_posts_repl in engagement.items():
+            print(f"Ranking: {lever_combination[1]}, "
+                  f"n's: {n_seen_posts_repl}, "
+                  f"avg: {sum(n_seen_posts_repl) / len(n_seen_posts_repl)}")
 
     # # Printing
     # end_time = time.localtime(time.time())

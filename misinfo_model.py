@@ -45,10 +45,6 @@ class MisinfoPy(Model):
             sampling_p_update=0.02,
             deffuant_mu=0.02,
 
-            # ––– For additional calibration of agent vocality –––
-            top_10_target=138,
-            bottom_90_target=2,
-
             # ––– Plots –––
             show_n_seen_posts=False,
             show_n_connections=False
@@ -729,7 +725,8 @@ def discretize(belief_list, n_bins=25):
 def create_polarized_pdf(epsilon=0.001, n_bins=25):
     """
     Creates most polarized probability distribtion function (pdf) as a comparison for the KL-divergence metric.
-    :param epsilon: float: smallest value, needed because values should not be 0 because of ln(0)=inf in KL-div
+    :param epsilon: float: smallest n_seen_posts_repl,
+                    needed because values should not be 0 because of ln(0)=inf in KL-div
     :param n_bins: int: number of bins of discrete belief_list
     :return: list: representing polarized pdf
     """
@@ -746,11 +743,11 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
     Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
     the current belief belief_list of the agents (or a the provided belief_list).
     If both, belief_list and model, are not specified, no KL divergence can be calculated and the function returns: None
-    :param belief_list: list: listing the belief value of each agent
+    :param belief_list: list: listing the belief n_seen_posts_repl of each agent
     :param model: MisinfoPy model
     :param template_pdf: list: discrete probability density function as a list of length n_bins
     :param n_bins: int: number of bins for discretization of belief_list
-    :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
+    :param n_digits: int: to how many digits the n_seen_posts_repl should be rounded, for non-rounded use high value
     :return: float: symmetric kl-divergence
     """
 
@@ -780,9 +777,9 @@ def variance(belief_list=None, model=None, n_digits=2):
     """
     Calculates the variance of
     the current belief belief_list of the agents (or a the provided belief_list).
-    :param belief_list: list: listing the belief value of each agent
+    :param belief_list: list: listing the belief n_seen_posts_repl of each agent
     :param model: MisinfoPy model
-    :param n_digits: int: to how many digits the value should be rounded, for non-rounded use high number (e.g., 20)
+    :param n_digits: int: to how many digits the n_seen_posts_repl should be rounded, for non-rounded use high number (e.g., 20)
     :return: float: variance
     """
     belief_list = get_belief_list(belief_list, model)
@@ -796,7 +793,7 @@ def get_belief_list(belief_list=None, model=None):
     """
     Makes sure there is a belief_list (either provided, or belief_list from the model's schedule),
     e.g., before calculating polarization metrics KL-divergence & variance, or belief metric
-    :param belief_list: list: listing the belief value of each agent
+    :param belief_list: list: listing the belief n_seen_posts_repl of each agent
     :param model: MisinfoPy model
     :return: list
     """
