@@ -88,33 +88,52 @@ class BaseAgent(Agent):
                 post = self.create_post(p_true_threshold_ranking=self.model.p_true_threshold_ranking)
 
                 # Deleting: Posts that have a very low probability of being true might be deleted
-                if (post.p_true <= self.model.p_true_threshold_deleting) and post.detected_as_misinfo:
+                if (post.p_true < self.model.p_true_threshold_deleting) and post.detected_as_misinfo:
                     # Delete post by not appending it and advancing the delete-counter
                     self.model.n_posts_deleted += 1
                 else:
                     posts.append(post)
 
                 # Strike system: Posts that have a very low probability of being true might yield a strike
-                if (post.p_true <= self.model.p_true_threshold_strikes) and post.detected_as_misinfo:
+                if (post.p_true < self.model.p_true_threshold_strikes) and post.detected_as_misinfo:
                     # Strike
                     self.n_strikes += 1
                     # Apply strike consequences
-                    match self.n_strikes:
-                        case 1:
-                            # print(f'{self.n_strikes} strike, should CONTINUE the loop')
-                            pass
-                        case (2 | 3):
-                            # print(f'{self.n_strikes} strikes, should STOP the loop')
-                            break
-                        case 4:
-                            self.blocked_until = self.model.schedule.time + 7
-                            print(f"7 tick-block, –––––––––––––––––––– "
-                                  f"{post.p_true} <= {self.model.p_true_threshold_strikes}")
-                            break
-                        case self.n_strikes if self.n_strikes >= 5:
-                            self.blocked_until = math.inf
-                            print(f"INFINITY-block – since tick {self.model.schedule.time}")
-                            break
+                    if self.n_strikes == 1:
+                        pass
+                        # print(f'{self.n_strikes} strike, should CONTINUE the loop')
+                    elif self.n_strikes == 2 or self.n_strikes == 3:
+                        break
+                        # print(f'{self.n_strikes} strikes, should STOP the loop')
+                    elif self.n_strikes == 4:
+                        self.blocked_until = self.model.schedule.time + 7
+                        print(f"7 tick-block, –––––––––––––––––––– "
+                              f"{post.p_true} < {self.model.p_true_threshold_strikes}")
+                        break
+                    elif self.n_strikes >= 5:
+                        self.blocked_until = math.inf
+                        print(f"INFINITY-block – since tick {self.model.schedule.time}")
+                        break
+                    else:
+                        raise ValueError(f"Negative number of strikes (agent {self.unique_id}).")
+
+            #         Python 3.10 version:
+            #         match self.n_strikes:
+            #             case 1:
+            #                 # print(f'{self.n_strikes} strike, should CONTINUE the loop')
+            #                 pass
+            #             case (2 | 3):
+            #                 # print(f'{self.n_strikes} strikes, should STOP the loop')
+            #                 break
+            #             case 4:
+            #                 self.blocked_until = self.model.schedule.time + 7
+            #                 print(f"7 tick-block, –––––––––––––––––––– "
+            #                       f"{post.p_true} < {self.model.p_true_threshold_strikes}")
+            #                 break
+            #             case self.n_strikes if self.n_strikes >= 5:
+            #                 self.blocked_until = math.inf
+            #                 print(f"INFINITY-block – since tick {self.model.schedule.time}")
+            #                 break
 
             # Share successful posts to followers
             for follower in self.followers:
@@ -390,15 +409,25 @@ class NormalUser(BaseAgent):
         Updates the tweet_beliefs with the required belief update function.
         :param post: Post
         """
-        match self.model.belief_update_fn:
-            case BeliefUpdate.SAMPLE:
-                self.update_beliefs_sample(post)
-            case BeliefUpdate.DEFFUANT:
-                self.update_beliefs_deffuant(post)
-            case BeliefUpdate.SIT:
-                self.update_beliefs_sit(post)
-            case _:
-                raise ValueError("Not a defined belief update function.")
+        if self.model.belief_update_fn == BeliefUpdate.SAMPLE:
+            self.update_beliefs_sample(post)
+        elif self.model.belief_update_fn == BeliefUpdate.DEFFUANT:
+            self.update_beliefs_deffuant(post)
+        elif self.model.belief_update_fn == BeliefUpdate.SIT:
+            self.update_beliefs_sit(post)
+        else:
+            raise ValueError("Not a defined belief update function.")
+
+    #     Python 3.10 version:
+    #     match self.model.belief_update_fn:
+    #         case BeliefUpdate.SAMPLE:
+    #             self.update_beliefs_sample(post)
+    #         case BeliefUpdate.DEFFUANT:
+    #             self.update_beliefs_deffuant(post)
+    #         case BeliefUpdate.SIT:
+    #             self.update_beliefs_sit(post)
+    #         case _:
+    #             raise ValueError("Not a defined belief update function.")
 
     def update_beliefs_sample(self, post):
         """

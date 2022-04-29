@@ -36,14 +36,17 @@ class MisinfoPy(Model):
             media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
             media_literacy_intervention_durations=None,
             ranking_visibility_adjustment=-0.0,
-            p_true_threshold_deleting=-0.1,
-            p_true_threshold_ranking=-0.1,
-            p_true_threshold_strikes=-0.1,
+            p_true_threshold_deleting=0.0,
+            p_true_threshold_ranking=0.0,
+            p_true_threshold_strikes=0.0,
 
             # ––– Belief updating behavior –––
             belief_update_fn=BeliefUpdate.SIT,
             sampling_p_update=0.02,
             deffuant_mu=0.02,
+
+            # ––– Metrics –––
+            belief_threshold=50.0,
 
             # ––– Plots –––
             show_n_seen_posts=False,
@@ -139,6 +142,10 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
         self.ranking_visibility_adjustment = ranking_visibility_adjustment
+
+        # ––– Metrics –––
+        self.belief_threshold = belief_threshold
+
         self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts
 
@@ -443,15 +450,25 @@ class MisinfoPy(Model):
 
         return top_10_error, bottom_90_error
 
-    def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
+    # def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
+    #     """
+    #     Return average belief of all agents on a given topic. For the DataCollector.
+    #     :param topic:   Topic
+    #     :param dummy:   None: just to avoid error (.ipynb files)
+    #     :return:        float
+    #     """
+    #     agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
+    #     avg_belief = sum(agent_beliefs) / len(agent_beliefs)
+    #
+    #     return avg_belief
+
+    def get_avg_belief(self, dummy=None) -> float:
         """
-        Return average belief of all agents on a given topic. For the DataCollector.
-        :param topic:   Topic
+        Return average belief of all agents on Topic.VAX. For the DataCollector.
         :param dummy:   None: just to avoid error (.ipynb files)
         :return:        float
         """
-
-        agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
+        agent_beliefs = [a.beliefs[Topic.VAX] for a in self.schedule.agents]
         avg_belief = sum(agent_beliefs) / len(agent_beliefs)
 
         return avg_belief
@@ -467,80 +484,74 @@ class MisinfoPy(Model):
 
         return total
 
-    def get_topic_above_below_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
+    def get_topic_above_below_sizes(self, dummy=None) -> tuple:
         """
-        Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
+        Return tuple of how many agents' belief on Topic.VAX. is above and below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
         :param dummy:       None: just to avoid error  (.ipynb files)
         :return:            tuple
         """
 
-        agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
-        n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
+        agent_beliefs = [a.beliefs[Topic.VAX] for a in self.schedule.agents]
+        n_above = sum([1 for a_belief in agent_beliefs if a_belief >= self.belief_threshold])
         n_below = len(agent_beliefs) - n_above
 
         return n_above, n_below
 
-    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
+    def get_n_above_belief_threshold(self, dummy=None) -> int:
         """
-        Returns how many agents' belief on a given topic is above and below the provided threshold.
+        Returns how many agents' belief on Topic.VAX is above and below the belief threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
+
         :param dummy:       None: just to avoid error  (.ipynb files)
         :return: n_above:   int
         """
 
-        agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
-        n_above = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
+        agent_beliefs = [a.beliefs[Topic.VAX] for a in self.schedule.agents]
+        n_above = sum([1 for a_belief in agent_beliefs if a_belief >= self.belief_threshold])
 
         return n_above
 
-    def get_n_below_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
+    def get_n_below_belief_threshold(self, dummy=None) -> int:
         """
-        Returns how many agents' belief on a given topic are below the provided threshold.
+        Returns how many agents' belief on Topic.VAX are below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
+
         :param dummy:       None: just to avoid error  (.ipynb files)
         :return: n_below    int
         """
 
-        agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
-        n_below = sum([1 for a_belief in agent_beliefs if a_belief < threshold])
+        agent_beliefs = [a.beliefs[Topic.VAX] for a in self.schedule.agents]
+        n_below = sum([1 for a_belief in agent_beliefs if a_belief < self.belief_threshold])
 
         return n_below
 
-    def get_avg_belief_above_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_above_threshold(self, dummy=None) -> float:
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
         :param dummy:       None: just to avoid error  (.ipynb files)
         :return: avg:       float
         """
 
-        beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
+        beliefs_above_threshold = [a.beliefs[Topic.VAX] for a in self.schedule.agents
+                                   if a.beliefs[Topic.VAX] >= self.belief_threshold]
         if len(beliefs_above_threshold) == 0:
             avg = self.get_avg_belief_below_threshold()  # If nobody above threshold, take avg of below threshold.
         else:
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
 
-    def get_avg_belief_below_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_below_threshold(self, dummy=None) -> float:
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
+
         :param dummy:       None: just to avoid error  (.ipynb files)
         :return: avg:       float
         """
 
-        beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
+        beliefs_below_threshold = [a.beliefs[Topic.VAX] for a in self.schedule.agents if a.beliefs[Topic.VAX] < self.belief_threshold]
 
         if len(beliefs_below_threshold) == 0:
             avg = self.get_avg_belief_above_threshold()  # If nobody below threshold, take avg of above threshold.
@@ -549,10 +560,9 @@ class MisinfoPy(Model):
 
         return avg
 
-    def get_indiv_beliefs(self, topic=Topic.VAX, agent_ids_list=None) -> dict:
+    def get_indiv_beliefs(self, agent_ids_list=None) -> dict:
         """
-        Returns a dictionary of the current get_beliefs of the agents with the unique_ids listed in agent_ids_list.
-        :param topic:       Topic
+        Returns a dictionary of the current beliefs of the agents with the unique_ids listed in agent_ids_list.
         :param agent_ids_list: list of agent.unique_id's
         :return: dict, {unique_id: vax_belief}
         """
@@ -561,7 +571,7 @@ class MisinfoPy(Model):
         vax_beliefs: dict[str, float] = {}
         agents = [a for a in self.schedule.agents if a.unique_id in agent_ids_list]
         for agent in agents:
-            belief = agent.beliefs[topic]
+            belief = agent.beliefs[Topic.VAX]
             vax_beliefs[f'belief of agent {id}'] = belief
 
         return vax_beliefs

@@ -14,8 +14,8 @@ if __name__ == '__main__':
     media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
     ranking_visibility_adjustment = -0.0
     p_true_threshold_deleting = 0.1
-    p_true_threshold_ranking = -0.1
-    p_true_threshold_strikes = -0.1
+    p_true_threshold_ranking = 0.0
+    p_true_threshold_strikes = 0.0
     belief_update_fn = BeliefUpdate.DEFFUANT
     sampling_p_update = 0.02
     deffuant_mu = 0.02

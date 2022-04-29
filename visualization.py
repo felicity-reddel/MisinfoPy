@@ -54,9 +54,9 @@ def show_visualization(model,
                        n_edges=3,
                        agent_ratio=None,
                        media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
-                       p_true_threshold_deleting=-0.1,
-                       p_true_threshold_ranking=-0.1,
-                       p_true_threshold_strikes=-0.1,
+                       p_true_threshold_deleting=0.0,
+                       p_true_threshold_ranking=0.0,
+                       p_true_threshold_strikes=0.0,
                        ranking_visibility_adjustment=-0.0,
                        belief_update_fn=BeliefUpdate.SIT,
                        sampling_p_update=0.02,
@@ -70,10 +70,10 @@ def show_visualization(model,
     :param n_edges:     int
     :param agent_ratio: dict {user_type: percentage}
     :param media_literacy_intervention:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
-    :param p_true_threshold_deleting: float, negative if no deleting, otherwise in range [0.0, 1.0]
-    :param p_true_threshold_ranking: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
-    :param p_true_threshold_strikes: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
-    :param ranking_visibility_adjustment: float, -0.0 if no adjustment, otherwise in range [-0.0, -1.0]
+    :param p_true_threshold_deleting: float, in range [0.0, 1.0], if 0.0 -> no deleting
+    :param p_true_threshold_ranking: float, in range [0.0, 1.0], if 0.0 -> no deleting
+    :param p_true_threshold_strikes: float, in range [0.0, 1.0], if 0.0 -> no deleting
+    :param ranking_visibility_adjustment: float, in range [-1.0, -0.0], if -0.0 -> no adjustment
     :param belief_update_fn:  BeliefUpdate
     :param sampling_p_update: float, probability that agent updates belief based on a seen post
     :param deffuant_mu: float, "step size" (in percent) with which the agent moves its belief towards the post's belief

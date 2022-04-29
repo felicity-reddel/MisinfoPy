@@ -57,9 +57,9 @@ if __name__ == '__main__':
                                           ]
 
     ranking_visibility_adjustment_values = [-0.0]  # by default no ranking adjustment
-    p_true_threshold_deleting_values = [-0.1]  # by default no deleting
-    p_true_threshold_ranking_values = [-0.1]  # by default no ranking
-    p_true_threshold_strikes_values = [-0.1]  # by default no strike system
+    p_true_threshold_deleting_values = [0.0]  # by default no deleting
+    p_true_threshold_ranking_values = [0.0]  # by default no ranking
+    p_true_threshold_strikes_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(media_literacy_intervention_values,

@@ -9,10 +9,10 @@ model = MisinfoPy(n_agents=100,
                   media_literacy_intervention_durations={"initial investment": 3600,
                                                          "MediaLiteracy.LOW": 3,
                                                          "MediaLiteracy.HIGH": 30},
-                  ranking_visibility_adjustment=-0.0,  # negative n_seen_posts_repl: no ranking adjustment
-                  p_true_threshold_deleting=-0.1,  # negative n_seen_posts_repl: no deleting
-                  p_true_threshold_ranking=-0.2,  # negative n_seen_posts_repl: no ranking
-                  p_true_threshold_strikes=-0.01,  # negative n_seen_posts_repl: no strike system
+                  ranking_visibility_adjustment=-0.0,
+                  p_true_threshold_deleting=0.0,
+                  p_true_threshold_ranking=0.0,
+                  p_true_threshold_strikes=0.0,
                   belief_update_fn=BeliefUpdate.DEFFUANT,
                   show_n_seen_posts=False)
 
