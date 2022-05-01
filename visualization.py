@@ -14,7 +14,7 @@ def get_node_color(agent):
     :param agent:   Agent
     :return: c_val, tuple: (r,g,b)  all three are floats
     """
-    belief = agent.tweet_beliefs[Topic.VAX]
+    belief = agent.beliefs[Topic.VAX]
     # Map belief n_seen_posts_repl to color n_seen_posts_repl
     # with PiYG, a diverging colormap:
     #       100 --> green

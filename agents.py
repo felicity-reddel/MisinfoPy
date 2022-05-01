@@ -1,6 +1,4 @@
 from posts import *
-from enums import *
-from utils import *
 import numpy as np
 
 import math
@@ -511,60 +509,3 @@ class Disinformer(BaseAgent):
         seen_posts = self.sample_seen_posts()
         self.n_seen_posts.append(len(seen_posts))
         # pass
-
-
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-#   More independent Helper-Functions
-# ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
-
-
-def rescale(old_value, new_domain=(-100, 100)):
-    """
-    Rescales a value from one range to another.
-    By default, from range [-100ˆ3,100ˆ3] to [-100,100].
-
-    :param old_value:   float
-    :param new_domain:   tuple, (min_new_range, max_new_range)
-    :return: new_value: float
-    """
-    old_min, old_max = (-1000000, 1000000)
-
-    if old_value < 0:
-        old_max = 0  # we already know that it should decrease, thus old_max = 0  and  new_max = 0
-        new_max = 0
-        new_min, _ = new_domain
-        old_range = old_max - old_min
-        new_range = new_max - new_min
-
-        new_value = (((old_value - old_min) * new_range) / old_range) + new_min
-
-    elif old_value > 0:
-        old_min = 0  # we already know that it should increase, thus old_min = 0   and  new_min = 0
-        new_min = 0
-        _, new_max = new_domain
-        old_range = old_max - old_min
-        new_range = new_max - new_min
-
-        new_value = (((old_value - old_min) * new_range) / old_range) + new_min
-    else:
-        new_value = 0
-
-    return new_value
-
-
-def get_update_strength(prev_belief, mean=50.0, std_dev=30.0):
-    """
-    Uses a normal distribution (with the provided parameters)
-    to return the update_strength that corresponds to the provided belief_strength.
-    :param prev_belief:     float
-    :param mean:                float
-    :param std_dev:             float
-    :return: update_strength:    float
-    """
-
-    dividend = math.exp((((prev_belief - mean) / std_dev) ** 2 * (-0.5)))
-    divisor = math.sqrt(2 * math.pi) * std_dev
-
-    update_strength = dividend / divisor
-
-    return update_strength

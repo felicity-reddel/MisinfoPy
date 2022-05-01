@@ -1,6 +1,5 @@
-from misinfo_model import MisinfoPy  # , draw_graph
+from misinfo_model import *
 from visualization import *
-from agents import *
 import time
 
 

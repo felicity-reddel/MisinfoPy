@@ -1,39 +1,8 @@
 import itertools
 import os
 import pandas as pd
-from agents import *
 import time
-from misinfo_model import MisinfoPy
-
-
-def calculate_avg_belief(misinfo_model):
-    """
-    Calculates the average belief over all agents.
-    :param misinfo_model: MisinfoPy
-    :return: avg_belief: float
-    """
-    topic = Topic.VAX
-    beliefs = []
-    for agent in misinfo_model.schedule.agents:
-        agent_belief_on_topic = agent.beliefs[topic]
-        beliefs.append(agent_belief_on_topic)
-
-    avg_belief = sum(beliefs) / len(beliefs)
-
-    return avg_belief
-
-
-def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
-    """
-    Calculates the percentage of agents that is above the specified threshold.
-    :param misinfo_model: MisinfoPy
-    :param threshold: float
-    :return: float
-    """
-    agent_beliefs = [a.beliefs[Topic.VAX] for a in misinfo_model.schedule.agents]
-    n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
-    percentage_above = n_above / len(misinfo_model.schedule.agents)
-    return percentage_above
+from misinfo_model import *
 
 
 if __name__ == '__main__':
