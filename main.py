@@ -6,7 +6,7 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = False
+    visualize = True
     n_agents = 100  # 1000
     agent_ratio = {NormalUser.__name__: 0.99, Disinformer.__name__: 0.01}
     n_edges = 2  # 3

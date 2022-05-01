@@ -140,26 +140,27 @@ class MisinfoPy(Model):
 
         self.data_collector = DataCollector(model_reporters={
             "Avg Vax-Belief": self.get_avg_belief,
-            # "Avg Vax-Belief": lambda m: m.get_avg_belief(topic=Topic.VAX, dummy=7), # TODO: CONTINUE HERE
-            "Avg Vax-Belief above threshold": self.get_avg_belief_above_threshold,
+            "Avg Vax-Belief above threshold": lambda m: m.get_avg_belief_above_threshold(threshold=50),
+            # TODO: think about whether to add a threshold param to the model (above)
             "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold,
             "Total seen posts": self.get_total_seen_posts,
             "Free speech constraint": self.get_free_speech_constraint,
             "User effort": self.get_avg_user_effort})
 
+        n_depicted = 10
+        ids = [*range(0, n_agents, math.floor(n_agents/n_depicted))]
         # DataCollector2: follow individual agents
-        self.data_collector2 = DataCollector(model_reporters={
-            f"Agent 0": self.get_belief_a0,
-            f"Agent 1": self.get_belief_a10,
-            f"Agent 2": self.get_belief_a20,
-            f"Agent 3": self.get_belief_a30,
-            f"Agent 4": self.get_belief_a40,
-            f"Agent 5": self.get_belief_a50,
-            f"Agent 6": self.get_belief_a60,
-            f"Agent 7": self.get_belief_a70,
-            f"Agent 8": self.get_belief_a80,
-            f"Agent 9": self.get_belief_a90,
-            f"Agent 10": self.get_belief_a100,
+        self.data_collector2 = DataCollector(model_reporters={  # As many as n_depicted
+            f"Agent 0": lambda m: m.get_belief(agent_id=ids[0]),
+            f"Agent 1": lambda m: m.get_belief(agent_id=ids[1]),
+            f"Agent 2": lambda m: m.get_belief(agent_id=ids[2]),
+            f"Agent 3": lambda m: m.get_belief(agent_id=ids[3]),
+            f"Agent 4": lambda m: m.get_belief(agent_id=ids[4]),
+            f"Agent 5": lambda m: m.get_belief(agent_id=ids[5]),
+            f"Agent 6": lambda m: m.get_belief(agent_id=ids[6]),
+            f"Agent 7": lambda m: m.get_belief(agent_id=ids[7]),
+            f"Agent 8": lambda m: m.get_belief(agent_id=ids[8]),
+            f"Agent 9": lambda m: m.get_belief(agent_id=ids[9]),
         })
 
         if show_n_connections:
@@ -436,11 +437,10 @@ class MisinfoPy(Model):
 
         return top_10_error, bottom_90_error
 
-    def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_avg_belief(self, topic=Topic.VAX) -> float:
         """
         Return average belief of all agents on a given topic. For the DataCollector.
         @param topic:   Topic
-        @param dummy:   None: just to avoid error (.ipynb files)
         @return:        float
         """
 
@@ -460,13 +460,12 @@ class MisinfoPy(Model):
 
         return total
 
-    def get_topic_above_below_sizes(self, topic=Topic.VAX, threshold=50.0, dummy=None) -> tuple:
+    def get_topic_above_below_sizes(self, topic=Topic.VAX, threshold=50.0) -> tuple:
         """
         Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
         @param topic:       Topic
         @param threshold:   float
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return:            tuple
         """
 
@@ -476,13 +475,12 @@ class MisinfoPy(Model):
 
         return n_above, n_below
 
-    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
+    def get_n_above_belief_threshold(self, topic=Topic.VAX, threshold=50) -> int:
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
         @param topic:       Topic
         @param threshold:   float
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return: n_above:   int
         """
 
@@ -491,13 +489,12 @@ class MisinfoPy(Model):
 
         return n_above
 
-    def get_n_below_belief_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> int:
+    def get_n_below_belief_threshold(self, topic=Topic.VAX, threshold=50) -> int:
         """
         Returns how many agents' belief on a given topic are below the provided threshold.
          For the DataCollector.
         @param topic:       Topic
         @param threshold:   float
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return: n_below    int
         """
 
@@ -506,13 +503,12 @@ class MisinfoPy(Model):
 
         return n_below
 
-    def get_avg_belief_above_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_above_threshold(self, topic=Topic.VAX, threshold=50) -> float:
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
         @param topic:       Topic
         @param threshold:   float
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return: avg:       float
         """
 
@@ -523,13 +519,12 @@ class MisinfoPy(Model):
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
 
-    def get_avg_belief_below_threshold(self, topic=Topic.VAX, threshold=50, dummy=None) -> float:
+    def get_avg_belief_below_threshold(self, topic=Topic.VAX, threshold=50) -> float:
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
         @param topic:       Topic
         @param threshold:   float
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return: avg:       float
         """
 
@@ -559,134 +554,18 @@ class MisinfoPy(Model):
 
         return vax_beliefs
 
-    def get_belief_a0(self, topic=Topic.VAX, dummy=None) -> float:
+    def get_belief(self, agent_id=None, topic=Topic.VAX) -> float:
         """
         Returns the belief of agent 0 at current tick.
         For data_collector2.
+        @param agent_id:    int
         @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
         @return: belief:    float
         """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a10(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 10% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.1][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a20(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 20% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.2][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a30(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 30% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.3][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a40(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 40% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.4][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a50(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 50% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.5][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a60(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 60% of unique_ids.)
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.6][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a70(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 70% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.7][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a80(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 80% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.8][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a90(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 90% of unique_ids.)
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.9][0]
-        belief = agent_i.beliefs[topic]
-        return belief
-
-    def get_belief_a100(self, topic=Topic.VAX, dummy=None) -> float:
-        """
-        Returns the belief a specific agent at current tick. (The agent at 100% of unique_ids (i.e., last agent))
-        For data_collector2.
-        @param topic:       Topic
-        @param dummy:       None: just to avoid error  (.ipynb files)
-        @return: belief:    float
-        """
-        agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents - 1][0]
+        try:
+            agent_i = [a for a in self.schedule.agents if a.unique_id == agent_id][0]
+        except ValueError:
+            raise ValueError(f"There is no agent with unique_id {agent_id}.")
         belief = agent_i.beliefs[topic]
         return belief
 
