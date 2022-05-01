@@ -1,15 +1,15 @@
+# import agents
+# from enums import *
+from agents import *
+
 import time
 import statistics
-import math
 from scipy.special import rel_entr
 from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.time import StagedActivation
 from mesa.space import NetworkGrid
 import networkx as nx
-
-from agents import *
-from enums import *
 
 import numpy as np
 import math
@@ -53,51 +53,51 @@ class MisinfoPy(Model):
         Initializes the MisinfoPy
 
         ––– Network –––
-        :param n_agents:                    int, how many agents the model should have
-        :param n_edges:                     int, with how many edges gets attached to the already built network
-        :param agent_ratio:                 dictionary {String: float},
+        @param n_agents:                    int, how many agents the model should have
+        @param n_edges:                     int, with how many edges gets attached to the already built network
+        @param agent_ratio:                 dictionary {String: float},
                                             String is agent type, float is agent_ratio in range [0.0,1.0]
 
         ––– Posting behavior –––
-        :param sigma:                       float, std_dev to sample from a normal distribution how many posts an agent
+        @param sigma:                       float, std_dev to sample from a normal distribution how many posts an agent
                                             want to post in a tick ( n_posts )
-        :param mean_normal_user:            float, mean of normal user for sampling n_posts
-        :param mean_disinformer:            float, mean of normal user for sampling n_posts
-        :param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
+        @param mean_normal_user:            float, mean of normal user for sampling n_posts
+        @param mean_disinformer:            float, mean of normal user for sampling n_posts
+        @param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
 
         ––– Levers –––
-        :param media_literacy_intervention: tuple(float, SelectAgentsBy)
+        @param media_literacy_intervention: tuple(float, SelectAgentsBy)
                     float:
                     - domain [0,1)
                     - meaning: Percentage of agents empowered by media literacy intervention.
                                 If 0.0: nobody is empowered by it, i.e., no media literacy intervention.
                                 If 1.0: everybody is empowered by it.
-        :param media_literacy_intervention_durations:   dict, {str: int}
+        @param media_literacy_intervention_durations:   dict, {str: int}
                     - how long the initial media literacy intervention takes for a user,
                     - how long a person with HIGH media literacy takes to judge the truthfulness of a post
                     - how long a person with LOW media literacy takes to judge the truthfulness of a post
-        :param ranking_visibility_adjustment: float, range [-0.0, -1.0],
-                                            the relative visibility change for posts with GroundTruth.FALSE
-        :param p_true_threshold_deleting:   float, range [0.0, 1.0],
+        @param ranking_visibility_adjustment: float, range [-0.0, -1.0],
+                                            the relative visibility change for posts with GroundTruth. FALSE
+        @param p_true_threshold_deleting:   float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be deleted.
                                             Thus, if threshold is negative, no posts will be deleted.
-        :param p_true_threshold_ranking:    float, range [0.0, 1.0],
+        @param p_true_threshold_ranking:    float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be down-ranked.
                                             Thus, if threshold is negative, no posts will be down-ranked.
-        :param p_true_threshold_strikes:    float, range [0.0, 1.0],
+        @param p_true_threshold_strikes:    float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will cause strikes.
                                             Thus, if threshold is negative, no posts will cause strikes.
 
         ––– Belief updating behavior –––
-        :param belief_update_fn:            BeliefUpdate (enum)
-        :param sampling_p_update:           float, probability that the agent will update
-        :param deffuant_mu:                 float, updating parameter, indicates how strongly the belief is updated
+        @param belief_update_fn:            BeliefUpdate (enum)
+        @param sampling_p_update:           float, probability that the agent will update
+        @param deffuant_mu:                 float, updating parameter, indicates how strongly the belief is updated
                                             towards the post's belief. If mu=0.1, the update is 10% towards the
                                             post's belief.
 
         ––– Plots –––
-        :param show_n_seen_posts:           boolean
-        :param show_n_connections:          boolean
+        @param show_n_seen_posts:           boolean
+        @param show_n_connections:          boolean
         """
         super().__init__()
 
@@ -203,10 +203,10 @@ class MisinfoPy(Model):
     def run(self, steps=60, time_tracking=False, debug=False):
         """
         Runs the model for the specified number of steps.
-        :param steps: int: number of model-steps the model should take
-        :param time_tracking: Boolean, whether to print timing information
-        :param debug: Boolean, whether to print details
-        :return: tuple: metrics values for this run (n_above_belief_threshold, variance, kl_divergence, ...)
+        @param steps: int: number of model-steps the model should take
+        @param time_tracking: Boolean, whether to print timing information
+        @param debug: Boolean, whether to print details
+        @return: tuple: metrics values for this run (n_above_belief_threshold, variance, kl_divergence, ...)
         """
 
         start_time = time.time()
@@ -234,12 +234,9 @@ class MisinfoPy(Model):
         free_speech_constraint = self.get_free_speech_constraint()
         avg_user_effort = self.get_avg_user_effort()
 
-        return n_agents_above_belief_threshold, \
-               polarization_variance, \
-               polarization_kl_divergence_from_polarized, \
-               engagement, \
-               free_speech_constraint, \
-               avg_user_effort
+        return \
+            n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized, \
+            engagement, free_speech_constraint, avg_user_effort
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -247,7 +244,7 @@ class MisinfoPy(Model):
 
     def init_agents(self, agent_ratio):
         """Initializes the agents.
-        :param agent_ratio: dictionary, {String: float}
+        @param agent_ratio: dictionary, {String: float}
         """
 
         # Saving scenario
@@ -313,7 +310,7 @@ class MisinfoPy(Model):
     def apply_media_literacy_intervention(self, media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM)):
         """
         Applies the media literacy intervention (if needed).
-        :param media_literacy_intervention: float, [0,1),
+        @param media_literacy_intervention: float, [0,1),
                     Percentage of agents empowered by media literacy intervention.
                     If 0.0: nobody is empowered by it, i.e., no media literacy intervention.
                     If 1.0: everybody is empowered by it.
@@ -333,11 +330,10 @@ class MisinfoPy(Model):
     def select_agents_for_media_literacy_intervention(self, n_select=0, select_by=SelectAgentsBy.RANDOM):
         """
         Select agents for the intervention.
-        :param n_select:    int, how many agents should be selected for the intervention
-        :param select_by:   SelectBy(Enum), selection method, e.g. SelectBy.RANDOM
-        :return:            list of agents, [(Base)Agent, (Base)Agent, ...]
+        @param n_select:    int, how many agents should be selected for the intervention
+        @param select_by:   SelectBy(Enum), selection method, e.g. SelectBy.RANDOM
+        @return:            list of agents, [(Base)Agent, (Base)Agent, ...]
         """
-        selected_agents = []
         if select_by.__eq__(SelectAgentsBy.RANDOM):
             selected_agents = random.choices(self.schedule.agents, k=n_select)
         else:
@@ -351,7 +347,7 @@ class MisinfoPy(Model):
     def get_beliefs(self):
         """
         Returns a list of tweet_beliefs that includes all agents' belief on Topic.VAX.
-        :return: list
+        @return: list
         """
         return [agent.beliefs[Topic.VAX] for agent in self.schedule.agents]
 
@@ -365,7 +361,7 @@ class MisinfoPy(Model):
         It is aggregated over the whold population, i.e., total "deleted" posts divided by the
         total number of how many posts the agents wanted to post.
         "deleted" includes downranked posts – If a post was downranked by 20%, it counts as 0.2 posts deleted.
-        :return: float, range [0.0, 1.0]
+        @return: float, range [0.0, 1.0]
         """
 
         total_posts = sum([a.preferred_n_posts for a in self.schedule.agents])
@@ -385,14 +381,14 @@ class MisinfoPy(Model):
             - partaking in the media literacy intervention, i.e., the initial investment (once)
         The effort is measured in minutes. The average effort per user is returned.
 
-        :return: float, cannot be lower than zero
+        @return: float, cannot be lower than zero
         """
         effort_per_agent = []
         for agent in self.schedule.agents:
             initial_investment = int(agent.received_media_literacy_intervention) * \
                                  self.media_literacy_intervention_durations["initial investment"]
-            judging_all_posts = agent.n_total_seen_posts * \
-                                self.media_literacy_intervention_durations[str(agent.media_literacy)]
+            judging_all_posts = \
+                agent.n_total_seen_posts * self.media_literacy_intervention_durations[str(agent.media_literacy)]
             effort = initial_investment + judging_all_posts
             effort_per_agent.append(effort)
 
@@ -405,7 +401,7 @@ class MisinfoPy(Model):
         """
         For additonal calibration of agent vocality.
         Returns a list of how many posts each agent has been posting over the whole run.
-        :return: list of floats
+        @return: list of floats
         """
         post_totals = [len(a.visible_posts) for a in self.schedule.agents]
         n_days = self.schedule.time
@@ -422,7 +418,7 @@ class MisinfoPy(Model):
         'median number of posts within the agents that posted the most posts (top-10%)' and
         'median number of posts within the agents that did not post the most posts (bottom-90%)'.
 
-        :return: 2-tuple of floats, both in domain [0.0, math.inf)
+        @return: 2-tuple of floats, both in domain [0.0, math.inf)
         """
         # Gather data & make sure the list is in ascending order
         posts_per_month = self.get_posts_per_month()
@@ -446,9 +442,9 @@ class MisinfoPy(Model):
     def get_avg_belief(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Return average belief of all agents on a given topic. For the DataCollector.
-        :param topic:   Topic
-        :param dummy:   None: just to avoid error (.ipynb files)
-        :return:        float
+        @param topic:   Topic
+        @param dummy:   None: just to avoid error (.ipynb files)
+        @return:        float
         """
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
@@ -459,7 +455,7 @@ class MisinfoPy(Model):
     def get_total_seen_posts(self):
         """
         Returns the total number of seen posts, summed over all agents.
-        :return: total: int
+        @return: total: int
         """
 
         per_agent = [sum(x.n_seen_posts) for x in self.schedule.agents]
@@ -471,10 +467,10 @@ class MisinfoPy(Model):
         """
         Return tuple of how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return:            tuple
+        @param topic:       Topic
+        @param threshold:   float
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return:            tuple
         """
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
@@ -487,10 +483,10 @@ class MisinfoPy(Model):
         """
         Returns how many agents' belief on a given topic is above and below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: n_above:   int
+        @param topic:       Topic
+        @param threshold:   float
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: n_above:   int
         """
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
@@ -502,10 +498,10 @@ class MisinfoPy(Model):
         """
         Returns how many agents' belief on a given topic are below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: n_below    int
+        @param topic:       Topic
+        @param threshold:   float
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: n_below    int
         """
 
         agent_beliefs = [a.beliefs[topic] for a in self.schedule.agents]
@@ -517,10 +513,10 @@ class MisinfoPy(Model):
         """
         Returns the average belief of agents that are above the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: avg:       float
+        @param topic:       Topic
+        @param threshold:   float
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: avg:       float
         """
 
         beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
@@ -534,10 +530,10 @@ class MisinfoPy(Model):
         """
         Returns the average belief of agents that are below the provided threshold.
          For the DataCollector.
-        :param topic:       Topic
-        :param threshold:   float
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: avg:       float
+        @param topic:       Topic
+        @param threshold:   float
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: avg:       float
         """
 
         beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
@@ -552,9 +548,9 @@ class MisinfoPy(Model):
     def get_indiv_beliefs(self, topic=Topic.VAX, agent_ids_list=None) -> dict:
         """
         Returns a dictionary of the current get_beliefs of the agents with the unique_ids listed in agent_ids_list.
-        :param topic:       Topic
-        :param agent_ids_list: list of agent.unique_id's
-        :return: dict, {unique_id: vax_belief}
+        @param topic:       Topic
+        @param agent_ids_list: list of agent.unique_id's
+        @return: dict, {unique_id: vax_belief}
         """
         if agent_ids_list is None:
             agent_ids_list = [a.unique_id for a in self.schedule.agents]
@@ -570,9 +566,9 @@ class MisinfoPy(Model):
         """
         Returns the belief of agent 0 at current tick.
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0][0]
         belief = agent_i.beliefs[topic]
@@ -582,9 +578,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 10% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.1][0]
         belief = agent_i.beliefs[topic]
@@ -594,9 +590,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 20% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.2][0]
         belief = agent_i.beliefs[topic]
@@ -606,9 +602,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 30% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.3][0]
         belief = agent_i.beliefs[topic]
@@ -618,9 +614,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 40% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.4][0]
         belief = agent_i.beliefs[topic]
@@ -630,9 +626,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 50% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.5][0]
         belief = agent_i.beliefs[topic]
@@ -641,9 +637,9 @@ class MisinfoPy(Model):
     def get_belief_a60(self, topic=Topic.VAX, dummy=None) -> float:
         """
         Returns the belief a specific agent at current tick. (The agent at 60% of unique_ids.)
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.6][0]
         belief = agent_i.beliefs[topic]
@@ -653,9 +649,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 70% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.7][0]
         belief = agent_i.beliefs[topic]
@@ -665,9 +661,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 80% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.8][0]
         belief = agent_i.beliefs[topic]
@@ -677,9 +673,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 90% of unique_ids.)
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents * 0.9][0]
         belief = agent_i.beliefs[topic]
@@ -689,9 +685,9 @@ class MisinfoPy(Model):
         """
         Returns the belief a specific agent at current tick. (The agent at 100% of unique_ids (i.e., last agent))
         For data_collector2.
-        :param topic:       Topic
-        :param dummy:       None: just to avoid error  (.ipynb files)
-        :return: belief:    float
+        @param topic:       Topic
+        @param dummy:       None: just to avoid error  (.ipynb files)
+        @return: belief:    float
         """
         agent_i = [a for a in self.schedule.agents if a.unique_id == self.n_agents - 1][0]
         belief = agent_i.beliefs[topic]
@@ -701,7 +697,7 @@ class MisinfoPy(Model):
 # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 def discretize(belief_list, n_bins=25):
     """
-    Transform a list of (belief values) into a discretized distribution
+    Transform a list of (belief) values into a discretized distribution
     :param belief_list: list: list of belief values (floats)
     :param n_bins: int: number of bins
     :return: list: list of integers, representing number of agents in that "belief-bin"
@@ -741,7 +737,7 @@ def create_polarized_pdf(epsilon=0.001, n_bins=25):
 def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_digits=2):
     """
     Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
-    the current belief belief_list of the agents (or a the provided belief_list).
+    the current belief belief_list of the agents (or the provided belief_list).
     If both, belief_list and model, are not specified, no KL divergence can be calculated and the function returns: None
     :param belief_list: list: listing the belief n_seen_posts_repl of each agent
     :param model: MisinfoPy model
@@ -764,8 +760,8 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
         template_pdf = create_polarized_pdf(epsilon=0.001, n_bins=n_bins)
 
     # Actual KL-divergence calculation (which is the same as the sum over the relative entropy)
-    direction1 = sum(rel_entr(discrete_distribution, template_pdf))
-    direction2 = sum(rel_entr(template_pdf, discrete_distribution))
+    direction1 = sum(rel_entr(relative_distribution, template_pdf))
+    direction2 = sum(rel_entr(template_pdf, relative_distribution))
     symmetric_kl_div = (direction1 + direction2) / 2
 
     rounded_kl_div = round(symmetric_kl_div, n_digits)
@@ -776,10 +772,11 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
 def variance(belief_list=None, model=None, n_digits=2):
     """
     Calculates the variance of
-    the current belief belief_list of the agents (or a the provided belief_list).
+    the current belief belief_list of the agents (or the provided belief_list).
     :param belief_list: list: listing the belief n_seen_posts_repl of each agent
     :param model: MisinfoPy model
-    :param n_digits: int: to how many digits the n_seen_posts_repl should be rounded, for non-rounded use high number (e.g., 20)
+    :param n_digits: int: to how many digits the n_seen_posts_repl should be rounded, for non-rounded use high number
+                            (e.g., 20)
     :return: float: variance
     """
     belief_list = get_belief_list(belief_list, model)
@@ -812,13 +809,13 @@ def get_belief_list(belief_list=None, model=None):
 
 def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
     """
-    Generates a random graph a la Barabasi Albert.
-    :param n_nodes:     int, number of nodes
-    :param m:           int, avg number of edges added per node
-    :param seed:        int, random seed
-    :param directed:    bool, undirected or directed graph
+    Generates a random graph à la Barabasi Albert.
+    @param n_nodes:     int, number of nodes
+    @param m:           int, avg number of edges added per node
+    @param seed:        int, random seed
+    @param directed:    bool, undirected or directed graph
 
-    :return:            nx.Graph, the resulting stochastic graph (barabasi albert G)
+    @return:            nx.Graph, the resulting stochastic graph (barabasi albert G)
 
     # Note:     Using Barabasi Albert graphs, because they are fitting for social networks.
     #           ( https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model )

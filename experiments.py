@@ -1,9 +1,9 @@
 import itertools
 import os
 import pandas as pd
-from misinfo_model import MisinfoPy
 from agents import *
 import time
+from misinfo_model import MisinfoPy
 
 
 def calculate_avg_belief(misinfo_model):

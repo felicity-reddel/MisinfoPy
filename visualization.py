@@ -97,7 +97,7 @@ def show_visualization(model,
                                # "tooltip": f"{round(agent.unique_id)}"
                                "tooltip": f"{sum(agent.n_seen_posts)}"
                                }
-                              for (id, agent) in G.nodes.data("agent")]
+                              for (i, agent) in G.nodes.data("agent")]
 
         portrayal['edges'] = [{'source': source,
                                'target': target,
@@ -141,7 +141,9 @@ def show_visualization(model,
                             'p_true_threshold_ranking': p_true_threshold_ranking,
                             'p_true_threshold_strikes': p_true_threshold_strikes,
                             'ranking_visibility_adjustment': ranking_visibility_adjustment,
-                            'belief_update_fn': belief_update_fn})  # model parameters
+                            'belief_update_fn': belief_update_fn,
+                            'sampling_p_update': sampling_p_update,
+                            'deffuant_mu': deffuant_mu})  # model parameters
 
     server.port = 8521  # The default
     server.launch()

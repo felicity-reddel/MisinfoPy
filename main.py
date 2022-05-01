@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     else:
 
-        max_run_length = 30
+        max_run_length = 10
 
         model = MisinfoPy(n_agents=n_agents,
                           n_edges=n_edges,

@@ -1,11 +1,12 @@
-import math
-import random
-
-from mesa import Agent
 from posts import *
 from enums import *
 from utils import *
 import numpy as np
+
+import math
+import random
+
+from mesa import Agent
 
 
 class BaseAgent(Agent):
@@ -50,7 +51,6 @@ class BaseAgent(Agent):
         # TODO: Decide which version to take (this or original one (below, commented out))
         mean = self.vocality['mean']
         max_mean_increase = self.model.adjustment_based_on_belief
-        current_belief = self.beliefs[Topic.VAX]
         extremeness = calculate_extremeness(self.beliefs)
 
         mean += extremeness * max_mean_increase
@@ -246,7 +246,7 @@ class BaseAgent(Agent):
         :return: Post
         """
         # Get post_id & post's tweet_beliefs
-        id = self.model.post_id_counter
+        post_id = self.model.post_id_counter
         # Increase post_id_counter
         self.model.post_id_counter += 1
 
@@ -256,7 +256,10 @@ class BaseAgent(Agent):
             tweet_beliefs = Post.sample_beliefs()
 
         # Create post
-        post = Post(id, source=self, tweet_beliefs=tweet_beliefs, p_true_threshold_ranking=p_true_threshold_ranking)
+        post = Post(post_id,
+                    source=self,
+                    tweet_beliefs=tweet_beliefs,
+                    p_true_threshold_ranking=p_true_threshold_ranking)
 
         return post
 
@@ -417,8 +420,6 @@ class NormalUser(BaseAgent):
         Updates the agent's belief with the DEFFUANT belief update function. (Currently only wrt Topic.VAX)
         Examples: Du et al. (2021), Rajabi et al. (2020), Mason et al. (2020)
         :param post:    Post
-        :param mu:      float, updating parameter, indicates how strongly the belief is updated towards the
-                        post's belief. If mu=0.1, the update is 10% towards the post's belief.
         """
         old = self.beliefs[Topic.VAX]
         tweet_belief = post.tweet_beliefs[Topic.VAX]
@@ -475,7 +476,7 @@ class NormalUser(BaseAgent):
             else:
                 p_judged_as_truthful = 0.2
         else:
-            p_judged_as_truthful = 1.0  # Default n_seen_posts_repl for people with Medialiteracy.LOW. They will always update
+            p_judged_as_truthful = 1.0  # People with Medialiteracy.LOW will always update
 
         # Sample whether post is judged as truthful
         if random.random() < p_judged_as_truthful:
@@ -497,7 +498,7 @@ class Disinformer(BaseAgent):
 
     def init_beliefs(self):
         """
-        Initialize for each topic a random extreme belief. Currently always at the lower end of [0,100].
+        Initialize for each topic a random extreme belief. Currently, always at the lower end of [0,100].
         """
         for topic in Topic:
             self.beliefs[topic] = self.random.randint(0, 10)
@@ -519,8 +520,8 @@ class Disinformer(BaseAgent):
 
 def rescale(old_value, new_domain=(-100, 100)):
     """
-    Rescales a n_seen_posts_repl from one range to another.
-    By default from range [-100ˆ3,100ˆ3] to [-100,100].
+    Rescales a value from one range to another.
+    By default, from range [-100ˆ3,100ˆ3] to [-100,100].
 
     :param old_value:   float
     :param new_domain:   tuple, (min_new_range, max_new_range)

@@ -63,7 +63,8 @@ class GroundTruth(Enum):
 class MediaLiteracy(Enum):
     """
     Media Literacy Levels.
-    The n_seen_posts_repl represents the duration of a user for judging the truthfulness of a post (on average, time in seconds).
+    The n_seen_posts_repl represents the duration of a user for judging the truthfulness of a post
+    (on average, time in seconds).
     """
     LOW = 3
     HIGH = 30
@@ -80,7 +81,7 @@ class MediaLiteracy(Enum):
 
 class SelectAgentsBy(Enum):
     """
-    Possibilities to select agents. E.g., for who will by empowered by the Media Literacy Intervention.
+    Possibilities to select agents. E.g., for who will be empowered by the Media Literacy Intervention.
     Easily extendable to e.g., pick agents based on an agent-characteristic (e.g., age, if age is an agent attribute).
     """
     RANDOM = 0
