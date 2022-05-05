@@ -31,10 +31,10 @@ class MisinfoPy(Model):
             # ––– Levers –––
             medlit_select=(0.0, SelectAgentsBy.RANDOM),
             media_literacy_intervention_durations=None,
-            ranking_visibility_adjustment=-0.0,
-            p_true_threshold_deleting=-0.1,
-            p_true_threshold_ranking=-0.1,
-            p_true_threshold_strikes=-0.1,
+            rank_punish=-0.0,
+            del_t=0.0,
+            p_true_threshold_ranking=0.0,
+            p_true_threshold_strikes=0.0,
 
             # ––– Belief updating behavior –––
             belief_update_fn=BeliefUpdate.SIT,
@@ -68,9 +68,9 @@ class MisinfoPy(Model):
                     - how long the initial media literacy intervention takes for a user,
                     - how long a person with HIGH media literacy takes to judge the truthfulness of a post
                     - how long a person with LOW media literacy takes to judge the truthfulness of a post
-        @param ranking_visibility_adjustment: float, range [-0.0, -1.0],
+        @param rank_punish: float, range [-0.0, -1.0],
                                             the relative visibility change for posts with GroundTruth. FALSE
-        @param p_true_threshold_deleting:   float, range [0.0, 1.0],
+        @param del_t:   float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be deleted.
                                             Thus, if threshold is negative, no posts will be deleted.
         @param p_true_threshold_ranking:    float, range [0.0, 1.0],
@@ -118,13 +118,13 @@ class MisinfoPy(Model):
         self.deffuant_mu = deffuant_mu
 
         self.apply_media_literacy_intervention(medlit_select)
-        if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
-            raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
+        if not (-1.0 <= rank_punish <= -0.0):
+            raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
                              f"while it should be in range [-0.0, -1.0]")
-        self.p_true_threshold_deleting = p_true_threshold_deleting
+        self.del_t = del_t
         self.n_posts_deleted = 0
         self.p_true_threshold_ranking = p_true_threshold_ranking
-        self.ranking_visibility_adjustment = ranking_visibility_adjustment
+        self.rank_punish = rank_punish
         self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts
         self.belief_metric_threshold = belief_metric_threshold
@@ -353,7 +353,7 @@ class MisinfoPy(Model):
         n_prevented = total_posts - n_posted
         n_downranked = sum([a.n_downranked for a in self.schedule.agents])
 
-        constraint = n_prevented + (n_downranked * abs(self.ranking_visibility_adjustment))
+        constraint = n_prevented + (n_downranked * abs(self.rank_punish))
         rel_constraint = constraint / total_posts
 
         return rel_constraint

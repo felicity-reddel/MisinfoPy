@@ -93,7 +93,7 @@ class Post:
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
         if (self.tweet_beliefs[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
-            visibility *= (1 + self.source.model.ranking_visibility_adjustment)
+            visibility *= (1 + self.source.model.rank_punish)
             self.source.n_downranked += 1
 
         return visibility

@@ -54,10 +54,10 @@ def show_visualization(model,
                        n_edges=3,
                        ratio_normal_user=0.99,
                        medlit_select=0.0,
-                       p_true_threshold_deleting=-0.1,
+                       del_t=-0.1,
                        p_true_threshold_ranking=-0.1,
                        p_true_threshold_strikes=-0.1,
-                       ranking_visibility_adjustment=-0.0,
+                       rank_punish=-0.0,
                        belief_update_fn=BeliefUpdate.SIT,
                        sampling_p_update=0.02,
                        deffuant_mu=0.02
@@ -70,10 +70,10 @@ def show_visualization(model,
     :param n_edges:     int
     :param ratio_normal_user: float, in range [0.0, 1.0]
     :param medlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
-    :param p_true_threshold_deleting: float, in range [0.0, 1.0]
+    :param del_t: float, in range [0.0, 1.0]
     :param p_true_threshold_ranking: float, in range [0.0, 1.0]
     :param p_true_threshold_strikes: float, in range [0.0, 1.0]
-    :param ranking_visibility_adjustment: float, -0.0 if no adjustment, in range [-0.0, -1.0]
+    :param rank_punish: float, -0.0 if no adjustment, in range [-0.0, -1.0]
     :param belief_update_fn:  BeliefUpdate
     :param sampling_p_update: float, probability that agent updates belief based on a seen post
     :param deffuant_mu: float, "step size" (in percent) with which the agent moves its belief towards the post's belief
@@ -134,10 +134,10 @@ def show_visualization(model,
                             'n_edges': n_edges,
                             'ratio_normal_user': ratio_normal_user,
                             'medlit_select': medlit_select,
-                            'p_true_threshold_deleting': p_true_threshold_deleting,
+                            'del_t': del_t,
                             'p_true_threshold_ranking': p_true_threshold_ranking,
                             'p_true_threshold_strikes': p_true_threshold_strikes,
-                            'ranking_visibility_adjustment': ranking_visibility_adjustment,
+                            'rank_punish': rank_punish,
                             'belief_update_fn': belief_update_fn,
                             'sampling_p_update': sampling_p_update,
                             'deffuant_mu': deffuant_mu})  # model parameters

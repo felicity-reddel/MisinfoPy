@@ -16,15 +16,15 @@ if __name__ == '__main__':
     # Experiment-Conditions are a combination of: Policies + BeliefUpdateFn
     # (Policies themselves = combinations of intervention values)
     medlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
-    ranking_visibility_adjustment_values = [-0.0]  # by default no ranking adjustment
-    p_true_threshold_deleting_values = [0.0]  # by default no deleting
+    rank_punish_values = [-0.0]  # by default no ranking adjustment
+    del_t_values = [0.0]  # by default no deleting
     p_true_threshold_ranking_values = [0.0]  # by default no ranking
     p_true_threshold_strikes_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(medlit_select_values,
-                                      ranking_visibility_adjustment_values,
-                                      p_true_threshold_deleting_values,
+                                      rank_punish_values,
+                                      del_t_values,
                                       p_true_threshold_ranking_values,
                                       p_true_threshold_strikes_values))
 
@@ -48,8 +48,8 @@ if __name__ == '__main__':
             for j, policy in enumerate(policies):
                 # Unpack policy (over multiple lines -> into a list)
                 [media_literacy_intervention,
-                 ranking_visibility_adjustment,
-                 p_true_threshold_deleting,
+                 rank_punish,
+                 del_t,
                  p_true_threshold_ranking,
                  p_true_threshold_strikes] = policy
 
@@ -74,8 +74,8 @@ if __name__ == '__main__':
                         # ––– Levers –––
                         medlit_select=media_literacy_intervention,
                         media_literacy_intervention_durations=None,
-                        ranking_visibility_adjustment=ranking_visibility_adjustment,
-                        p_true_threshold_deleting=p_true_threshold_deleting,
+                        rank_punish=rank_punish,
+                        del_t=del_t,
                         p_true_threshold_ranking=p_true_threshold_ranking,
                         p_true_threshold_strikes=p_true_threshold_strikes,
 

@@ -6,13 +6,13 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = False
+    visualize = True
     n_agents = 100  # 1000
     ratio = 0.99
     n_edges = 2  # 3
     medlit_select = 0.0
-    ranking_visibility_adjustment = -0.0
-    p_true_threshold_deleting = 0.1
+    rank_punish = -0.0
+    del_t = 0.1
     p_true_threshold_ranking = -0.1
     p_true_threshold_strikes = -0.1
     belief_update_fn = BeliefUpdate.DEFFUANT
@@ -27,8 +27,8 @@ if __name__ == '__main__':
                            n_edges=n_edges,
                            ratio_normal_user=ratio,
                            medlit_select=medlit_select,
-                           ranking_visibility_adjustment=ranking_visibility_adjustment,
-                           p_true_threshold_deleting=p_true_threshold_deleting,
+                           rank_punish=rank_punish,
+                           del_t=del_t,
                            p_true_threshold_ranking=p_true_threshold_ranking,
                            p_true_threshold_strikes=p_true_threshold_strikes,
                            belief_update_fn=belief_update_fn,
@@ -44,8 +44,8 @@ if __name__ == '__main__':
                           n_edges=n_edges,
                           ratio_normal_user=ratio,
                           medlit_select=medlit_select,
-                          ranking_visibility_adjustment=ranking_visibility_adjustment,
-                          p_true_threshold_deleting=p_true_threshold_deleting,
+                          rank_punish=rank_punish,
+                          del_t=del_t,
                           p_true_threshold_ranking=p_true_threshold_ranking,
                           p_true_threshold_strikes=p_true_threshold_strikes,
                           belief_update_fn=belief_update_fn,
