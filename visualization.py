@@ -55,7 +55,7 @@ def show_visualization(model,
                        ratio_normal_user=0.99,
                        medlit_select=0.0,
                        del_t=-0.1,
-                       p_true_threshold_ranking=-0.1,
+                       rank_t=-0.1,
                        p_true_threshold_strikes=-0.1,
                        rank_punish=-0.0,
                        belief_update_fn=BeliefUpdate.SIT,
@@ -71,7 +71,7 @@ def show_visualization(model,
     :param ratio_normal_user: float, in range [0.0, 1.0]
     :param medlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
     :param del_t: float, in range [0.0, 1.0]
-    :param p_true_threshold_ranking: float, in range [0.0, 1.0]
+    :param rank_t: float, in range [0.0, 1.0]
     :param p_true_threshold_strikes: float, in range [0.0, 1.0]
     :param rank_punish: float, -0.0 if no adjustment, in range [-0.0, -1.0]
     :param belief_update_fn:  BeliefUpdate
@@ -135,7 +135,7 @@ def show_visualization(model,
                             'ratio_normal_user': ratio_normal_user,
                             'medlit_select': medlit_select,
                             'del_t': del_t,
-                            'p_true_threshold_ranking': p_true_threshold_ranking,
+                            'rank_t': rank_t,
                             'p_true_threshold_strikes': p_true_threshold_strikes,
                             'rank_punish': rank_punish,
                             'belief_update_fn': belief_update_fn,

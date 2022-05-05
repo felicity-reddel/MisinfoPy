@@ -33,7 +33,7 @@ class MisinfoPy(Model):
             media_literacy_intervention_durations=None,
             rank_punish=-0.0,
             del_t=0.0,
-            p_true_threshold_ranking=0.0,
+            rank_t=0.0,
             p_true_threshold_strikes=0.0,
 
             # ––– Belief updating behavior –––
@@ -73,7 +73,7 @@ class MisinfoPy(Model):
         @param del_t:   float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be deleted.
                                             Thus, if threshold is negative, no posts will be deleted.
-        @param p_true_threshold_ranking:    float, range [0.0, 1.0],
+        @param rank_t:    float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be down-ranked.
                                             Thus, if threshold is negative, no posts will be down-ranked.
         @param p_true_threshold_strikes:    float, range [0.0, 1.0],
@@ -123,7 +123,7 @@ class MisinfoPy(Model):
                              f"while it should be in range [-0.0, -1.0]")
         self.del_t = del_t
         self.n_posts_deleted = 0
-        self.p_true_threshold_ranking = p_true_threshold_ranking
+        self.rank_t = rank_t
         self.rank_punish = rank_punish
         self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts

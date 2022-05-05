@@ -13,7 +13,7 @@ if __name__ == "__main__":
                                                              "MediaLiteracy.HIGH": 30},
                       rank_punish=-0.0,  # negative n_seen_posts_repl: no ranking adjustment
                       del_t=-0.1,  # negative n_seen_posts_repl: no deleting
-                      p_true_threshold_ranking=-0.2,  # negative n_seen_posts_repl: no ranking
+                      rank_t=-0.2,  # negative n_seen_posts_repl: no ranking
                       p_true_threshold_strikes=-0.01,  # negative n_seen_posts_repl: no strike system
                       belief_update_fn=BeliefUpdate.DEFFUANT,
                       show_n_seen_posts=False)

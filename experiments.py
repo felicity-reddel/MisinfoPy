@@ -18,14 +18,14 @@ if __name__ == '__main__':
     medlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
     rank_punish_values = [-0.0]  # by default no ranking adjustment
     del_t_values = [0.0]  # by default no deleting
-    p_true_threshold_ranking_values = [0.0]  # by default no ranking
+    rank_t_values = [0.0]  # by default no ranking
     p_true_threshold_strikes_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(medlit_select_values,
                                       rank_punish_values,
                                       del_t_values,
-                                      p_true_threshold_ranking_values,
+                                      rank_t_values,
                                       p_true_threshold_strikes_values))
 
     print("Policies:")
@@ -50,7 +50,7 @@ if __name__ == '__main__':
                 [media_literacy_intervention,
                  rank_punish,
                  del_t,
-                 p_true_threshold_ranking,
+                 rank_t,
                  p_true_threshold_strikes] = policy
 
                 # Set up data structure (col: policy, row: replication)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
                         media_literacy_intervention_durations=None,
                         rank_punish=rank_punish,
                         del_t=del_t,
-                        p_true_threshold_ranking=p_true_threshold_ranking,
+                        rank_t=rank_t,
                         p_true_threshold_strikes=p_true_threshold_strikes,
 
                         # ––– Belief updating behavior –––

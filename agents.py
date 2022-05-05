@@ -85,7 +85,7 @@ class BaseAgent(Agent):
 
             # Create posts
             for i in range(nr_of_posts):
-                post = self.create_post(p_true_threshold_ranking=self.model.p_true_threshold_ranking)
+                post = self.create_post(rank_t=self.model.rank_t)
 
                 # Deleting: Posts that have a very low probability of being true might be deleted
                 if (post.p_true <= self.model.del_t) and post.detected_as_misinfo:
@@ -240,7 +240,7 @@ class BaseAgent(Agent):
         """
         pass
 
-    def create_post(self, based_on_beliefs=True, p_true_threshold_ranking=0.1):
+    def create_post(self, based_on_beliefs=True, rank_t=0.1):
         """
         Creates a new post. Either random or based on own tweet_beliefs.
         :return: Post
@@ -259,7 +259,7 @@ class BaseAgent(Agent):
         post = Post(post_id,
                     source=self,
                     tweet_beliefs=tweet_beliefs,
-                    p_true_threshold_ranking=p_true_threshold_ranking)
+                    rank_t=rank_t)
 
         return post
 

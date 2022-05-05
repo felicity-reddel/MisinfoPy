@@ -5,12 +5,12 @@ from utils import *
 
 class Post:
 
-    def __init__(self, unique_id, source, tweet_beliefs=None, p_true_threshold_ranking=0.0):
+    def __init__(self, unique_id, source, tweet_beliefs=None, rank_t=0.0):
         """
         :param unique_id: int
         :param source: Agent (NormalUser or Disinformer)
         :param tweet_beliefs: dict, {Topic: int_belief}, tweet_beliefs to be represented in the post.
-        :param p_true_threshold_ranking: float, below which the ranking intervention decreases the post's visibility
+        :param rank_t: float, below which the ranking intervention decreases the post's visibility
         """
         self.unique_id = unique_id
         self.source = source
@@ -23,7 +23,7 @@ class Post:
         self.ground_truth = GroundTruth.get_groundtruth(tweet_belief=self.tweet_beliefs[Topic.VAX])
         self.p_true = self.factcheck_algorithm()
         self.detected_as_misinfo = self.detected_as_misinfo()
-        self.visibility = self.get_visibility(p_true_threshold_ranking)
+        self.visibility = self.get_visibility(rank_t)
 
     @staticmethod
     def sample_beliefs(max_n_topics=1, agent=None) -> dict:
@@ -79,20 +79,20 @@ class Post:
 
         return engagement
 
-    def get_visibility(self, p_true_threshold_ranking=0.1):
+    def get_visibility(self, rank_t=0.1):
         """
         The ranking intervention is applied. This method adjusts the visibility of the posts if the factcheck result
         is of sufficient certainty that the post is false (i.e., post has a sufficiently low p_true).
         This adjustment is dependent on the Post's GroundTruth:
             if TRUE     -> same visibility
             if FALSE    -> visibility reduced by 50%
-        :param p_true_threshold_ranking: float, range [0.0, 1.0]
+        :param rank_t: float, range [0.0, 1.0]
         :return:  float, [0,1)
         """
         visibility = self.estimate_visibility()
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
-        if (self.tweet_beliefs[Topic.VAX] <= p_true_threshold_ranking) and self.detected_as_misinfo:
+        if (self.tweet_beliefs[Topic.VAX] <= rank_t) and self.detected_as_misinfo:
             visibility *= (1 + self.source.model.rank_punish)
             self.source.n_downranked += 1
 

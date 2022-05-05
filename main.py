@@ -6,14 +6,14 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = True
+    visualize = False
     n_agents = 100  # 1000
     ratio = 0.99
     n_edges = 2  # 3
     medlit_select = 0.0
     rank_punish = -0.0
     del_t = 0.1
-    p_true_threshold_ranking = -0.1
+    rank_t = -0.1
     p_true_threshold_strikes = -0.1
     belief_update_fn = BeliefUpdate.DEFFUANT
     sampling_p_update = 0.02
@@ -29,7 +29,7 @@ if __name__ == '__main__':
                            medlit_select=medlit_select,
                            rank_punish=rank_punish,
                            del_t=del_t,
-                           p_true_threshold_ranking=p_true_threshold_ranking,
+                           rank_t=rank_t,
                            p_true_threshold_strikes=p_true_threshold_strikes,
                            belief_update_fn=belief_update_fn,
                            sampling_p_update=sampling_p_update,
@@ -46,7 +46,7 @@ if __name__ == '__main__':
                           medlit_select=medlit_select,
                           rank_punish=rank_punish,
                           del_t=del_t,
-                          p_true_threshold_ranking=p_true_threshold_ranking,
+                          rank_t=rank_t,
                           p_true_threshold_strikes=p_true_threshold_strikes,
                           belief_update_fn=belief_update_fn,
                           sampling_p_update=sampling_p_update,
