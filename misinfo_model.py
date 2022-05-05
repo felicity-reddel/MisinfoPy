@@ -20,7 +20,7 @@ class MisinfoPy(Model):
             # ––– Network –––
             n_agents=1000,
             n_edges=2,
-            agent_ratio=None,
+            ratio_normal_user=0.99,
 
             # ––– Posting behavior –––
             sigma=0.7,
@@ -52,8 +52,7 @@ class MisinfoPy(Model):
         ––– Network –––
         @param n_agents:                    int, how many agents the model should have
         @param n_edges:                     int, with how many edges gets attached to the already built network
-        @param agent_ratio:                 dictionary {String: float},
-                                            String is agent type, float is agent_ratio in range [0.0,1.0]
+        @param ratio_normal_user:           float, in range [0.0, 1.0]
 
         ––– Posting behavior –––
         @param sigma:                       float, std_dev to sample from a normal distribution how many posts an agent
@@ -98,12 +97,6 @@ class MisinfoPy(Model):
         """
         super().__init__()
 
-        if agent_ratio is None:
-            agent_ratio = {NormalUser.__name__: 0.9, Disinformer.__name__: 0.1}
-        # Making sure that the agent ratios add up to 1.0
-        if sum(agent_ratio.values()) != 1.0:
-            raise ValueError(f"The agent ratios add up to {sum(agent_ratio.values())}, "
-                             f"while they should add up to 1.0.")
         self.media_literacy_intervention_durations = media_literacy_intervention_durations
         if self.media_literacy_intervention_durations is None:
             self.media_literacy_intervention_durations = {"initial investment": 3600,
@@ -122,7 +115,7 @@ class MisinfoPy(Model):
         self.mean_disinformer = mean_disinformer
         self.adjustment_based_on_belief = adjustment_based_on_belief
 
-        self.init_agents(agent_ratio)
+        self.init_agents(ratio_normal_user)
         self.init_followers_and_following()
         self.belief_update_fn = belief_update_fn
         self.sampling_p_update = sampling_p_update
@@ -247,29 +240,23 @@ class MisinfoPy(Model):
     # Init functions
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
-    def init_agents(self, agent_ratio):
+    def init_agents(self, ratio_normal_user):
         """Initializes the agents.
-        @param agent_ratio: dictionary, {String: float}
+        @param ratio_normal_user: float, in range [0.0, 1.0]
         """
-
-        # Saving scenario
-        types = []
-        percentages = []
-        for agent_type, percentage in agent_ratio.items():
-            types.append(agent_type)
-            percentages.append(percentage)
+        types = [NormalUser, Disinformer]
+        percentages = [ratio_normal_user, 1 - ratio_normal_user]
 
         # Create agents & add them to the scheduler
         for i in range(self.n_agents):
-
             # Pick which type should be added
             agent_type = random.choices(population=types, weights=percentages, k=1)[0]
 
             # Add agent of that type
-            if agent_type is NormalUser.__name__:
+            if agent_type is NormalUser:
                 a = NormalUser(i, self)
                 self.schedule.add(a)
-            elif agent_type is Disinformer.__name__:
+            elif agent_type is Disinformer:
                 a = Disinformer(i, self)
                 self.schedule.add(a)
 

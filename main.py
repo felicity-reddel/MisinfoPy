@@ -8,7 +8,7 @@ if __name__ == '__main__':
     # Parameters
     visualize = True
     n_agents = 100  # 1000
-    agent_ratio = {NormalUser.__name__: 0.99, Disinformer.__name__: 0.01}
+    ratio = 0.99
     n_edges = 2  # 3
     media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
     ranking_visibility_adjustment = -0.0
@@ -25,7 +25,7 @@ if __name__ == '__main__':
         show_visualization(model=MisinfoPy,
                            n_agents=n_agents,
                            n_edges=n_edges,
-                           agent_ratio=agent_ratio,
+                           ratio_normal_user=ratio,
                            media_literacy_intervention=media_literacy_intervention,
                            ranking_visibility_adjustment=ranking_visibility_adjustment,
                            p_true_threshold_deleting=p_true_threshold_deleting,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
         model = MisinfoPy(n_agents=n_agents,
                           n_edges=n_edges,
-                          agent_ratio=agent_ratio,
+                          ratio_normal_user=ratio,
                           media_literacy_intervention=media_literacy_intervention,
                           ranking_visibility_adjustment=ranking_visibility_adjustment,
                           p_true_threshold_deleting=p_true_threshold_deleting,

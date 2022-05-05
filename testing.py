@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
     model = MisinfoPy(n_agents=100,
                       n_edges=3,
-                      agent_ratio={NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
+                      ratio_normal_user=0.99,
                       media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                       media_literacy_intervention_durations={"initial investment": 3600,
                                                              "MediaLiteracy.LOW": 3,

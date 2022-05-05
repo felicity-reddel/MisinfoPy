@@ -7,17 +7,11 @@ from misinfo_model import *
 
 if __name__ == '__main__':
 
-    n_agents = 50  # 1000
+    n_agents = 10  # 1000
     n_edges = 3
     max_run_length = 60
     n_replications = 9  # 12
-
-    # Scenarios are different agent_ratios
-    scenarios = [{NormalUser.__name__: 0.99, Disinformer.__name__: 0.01},
-                 # {NormalUser.__name__: 0.95, Disinformer.__name__: 0.05},
-                 # {NormalUser.__name__: 0.8, Disinformer.__name__: 0.2},
-                 # {NormalUser.__name__: 0.25, Disinformer.__name__: 0.75}
-                 ]
+    ratios_normal = [0.99]  # , 0.95, 0.25, 0.0]
 
     # Experiment-Conditions are a combination of: Policies + BeliefUpdateFn
     # (Policies themselves = combinations of intervention values)
@@ -50,7 +44,7 @@ if __name__ == '__main__':
 
     # Run Experiments
     for belief_update_fn in belief_update_fn_values:
-        for i, scenario in enumerate(scenarios):  # Each scenario is 1 ratio of agent types
+        for i, ratio in enumerate(ratios_normal):
             # Set up data structures
             data = pd.DataFrame({"Replication": list(range(0, n_replications))})
             engagement = {}
@@ -66,14 +60,14 @@ if __name__ == '__main__':
                 # Set up data structure (col: policy, row: replication)
                 df_column = []
 
-                replications_n_seen_posts = []
+                # replications_n_seen_posts = []
                 for replication in range(n_replications):
                     # Set up the model
                     model = MisinfoPy(
                         # ––– Network –––
                         n_agents=n_agents,
                         n_edges=n_edges,
-                        agent_ratio=scenario,
+                        ratio_normal_user=ratio,
 
                         # # ––– Posting behavior –––
                         # sigma=0.7,
@@ -119,11 +113,11 @@ if __name__ == '__main__':
 
                 # engagement[policy] = replications_n_seen_posts
 
-                # Save scenario data into a csv file
+                # Save data into a csv file
                 directory = os.getcwd()
                 path = directory + '/results/'
 
-                file_name = "belief_distr_" + belief_update_fn.name + str(scenario) + ".csv"
+                file_name = "belief_distr_" + belief_update_fn.name + str(ratio) + "%_normal_users.csv"
                 # noinspection PyTypeChecker
                 data.to_csv(path + file_name)
 

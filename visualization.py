@@ -52,7 +52,7 @@ def get_edge_width(weight=1, weight_borders=(0, 100)):
 def show_visualization(model,
                        n_agents=100,
                        n_edges=3,
-                       agent_ratio=None,
+                       ratio_normal_user=0.99,
                        media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
                        p_true_threshold_deleting=-0.1,
                        p_true_threshold_ranking=-0.1,
@@ -68,19 +68,16 @@ def show_visualization(model,
     :param model:       MisinfoPy
     :param n_agents:    int
     :param n_edges:     int
-    :param agent_ratio: dict {user_type: percentage}
+    :param ratio_normal_user: float, in range [0.0, 1.0]
     :param media_literacy_intervention:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
-    :param p_true_threshold_deleting: float, negative if no deleting, otherwise in range [0.0, 1.0]
-    :param p_true_threshold_ranking: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
-    :param p_true_threshold_strikes: float, negative if no ranking adjustment, otherwise in range [0.0, 1.0]
-    :param ranking_visibility_adjustment: float, -0.0 if no adjustment, otherwise in range [-0.0, -1.0]
+    :param p_true_threshold_deleting: float, in range [0.0, 1.0]
+    :param p_true_threshold_ranking: float, in range [0.0, 1.0]
+    :param p_true_threshold_strikes: float, in range [0.0, 1.0]
+    :param ranking_visibility_adjustment: float, -0.0 if no adjustment, in range [-0.0, -1.0]
     :param belief_update_fn:  BeliefUpdate
     :param sampling_p_update: float, probability that agent updates belief based on a seen post
     :param deffuant_mu: float, "step size" (in percent) with which the agent moves its belief towards the post's belief
     """
-
-    if agent_ratio is None:
-        agent_ratio = {NormalUser.__name__: 0.9, Disinformer.__name__: 0.1}
 
     def network_portrayal(G):
         """
@@ -135,7 +132,7 @@ def show_visualization(model,
                            'Misinfo Model',  # title
                            {'n_agents': n_agents,
                             'n_edges': n_edges,
-                            'agent_ratio': agent_ratio,
+                            'ratio_normal_user': ratio_normal_user,
                             'media_literacy_intervention': media_literacy_intervention,
                             'p_true_threshold_deleting': p_true_threshold_deleting,
                             'p_true_threshold_ranking': p_true_threshold_ranking,
