@@ -8,9 +8,9 @@ if __name__ == "__main__":
                       n_edges=3,
                       ratio_normal_user=0.99,
                       mlit_select=0.0,
-                      media_literacy_intervention_durations={"initial investment": 3600,
-                                                             "MediaLiteracy.LOW": 3,
-                                                             "MediaLiteracy.HIGH": 30},
+                      mlit_dur_init=3600,
+                      mlit_dur_low=3,
+                      mlit_dur_high=30,
                       rank_punish=-0.0,  # negative n_seen_posts_repl: no ranking adjustment
                       del_t=-0.1,  # negative n_seen_posts_repl: no deleting
                       rank_t=-0.2,  # negative n_seen_posts_repl: no ranking

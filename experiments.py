@@ -73,7 +73,6 @@ if __name__ == '__main__':
 
                         # ––– Levers –––
                         mlit_select=media_literacy_intervention,
-                        media_literacy_intervention_durations=None,
                         rank_punish=rank_punish,
                         del_t=del_t,
                         rank_t=rank_t,

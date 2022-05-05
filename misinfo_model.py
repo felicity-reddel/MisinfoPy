@@ -30,7 +30,9 @@ class MisinfoPy(Model):
 
             # ––– Levers –––
             mlit_select=(0.0, SelectAgentsBy.RANDOM),
-            media_literacy_intervention_durations=None,
+            mlit_dur_init=3600,
+            mlit_dur_low=3,
+            mlit_dur_high=30,
             rank_punish=-0.0,
             del_t=0.0,
             rank_t=0.0,
@@ -62,23 +64,14 @@ class MisinfoPy(Model):
         @param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
 
         ––– Levers –––
-        @param mlit_select: float, in domain [0,1]
-                    - meaning: Percentage of agents empowered by media literacy intervention.
-        @param media_literacy_intervention_durations:   dict, {str: int}
-                    - how long the initial media literacy intervention takes for a user,
-                    - how long a person with HIGH media literacy takes to judge the truthfulness of a post
-                    - how long a person with LOW media literacy takes to judge the truthfulness of a post
-        @param rank_punish: float, range [-0.0, -1.0],
-                                            the relative visibility change for posts with GroundTruth. FALSE
-        @param del_t:   float, range [0.0, 1.0],
-                                            if below threshold-probability that post is true, post will be deleted.
-                                            Thus, if threshold is negative, no posts will be deleted.
-        @param rank_t:    float, range [0.0, 1.0],
-                                            if below threshold-probability that post is true, post will be down-ranked.
-                                            Thus, if threshold is negative, no posts will be down-ranked.
-        @param strikes_t:    float, range [0.0, 1.0],
-                                            if below threshold-probability that post is true, post will cause strikes.
-                                            Thus, if threshold is negative, no posts will cause strikes.
+        @param mlit_select: float, in domain [0,1], Percentage of agents empowered by media literacy intervention.
+        @param mlit_dur_init: int, how long the initial media literacy intervention takes for a user
+        @param mlit_dur_low: int, how long a person with LOW media literacy takes to judge the truthfulness of a post
+        @param mlit_dur_high: int, how long a person with HIGH media literacy takes to judge the truthfulness of a post
+        @param rank_punish: float, range [-0.0, -1.0], relative visibility change for posts with GroundTruth.FALSE
+        @param del_t: float, range [0.0, 1.0], p_true_threshold for deleting (below -> may be deleted)
+        @param rank_t: float, range [0.0, 1.0], p_true_threshold for down-ranking (below -> may be down-ranked)
+        @param strikes_t: float, range [0.0, 1.0], p_true_threshold for strike system (below -> may result in strike)
 
         ––– Belief updating behavior –––
         @param belief_update_fn:            BeliefUpdate (enum)
@@ -92,12 +85,6 @@ class MisinfoPy(Model):
         @param show_n_connections:          boolean
         """
         super().__init__()
-
-        self.media_literacy_intervention_durations = media_literacy_intervention_durations
-        if self.media_literacy_intervention_durations is None:
-            self.media_literacy_intervention_durations = {"initial investment": 3600,
-                                                          "MediaLiteracy.LOW": 3,
-                                                          "MediaLiteracy.HIGH": 30}
 
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
@@ -117,6 +104,9 @@ class MisinfoPy(Model):
         self.sampling_p_update = sampling_p_update
         self.deffuant_mu = deffuant_mu
 
+        self.mlit_dur_init = mlit_dur_init
+        self.mlit_dur_low = mlit_dur_low
+        self.mlit_dur_high = mlit_dur_high
         self.apply_media_literacy_intervention(mlit_select)
         if not (-1.0 <= rank_punish <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
@@ -369,10 +359,13 @@ class MisinfoPy(Model):
         """
         effort_per_agent = []
         for agent in self.schedule.agents:
-            initial_investment = int(agent.received_media_literacy_intervention) * \
-                                 self.media_literacy_intervention_durations["initial investment"]
-            judging_all_posts = \
-                agent.n_total_seen_posts * self.media_literacy_intervention_durations[str(agent.media_literacy)]
+            initial_investment = int(agent.received_media_literacy_intervention) * self.mlit_dur_init
+            if agent.media_literacy == MediaLiteracy.HIGH:
+                judging_all_posts = agent.n_total_seen_posts * self.mlit_dur_high
+            elif agent.media_literacy == MediaLiteracy.LOW:
+                judging_all_posts = agent.n_total_seen_posts * self.mlit_dur_low
+            else:
+                raise ValueError("Only MediaLiteracy.HIGH and MediaLiteracy.LOW are currently implemented.")
             effort = initial_investment + judging_all_posts
             effort_per_agent.append(effort)
 
