@@ -9,7 +9,7 @@ class Post:
         """
         :param unique_id: int
         :param source: Agent (NormalUser or Disinformer)
-        :param tweet_beliefs: dict, {Topic: int_belief}, tweet_beliefs to be represented in the post. (TODO: yes?)
+        :param tweet_beliefs: dict, {Topic: int_belief}, tweet_beliefs to be represented in the post.
         :param p_true_threshold_ranking: float, below which the ranking intervention decreases the post's visibility
         """
         self.unique_id = unique_id

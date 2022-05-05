@@ -40,6 +40,7 @@ class MisinfoPy(Model):
             belief_update_fn=BeliefUpdate.SIT,
             sampling_p_update=0.02,
             deffuant_mu=0.02,
+            belief_metric_threshold=50.0,
 
             # ––– Plots –––
             show_n_seen_posts=False,
@@ -137,15 +138,21 @@ class MisinfoPy(Model):
         self.ranking_visibility_adjustment = ranking_visibility_adjustment
         self.p_true_threshold_strikes = p_true_threshold_strikes
         self.show_n_seen_posts = show_n_seen_posts
+        self.belief_metric_threshold = belief_metric_threshold
 
         self.data_collector = DataCollector(model_reporters={
-            "Avg Vax-Belief": self.get_avg_belief,
-            "Avg Vax-Belief above threshold": lambda m: m.get_avg_belief_above_threshold(threshold=50),
-            # TODO: think about whether to add a threshold param to the model (above)
-            "Avg Vax-Belief below threshold": self.get_avg_belief_below_threshold,
+            # Metrics
+            # TODO: Add percentage_above_threshold metric
             "Total seen posts": self.get_total_seen_posts,
             "Free speech constraint": self.get_free_speech_constraint,
-            "User effort": self.get_avg_user_effort})
+            "User effort": self.get_avg_user_effort,
+
+            # For additional plots in the browser
+            "Avg Vax-Belief": self.get_avg_belief,
+            "Avg Vax-Belief above threshold": lambda m: m.get_avg_belief_above_threshold(
+                threshold=belief_metric_threshold),
+            "Avg Vax-Belief below threshold": lambda m: m.get_avg_belief_below_threshold(
+                threshold=belief_metric_threshold)})
 
         n_depicted = 10
         ids = [*range(0, n_agents, math.floor(n_agents/n_depicted))]
@@ -198,7 +205,7 @@ class MisinfoPy(Model):
             plt.ylabel('Agent count')
             plt.show()
 
-    def run(self, steps=60, time_tracking=False, debug=False):
+    def __call__(self, steps=60, time_tracking=False, debug=False):
         """
         Runs the model for the specified number of steps.
         @param steps: int: number of model-steps the model should take
@@ -423,7 +430,7 @@ class MisinfoPy(Model):
         posts_per_month.sort()  # by default in ascending order
 
         # Find the cutoff index & split the list into two
-        cutoff = round(len(posts_per_month) * 0.9)  # TODO: Maybe floor(/ceil) instead?
+        cutoff = round(len(posts_per_month) * 0.9)
         top_10 = posts_per_month[cutoff:]
         bottom_90 = posts_per_month[:cutoff]
 

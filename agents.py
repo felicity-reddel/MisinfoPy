@@ -46,7 +46,6 @@ class BaseAgent(Agent):
             nr_of_posts: int
         """
 
-        # TODO: Decide which version to take (this or original one (below, commented out))
         mean = self.vocality['mean']
         max_mean_increase = self.model.adjustment_based_on_belief
         extremeness = calculate_extremeness(self.beliefs)
@@ -54,6 +53,9 @@ class BaseAgent(Agent):
         mean += extremeness * max_mean_increase
         std_dev = self.vocality['std_dev']
 
+        # mean = self.vocality['mean']
+        # std_dev = self.vocality['std_dev']
+        # current_belief = self.beliefs[Topic.VAX]
         # if current_belief < 15 or current_belief > 85:
         #     # factor = current_belief / 10
         #     mean += 2
@@ -106,12 +108,12 @@ class BaseAgent(Agent):
                             break
                         case 4:
                             self.blocked_until = self.model.schedule.time + 7
-                            print(f"7 tick-block, –––––––––––––––––––– "
-                                  f"{post.p_true} <= {self.model.p_true_threshold_strikes}")
+                            # print(f"7 tick-block, –––––––––––––––––––– "
+                            #       f"{post.p_true} <= {self.model.p_true_threshold_strikes}")
                             break
                         case self.n_strikes if self.n_strikes >= 5:
                             self.blocked_until = math.inf
-                            print(f"INFINITY-block – since tick {self.model.schedule.time}")
+                            # print(f"INFINITY-block – since tick {self.model.schedule.time}")
                             break
 
             # Share successful posts to followers
