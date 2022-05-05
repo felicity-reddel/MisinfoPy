@@ -95,7 +95,7 @@ class BaseAgent(Agent):
                     posts.append(post)
 
                 # Strike system: Posts that have a very low probability of being true might yield a strike
-                if (post.p_true <= self.model.p_true_threshold_strikes) and post.detected_as_misinfo:
+                if (post.p_true <= self.model.strikes_t) and post.detected_as_misinfo:
                     # Strike
                     self.n_strikes += 1
                     # Apply strike consequences
@@ -109,7 +109,7 @@ class BaseAgent(Agent):
                         case 4:
                             self.blocked_until = self.model.schedule.time + 7
                             # print(f"7 tick-block, –––––––––––––––––––– "
-                            #       f"{post.p_true} <= {self.model.p_true_threshold_strikes}")
+                            #       f"{post.p_true} <= {self.model.strikes_t}")
                             break
                         case self.n_strikes if self.n_strikes >= 5:
                             self.blocked_until = math.inf

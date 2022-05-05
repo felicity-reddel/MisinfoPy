@@ -34,7 +34,7 @@ class MisinfoPy(Model):
             rank_punish=-0.0,
             del_t=0.0,
             rank_t=0.0,
-            p_true_threshold_strikes=0.0,
+            strikes_t=0.0,
 
             # ––– Belief updating behavior –––
             belief_update_fn=BeliefUpdate.SIT,
@@ -76,7 +76,7 @@ class MisinfoPy(Model):
         @param rank_t:    float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will be down-ranked.
                                             Thus, if threshold is negative, no posts will be down-ranked.
-        @param p_true_threshold_strikes:    float, range [0.0, 1.0],
+        @param strikes_t:    float, range [0.0, 1.0],
                                             if below threshold-probability that post is true, post will cause strikes.
                                             Thus, if threshold is negative, no posts will cause strikes.
 
@@ -125,7 +125,7 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.rank_t = rank_t
         self.rank_punish = rank_punish
-        self.p_true_threshold_strikes = p_true_threshold_strikes
+        self.strikes_t = strikes_t
         self.show_n_seen_posts = show_n_seen_posts
         self.belief_metric_threshold = belief_metric_threshold
 

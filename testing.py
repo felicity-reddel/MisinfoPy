@@ -14,7 +14,7 @@ if __name__ == "__main__":
                       rank_punish=-0.0,  # negative n_seen_posts_repl: no ranking adjustment
                       del_t=-0.1,  # negative n_seen_posts_repl: no deleting
                       rank_t=-0.2,  # negative n_seen_posts_repl: no ranking
-                      p_true_threshold_strikes=-0.01,  # negative n_seen_posts_repl: no strike system
+                      strikes_t=-0.01,  # negative n_seen_posts_repl: no strike system
                       belief_update_fn=BeliefUpdate.DEFFUANT,
                       show_n_seen_posts=False)
 

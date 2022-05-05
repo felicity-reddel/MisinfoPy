@@ -19,14 +19,14 @@ if __name__ == '__main__':
     rank_punish_values = [-0.0]  # by default no ranking adjustment
     del_t_values = [0.0]  # by default no deleting
     rank_t_values = [0.0]  # by default no ranking
-    p_true_threshold_strikes_values = [0.0]  # by default no strike system
+    strikes_t_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(medlit_select_values,
                                       rank_punish_values,
                                       del_t_values,
                                       rank_t_values,
-                                      p_true_threshold_strikes_values))
+                                      strikes_t_values))
 
     print("Policies:")
     for policy in policies:
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                  rank_punish,
                  del_t,
                  rank_t,
-                 p_true_threshold_strikes] = policy
+                 strikes_t] = policy
 
                 # Set up data structure (col: policy, row: replication)
                 df_column = []
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                         rank_punish=rank_punish,
                         del_t=del_t,
                         rank_t=rank_t,
-                        p_true_threshold_strikes=p_true_threshold_strikes,
+                        strikes_t=strikes_t,
 
                         # ––– Belief updating behavior –––
                         belief_update_fn=belief_update_fn,

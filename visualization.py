@@ -56,7 +56,7 @@ def show_visualization(model,
                        medlit_select=0.0,
                        del_t=-0.1,
                        rank_t=-0.1,
-                       p_true_threshold_strikes=-0.1,
+                       strikes_t=-0.1,
                        rank_punish=-0.0,
                        belief_update_fn=BeliefUpdate.SIT,
                        sampling_p_update=0.02,
@@ -72,7 +72,7 @@ def show_visualization(model,
     :param medlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
     :param del_t: float, in range [0.0, 1.0]
     :param rank_t: float, in range [0.0, 1.0]
-    :param p_true_threshold_strikes: float, in range [0.0, 1.0]
+    :param strikes_t: float, in range [0.0, 1.0]
     :param rank_punish: float, -0.0 if no adjustment, in range [-0.0, -1.0]
     :param belief_update_fn:  BeliefUpdate
     :param sampling_p_update: float, probability that agent updates belief based on a seen post
@@ -136,7 +136,7 @@ def show_visualization(model,
                             'medlit_select': medlit_select,
                             'del_t': del_t,
                             'rank_t': rank_t,
-                            'p_true_threshold_strikes': p_true_threshold_strikes,
+                            'strikes_t': strikes_t,
                             'rank_punish': rank_punish,
                             'belief_update_fn': belief_update_fn,
                             'sampling_p_update': sampling_p_update,
