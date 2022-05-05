@@ -53,7 +53,7 @@ def show_visualization(model,
                        n_agents=100,
                        n_edges=3,
                        ratio_normal_user=0.99,
-                       medlit_select=0.0,
+                       mlit_select=0.0,
                        del_t=-0.1,
                        rank_t=-0.1,
                        strikes_t=-0.1,
@@ -69,7 +69,7 @@ def show_visualization(model,
     :param n_agents:    int
     :param n_edges:     int
     :param ratio_normal_user: float, in range [0.0, 1.0]
-    :param medlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
+    :param mlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
     :param del_t: float, in range [0.0, 1.0]
     :param rank_t: float, in range [0.0, 1.0]
     :param strikes_t: float, in range [0.0, 1.0]
@@ -133,7 +133,7 @@ def show_visualization(model,
                            {'n_agents': n_agents,
                             'n_edges': n_edges,
                             'ratio_normal_user': ratio_normal_user,
-                            'medlit_select': medlit_select,
+                            'mlit_select': mlit_select,
                             'del_t': del_t,
                             'rank_t': rank_t,
                             'strikes_t': strikes_t,

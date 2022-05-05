@@ -15,14 +15,14 @@ if __name__ == '__main__':
 
     # Experiment-Conditions are a combination of: Policies + BeliefUpdateFn
     # (Policies themselves = combinations of intervention values)
-    medlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
+    mlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
     rank_punish_values = [-0.0]  # by default no ranking adjustment
     del_t_values = [0.0]  # by default no deleting
     rank_t_values = [0.0]  # by default no ranking
     strikes_t_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
-    policies = list(itertools.product(medlit_select_values,
+    policies = list(itertools.product(mlit_select_values,
                                       rank_punish_values,
                                       del_t_values,
                                       rank_t_values,
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                         # adjustment_based_on_belief=2,
 
                         # ––– Levers –––
-                        medlit_select=media_literacy_intervention,
+                        mlit_select=media_literacy_intervention,
                         media_literacy_intervention_durations=None,
                         rank_punish=rank_punish,
                         del_t=del_t,

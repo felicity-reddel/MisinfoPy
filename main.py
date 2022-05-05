@@ -10,7 +10,7 @@ if __name__ == '__main__':
     n_agents = 100  # 1000
     ratio = 0.99
     n_edges = 2  # 3
-    medlit_select = 0.0
+    mlit_select = 0.0
     rank_punish = -0.0
     del_t = 0.1
     rank_t = -0.1
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                            n_agents=n_agents,
                            n_edges=n_edges,
                            ratio_normal_user=ratio,
-                           medlit_select=medlit_select,
+                           mlit_select=mlit_select,
                            rank_punish=rank_punish,
                            del_t=del_t,
                            rank_t=rank_t,
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         model = MisinfoPy(n_agents=n_agents,
                           n_edges=n_edges,
                           ratio_normal_user=ratio,
-                          medlit_select=medlit_select,
+                          mlit_select=mlit_select,
                           rank_punish=rank_punish,
                           del_t=del_t,
                           rank_t=rank_t,

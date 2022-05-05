@@ -29,7 +29,7 @@ class MisinfoPy(Model):
             adjustment_based_on_belief=2,
 
             # ––– Levers –––
-            medlit_select=(0.0, SelectAgentsBy.RANDOM),
+            mlit_select=(0.0, SelectAgentsBy.RANDOM),
             media_literacy_intervention_durations=None,
             rank_punish=-0.0,
             del_t=0.0,
@@ -62,7 +62,7 @@ class MisinfoPy(Model):
         @param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
 
         ––– Levers –––
-        @param medlit_select: float, in domain [0,1]
+        @param mlit_select: float, in domain [0,1]
                     - meaning: Percentage of agents empowered by media literacy intervention.
         @param media_literacy_intervention_durations:   dict, {str: int}
                     - how long the initial media literacy intervention takes for a user,
@@ -117,7 +117,7 @@ class MisinfoPy(Model):
         self.sampling_p_update = sampling_p_update
         self.deffuant_mu = deffuant_mu
 
-        self.apply_media_literacy_intervention(medlit_select)
+        self.apply_media_literacy_intervention(mlit_select)
         if not (-1.0 <= rank_punish <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
                              f"while it should be in range [-0.0, -1.0]")
