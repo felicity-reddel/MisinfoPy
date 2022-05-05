@@ -6,11 +6,11 @@ import time
 if __name__ == '__main__':
 
     # Parameters
-    visualize = True
+    visualize = False
     n_agents = 100  # 1000
     ratio = 0.99
     n_edges = 2  # 3
-    media_literacy_intervention = (0.0, SelectAgentsBy.RANDOM)
+    medlit_select = 0.0
     ranking_visibility_adjustment = -0.0
     p_true_threshold_deleting = 0.1
     p_true_threshold_ranking = -0.1
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                            n_agents=n_agents,
                            n_edges=n_edges,
                            ratio_normal_user=ratio,
-                           media_literacy_intervention=media_literacy_intervention,
+                           medlit_select=medlit_select,
                            ranking_visibility_adjustment=ranking_visibility_adjustment,
                            p_true_threshold_deleting=p_true_threshold_deleting,
                            p_true_threshold_ranking=p_true_threshold_ranking,
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         model = MisinfoPy(n_agents=n_agents,
                           n_edges=n_edges,
                           ratio_normal_user=ratio,
-                          media_literacy_intervention=media_literacy_intervention,
+                          medlit_select=medlit_select,
                           ranking_visibility_adjustment=ranking_visibility_adjustment,
                           p_true_threshold_deleting=p_true_threshold_deleting,
                           p_true_threshold_ranking=p_true_threshold_ranking,

@@ -53,7 +53,7 @@ def show_visualization(model,
                        n_agents=100,
                        n_edges=3,
                        ratio_normal_user=0.99,
-                       media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+                       medlit_select=0.0,
                        p_true_threshold_deleting=-0.1,
                        p_true_threshold_ranking=-0.1,
                        p_true_threshold_strikes=-0.1,
@@ -69,7 +69,7 @@ def show_visualization(model,
     :param n_agents:    int
     :param n_edges:     int
     :param ratio_normal_user: float, in range [0.0, 1.0]
-    :param media_literacy_intervention:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
+    :param medlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
     :param p_true_threshold_deleting: float, in range [0.0, 1.0]
     :param p_true_threshold_ranking: float, in range [0.0, 1.0]
     :param p_true_threshold_strikes: float, in range [0.0, 1.0]
@@ -133,7 +133,7 @@ def show_visualization(model,
                            {'n_agents': n_agents,
                             'n_edges': n_edges,
                             'ratio_normal_user': ratio_normal_user,
-                            'media_literacy_intervention': media_literacy_intervention,
+                            'medlit_select': medlit_select,
                             'p_true_threshold_deleting': p_true_threshold_deleting,
                             'p_true_threshold_ranking': p_true_threshold_ranking,
                             'p_true_threshold_strikes': p_true_threshold_strikes,

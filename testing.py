@@ -7,7 +7,7 @@ if __name__ == "__main__":
     model = MisinfoPy(n_agents=100,
                       n_edges=3,
                       ratio_normal_user=0.99,
-                      media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+                      medlit_select=0.0,
                       media_literacy_intervention_durations={"initial investment": 3600,
                                                              "MediaLiteracy.LOW": 3,
                                                              "MediaLiteracy.HIGH": 30},

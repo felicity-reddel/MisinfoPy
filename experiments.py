@@ -15,18 +15,14 @@ if __name__ == '__main__':
 
     # Experiment-Conditions are a combination of: Policies + BeliefUpdateFn
     # (Policies themselves = combinations of intervention values)
-    media_literacy_intervention_values = [(0.0, SelectAgentsBy.RANDOM),
-                                          # (0.1, SelectAgentsBy.RANDOM),
-                                          # (0.25, SelectAgentsBy.RANDOM)
-                                          ]
-
+    medlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
     ranking_visibility_adjustment_values = [-0.0]  # by default no ranking adjustment
     p_true_threshold_deleting_values = [0.0]  # by default no deleting
     p_true_threshold_ranking_values = [0.0]  # by default no ranking
     p_true_threshold_strikes_values = [0.0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
-    policies = list(itertools.product(media_literacy_intervention_values,
+    policies = list(itertools.product(medlit_select_values,
                                       ranking_visibility_adjustment_values,
                                       p_true_threshold_deleting_values,
                                       p_true_threshold_ranking_values,
@@ -76,7 +72,7 @@ if __name__ == '__main__':
                         # adjustment_based_on_belief=2,
 
                         # ––– Levers –––
-                        media_literacy_intervention=media_literacy_intervention,
+                        medlit_select=media_literacy_intervention,
                         media_literacy_intervention_durations=None,
                         ranking_visibility_adjustment=ranking_visibility_adjustment,
                         p_true_threshold_deleting=p_true_threshold_deleting,

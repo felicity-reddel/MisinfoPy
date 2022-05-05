@@ -29,7 +29,7 @@ class MisinfoPy(Model):
             adjustment_based_on_belief=2,
 
             # ––– Levers –––
-            media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM),
+            medlit_select=(0.0, SelectAgentsBy.RANDOM),
             media_literacy_intervention_durations=None,
             ranking_visibility_adjustment=-0.0,
             p_true_threshold_deleting=-0.1,
@@ -62,12 +62,8 @@ class MisinfoPy(Model):
         @param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
 
         ––– Levers –––
-        @param media_literacy_intervention: tuple(float, SelectAgentsBy)
-                    float:
-                    - domain [0,1)
+        @param medlit_select: float, in domain [0,1]
                     - meaning: Percentage of agents empowered by media literacy intervention.
-                                If 0.0: nobody is empowered by it, i.e., no media literacy intervention.
-                                If 1.0: everybody is empowered by it.
         @param media_literacy_intervention_durations:   dict, {str: int}
                     - how long the initial media literacy intervention takes for a user,
                     - how long a person with HIGH media literacy takes to judge the truthfulness of a post
@@ -121,7 +117,7 @@ class MisinfoPy(Model):
         self.sampling_p_update = sampling_p_update
         self.deffuant_mu = deffuant_mu
 
-        self.apply_media_literacy_intervention(media_literacy_intervention)
+        self.apply_media_literacy_intervention(medlit_select)
         if not (-1.0 <= ranking_visibility_adjustment <= -0.0):
             raise ValueError(f"Visibility adjustment for ranking was {ranking_visibility_adjustment}, "
                              f"while it should be in range [-0.0, -1.0]")
@@ -299,20 +295,16 @@ class MisinfoPy(Model):
         self.agents_data["n_following_range"] = (min_n_following, max_n_following)
         self.agents_data["n_followers_range"] = (min_n_followers, max_n_followers)
 
-    def apply_media_literacy_intervention(self, media_literacy_intervention=(0.0, SelectAgentsBy.RANDOM)):
+    def apply_media_literacy_intervention(self, percentage_selected=0.0, select_by=SelectAgentsBy.RANDOM):
         """
         Applies the media literacy intervention (if needed).
-        @param media_literacy_intervention: float, [0,1),
-                    Percentage of agents empowered by media literacy intervention.
-                    If 0.0: nobody is empowered by it, i.e., no media literacy intervention.
-                    If 1.0: everybody is empowered by it.
+        @param percentage_selected: float, [0,1], Percentage of agents empowered by media literacy intervention.
+        @param select_by: SelectAgentsBy, enum how to select agents
         """
-        percentage, select_by = media_literacy_intervention
-
         # If media literacy intervention is used: select agents for intervention, adjust their media literacy.
         # (i.e., if some percentage of agents is targeted with it)
-        if percentage > 0.0:
-            n_select = int(len(self.schedule.agents) * percentage)
+        if percentage_selected > 0.0:
+            n_select = int(len(self.schedule.agents) * percentage_selected)
             selected_agents = self.select_agents_for_media_literacy_intervention(n_select, select_by)
 
             for agent in selected_agents:
