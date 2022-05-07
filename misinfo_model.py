@@ -29,7 +29,7 @@ class MisinfoPy(Model):
             adjustment_based_on_belief=2,
 
             # ––– Levers –––
-            mlit_select=(0.0, SelectAgentsBy.RANDOM),
+            mlit_select=0.0,
             mlit_dur_init=3600,
             mlit_dur_low=3,
             mlit_dur_high=30,
@@ -86,6 +86,7 @@ class MisinfoPy(Model):
         """
         super().__init__()
 
+        # ––– Network & Setup –––
         self.n_agents = n_agents
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
         self.G = random_graph(n_nodes=n_agents, m=n_edges)  # n_nodes = n_agents, exactly 1 agent per node
@@ -93,17 +94,14 @@ class MisinfoPy(Model):
         self.post_id_counter = 0
         self.agents_data = {'n_followers_range': (0, 0),
                             'n_following_range': (0, 0)}
+
+        # ––– Posting behavior –––
         self.sigma = sigma
         self.mean_normal_user = mean_normal_user
         self.mean_disinformer = mean_disinformer
         self.adjustment_based_on_belief = adjustment_based_on_belief
 
-        self.init_agents(ratio_normal_user)
-        self.init_followers_and_following()
-        self.belief_update_fn = belief_update_fn
-        self.sampling_p_update = sampling_p_update
-        self.deffuant_mu = deffuant_mu
-
+        # ––– Levers –––
         self.mlit_dur_init = mlit_dur_init
         self.mlit_dur_low = mlit_dur_low
         self.mlit_dur_high = mlit_dur_high
@@ -112,13 +110,25 @@ class MisinfoPy(Model):
             raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
                              f"while it should be in range [-0.0, -1.0]")
         self.del_t = del_t
-        self.n_posts_deleted = 0
         self.rank_t = rank_t
         self.rank_punish = rank_punish
         self.strikes_t = strikes_t
+
+        # ––– init agents –––
+        self.init_agents(ratio_normal_user)
+        self.init_followers_and_following()
+
+        # ––– Belief updating behavior –––
+        self.belief_update_fn = belief_update_fn
+        self.sampling_p_update = sampling_p_update
+        self.deffuant_mu = deffuant_mu
+
+        # ––– Plots –––
         self.show_n_seen_posts = show_n_seen_posts
         self.belief_metric_threshold = belief_metric_threshold
 
+        # ––– Data Collectors –––
+        self.n_posts_deleted = 0
         self.data_collector = DataCollector(model_reporters={
             # Metrics
             # TODO: Add percentage_above_threshold metric
