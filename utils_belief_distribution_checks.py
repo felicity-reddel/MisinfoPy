@@ -110,5 +110,3 @@ def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, 
         root_directory = os.path.dirname(directory)
         images_folder = root_directory + '/results/images/'
         fig.savefig(images_folder + f"belief_distributions_{title}.png", dpi=200, bbox_inches="tight", pad_inches=0.1)
-
-
