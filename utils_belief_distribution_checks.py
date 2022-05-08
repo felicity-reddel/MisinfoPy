@@ -49,7 +49,7 @@ def run_experiment(mlit_select, rank_punish, del_t, rank_t, strikes_t, belief_up
     return df_column
 
 
-def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, y_ticks=5):
+def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, y_ticks=5, y_max=None):
     """
     Plots and potentially save a subplot of the requested policy and number of subplots (via nrows & ncols).
 
@@ -60,6 +60,7 @@ def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, 
     @param title: String,   title of the whole plot
     @param x_ticks: int,    number of grid lines in a subplot
     @param y_ticks: int,    number of grid lines in a subplot
+    @param y_max: int,      maximal y-axis value -> all plots have same y-axis scale
     """
 
     # Sample which runs to include in the plot
@@ -81,6 +82,8 @@ def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, 
                          ax=axes[row, col])
             sns.histplot(data=after, color="red", label="After", kde=True, bins=25, binrange=(0, 100),
                          ax=axes[row, col])
+            if y_max is not None:
+                plt.ylim(0, y_max)
 
             # Depict information (labels etc)
             # - replication number
