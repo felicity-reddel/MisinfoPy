@@ -352,7 +352,7 @@ class NormalUser(BaseAgent):
 
         self.vocality = {'mean': self.model.mean_normal_user,
                          'std_dev': self.model.sigma}
-        self.media_literacy = MediaLiteracy.get_random()  # {LOW, HIGH}
+        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[0.7, 0.3])  # {LOW, HIGH}
 
     def init_beliefs(self):
         """

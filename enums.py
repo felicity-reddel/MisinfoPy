@@ -70,12 +70,15 @@ class MediaLiteracy(Enum):
     HIGH = 30
 
     @staticmethod
-    def get_random():
+    def get_random(mlit_weights=None):
         """
         Samples MediaLiteracy completely independent of the tweet_beliefs represented in the post.
+        @param mlit_weights: list of two floats, for MediaLiteracy.LOW and MediaLiteracy.HIGH, respectively
         :return: result: MediaLiteracy
         """
-        result = random.choice(list(MediaLiteracy))
+        if mlit_weights is None:
+            mlit_weights = [0.7, 0.3]
+        result = random.choices(population=list(MediaLiteracy), weights=mlit_weights, k=1)[0]
         return result
 
 
