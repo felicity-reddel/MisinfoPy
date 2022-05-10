@@ -1,12 +1,11 @@
+import pandas as pd
 from agents import *  # incl.: utils import
-
 import time
 import statistics
 from mesa import Model
 from mesa.datacollection import DataCollector
 from mesa.time import StagedActivation
 from mesa.space import NetworkGrid
-
 import numpy as np
 import math
 from matplotlib import pyplot as plt
@@ -15,11 +14,63 @@ from matplotlib import pyplot as plt
 class MisinfoPy(Model):
     """Simple model with n agents."""
 
-    def __init__(
+    def __init__(  # New, Minimal init
             self,
             # ––– Network –––
             n_agents=1000,
             n_edges=2,
+    ):
+        """
+        Initializes the MisinfoPy.
+
+        ––– Network –––
+        @param n_agents:                    int, how many agents the model should have
+        @param n_edges:                     int, with how many edges gets attached to the already built network
+        """
+
+        super().__init__()
+
+        # ––– Network & Setup –––
+        self.n_agents = n_agents
+        self.n_edges = n_edges
+        self.schedule = None  # StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
+        self.G = None
+        self.grid = None
+        self.post_id_counter = 0
+        self.agents_data = {'n_followers_range': (0, 0),
+                            'n_following_range': (0, 0)}
+
+        # ––– Posting behavior –––
+        self.sigma = None
+        self.mean_normal_user = None
+        self.mean_disinformer = None
+        self.adjustment_based_on_belief = None
+
+        # ––– Levers –––
+        self.mlit_dur_init = None
+        self.mlit_dur_low = None
+        self.mlit_dur_high = None
+
+        self.del_t = None
+        self.rank_t = None
+        self.rank_punish = None
+        self.strikes_t = None
+
+        # ––– Belief updating behavior –––
+        self.belief_update_fn = None
+        self.sampling_p_update = None
+        self.deffuant_mu = None
+
+        # ––– Plots –––
+        self.belief_metric_threshold = None
+
+        # ––– Data Collectors –––
+        self.n_posts_deleted = 0
+        self.data_collector = None
+
+    def set_up(
+            self,
+            # ––– Network –––
             ratio_normal_user=0.99,
 
             # ––– Posting behavior –––
@@ -45,15 +96,12 @@ class MisinfoPy(Model):
             belief_metric_threshold=50.0,
 
             # ––– Plots –––
-            show_n_seen_posts=False,
             show_n_connections=False
     ):
         """
-        Initializes the MisinfoPy
+        Sets up the initial, barebone MisinfoPy model.
 
         ––– Network –––
-        @param n_agents:                    int, how many agents the model should have
-        @param n_edges:                     int, with how many edges gets attached to the already built network
         @param ratio_normal_user:           float, in range [0.0, 1.0]
 
         ––– Posting behavior –––
@@ -79,21 +127,15 @@ class MisinfoPy(Model):
         @param deffuant_mu:                 float, updating parameter, indicates how strongly the belief is updated
                                             towards the post's belief. If mu=0.1, the update is 10% towards the
                                             post's belief.
+        @param belief_metric_threshold:     float, threshold for the belief metric (agents above belief threshold)
 
         ––– Plots –––
-        @param show_n_seen_posts:           boolean
         @param show_n_connections:          boolean
         """
-        super().__init__()
-
         # ––– Network & Setup –––
-        self.n_agents = n_agents
-        self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
-        self.G = random_graph(n_nodes=n_agents, m=n_edges)  # n_nodes = n_agents, exactly 1 agent per node
+        self.G = random_graph(n_nodes=self.n_agents, m=self.n_edges)  # n_nodes = n_agents, exactly 1 agent per node
         self.grid = NetworkGrid(self.G)
-        self.post_id_counter = 0
-        self.agents_data = {'n_followers_range': (0, 0),
-                            'n_following_range': (0, 0)}
+        self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
 
         # ––– Posting behavior –––
         self.sigma = sigma
@@ -124,18 +166,14 @@ class MisinfoPy(Model):
         self.deffuant_mu = deffuant_mu
 
         # ––– Plots –––
-        self.show_n_seen_posts = show_n_seen_posts
         self.belief_metric_threshold = belief_metric_threshold
 
-        # ––– Data Collectors –––
-        self.n_posts_deleted = 0
-        self.data_collector = DataCollector(model_reporters={
-            # Metrics
-            # TODO: Add percentage_above_threshold metric
-            "Total seen posts": self.get_total_seen_posts,
-            "Free speech constraint": self.get_free_speech_constraint,
-            "User effort": self.get_avg_user_effort
-        })
+        # self.data_collector = DataCollector(model_reporters={
+        #     "n_agents_above_belief_threshold": self.get_n_above_belief_threshold,
+        #     "engagement": self.get_total_seen_posts,
+        #     "free_speech_constraint": self.get_free_speech_constraint,
+        #     "avg_user_effort": self.get_avg_user_effort
+        # })
 
         # # For additional plots in the browser
         # "Avg Vax-Belief": self.get_avg_belief,
@@ -178,31 +216,76 @@ class MisinfoPy(Model):
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
-        self.data_collector.collect(self)
+        # self.data_collector.collect(self)
         # self.data_collector2.collect(self)
 
-        if self.show_n_seen_posts:
-            data = [x.n_seen_posts for x in self.schedule.agents]
+    def __call__(
+        self,
+        # ––– Network –––
+        ratio_normal_user=0.99,
 
-            bins = np.linspace(math.ceil(min(data)),
-                               math.floor(max(data)),
-                               40)  # a fixed number of bins
+        # ––– Posting behavior –––
+        sigma=0.7,
+        mean_normal_user=1,
+        mean_disinformer=10,
+        adjustment_based_on_belief=2,
 
-            plt.xlim([min(data) - 5, max(data) + 5])
+        # ––– Levers –––
+        mlit_select=0.0,
+        mlit_dur_init=3600,
+        mlit_dur_low=3,
+        mlit_dur_high=30,
+        rank_punish=-0.0,
+        del_t=0.0,
+        rank_t=0.0,
+        strikes_t=0.0,
 
-            plt.hist(data, bins=bins, alpha=0.5)
-            plt.xlabel(f'Number of seen posts (highest: {max(data)})')
-            plt.ylabel('Agent count')
-            plt.show()
+        # ––– Belief updating behavior –––
+        belief_update_fn=BeliefUpdate.SIT,
+        sampling_p_update=0.02,
+        deffuant_mu=0.02,
+        belief_metric_threshold=50.0,
 
-    def __call__(self, steps=60, time_tracking=False, debug=False):
+        # ––– Call parameters –––
+        steps=60,
+        time_tracking=False,
+        debug=False,
+    ):
         """
         Runs the model for the specified number of steps.
-        @param steps: int: number of model-steps the model should take
-        @param time_tracking: Boolean, whether to print timing information
-        @param debug: Boolean, whether to print details
-        @return: tuple: metrics values for this run (n_above_belief_threshold, variance, kl_divergence, ...)
+
+        @param steps:           int, number of model-steps the model should take
+        @param time_tracking:   Boolean, whether to print timing information
+        @param debug:           Boolean, whether to print details
+        @return: tuple: metrics values for this run (n_above_belief_threshold, variance, ...)
         """
+
+        self.set_up(
+            # ––– Network –––
+            ratio_normal_user=ratio_normal_user,
+
+            # ––– Posting behavior –––
+            sigma=sigma,
+            mean_normal_user=mean_normal_user,
+            mean_disinformer=mean_disinformer,
+            adjustment_based_on_belief=adjustment_based_on_belief,
+
+            # ––– Levers –––
+            mlit_select=mlit_select,
+            mlit_dur_init=mlit_dur_init,
+            mlit_dur_low=mlit_dur_low,
+            mlit_dur_high=mlit_dur_high,
+            rank_punish=rank_punish,
+            del_t=del_t,
+            rank_t=rank_t,
+            strikes_t=strikes_t,
+
+            # ––– Belief updating behavior –––
+            belief_update_fn=belief_update_fn,
+            sampling_p_update=sampling_p_update,
+            deffuant_mu=deffuant_mu,
+            belief_metric_threshold=belief_metric_threshold,
+        )
 
         start_time = time.time()
 
@@ -229,12 +312,20 @@ class MisinfoPy(Model):
         free_speech_constraint = self.get_free_speech_constraint()
         avg_user_effort = self.get_avg_user_effort()
 
-        return \
-            n_agents_above_belief_threshold, \
-            polarization_variance, polarization_kl_divergence_from_polarized, \
-            engagement, \
-            free_speech_constraint, \
-            avg_user_effort
+        results_dict = {
+            'n_agents_above_belief_threshold': n_agents_above_belief_threshold,
+            'polarization_variance': polarization_variance,
+            'polarization_kl_divergence_from_polarized': polarization_kl_divergence_from_polarized,
+            'engagement': engagement,
+            'free_speech_constraint': free_speech_constraint,
+            'avg_user_effort': avg_user_effort,
+        }
+
+        print()
+        pretty = pd.Series(results_dict)
+        print(pretty)
+
+        return results_dict
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -605,3 +696,10 @@ def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
             graph.edges[from_e, to_e]['weight'] = weight
 
     return graph
+
+
+if __name__ == '__main__':
+    model = MisinfoPy(n_agents=100)
+    results = model(steps=15)
+
+    [print(r) for r in results]

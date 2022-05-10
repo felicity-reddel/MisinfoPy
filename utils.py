@@ -106,10 +106,10 @@ def variance(belief_list=None, model=None, n_digits=2):
     """
     Calculates the variance of
     the current belief belief_list of the agents (or the provided belief_list).
-    :param belief_list: list: listing the belief n_seen_posts_repl of each agent
-    :param model: MisinfoPy model
-    :param n_digits: int: to how many digits the n_seen_posts_repl should be rounded, for non-rounded use high number
-                            (e.g., 20)
+    :param belief_list:     list: listing the belief n_seen_posts_repl of each agent
+    :param model:           MisinfoPy model
+    :param n_digits:        int: to how many digits the n_seen_posts_repl should be rounded,
+                            for non-rounded use high number (e.g., 20)
     :return: float: variance
     """
     belief_list = get_belief_list(belief_list, model)
@@ -225,4 +225,3 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
-

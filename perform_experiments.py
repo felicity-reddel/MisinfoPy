@@ -1,3 +1,4 @@
+import pandas as pd
 from ema_workbench import (
     Model,
     Policy,
@@ -5,28 +6,32 @@ from ema_workbench import (
     MultiprocessingEvaluator,
     ScalarOutcome,
     CategoricalParameter,
-    RealParameter
+    RealParameter,
+    Constant
 )
 from ema_workbench.em_framework.parameters import Category
-
 from misinfo_model import MisinfoPy
 
 
-def perform_my_experiments(n_scenarios=0, n_policies=10):
+ema_logging.log_to_stderr(ema_logging.INFO)
+
+
+def perform_my_experiments(n_scenarios=1, n_policies=10, n_agents=1000):
     """
     Sets up the model, performs experiments and returns the results.
 
-    @param n_scenarios: int
-    @param n_policies: int,  # TODO: SPECIFY FURTHER, how to make all policies?
+    @param n_scenarios: int, number of scenarios
+    @param n_policies: int, number of policies  # TODO: SPECIFY FURTHER, how to make all policies?
+    @param n_agents: int, number of agents
     @return:
     """
 
     # Setting up the model
-    model = MisinfoPy()
+    model = MisinfoPy(n_agents=n_agents)
     model = Model('MisinfoPy', function=model)
 
-    model.uncertainties = []
-    model.constants = []  # TODO: FILL
+    model.uncertainties = [RealParameter('belief_metric_threshold', 40.0, 60.0)]  # TODO: Fill fully
+    model.constants = [Constant('steps', 15)]  # TODO: Fill fully
     model.outcomes = get_outcomes()
     model.levers = get_levers()
 
@@ -63,6 +68,18 @@ def get_levers():
     Returns the levers. In the fitting format for the ema_workbench.
     @return: list of CategoricalParameter
     """
+
+    # Currently, as RealParameter (to make sure that issue is not
+    # with the potentially incorrect use of CategoricalParameter)
+    levers = [
+        RealParameter('mlit_select', 0.0, 1.0),
+        RealParameter('del_t', 0.0, 1.0),
+        RealParameter('rank_punish', -1.0, -0.0),
+        RealParameter('rank_t', 0.0, 1.0),
+        RealParameter('strikes_t', 0.0, 1.0),
+    ]
+
+    # # Later: CategoricalParameter (to not do full exploration, but only specified values)
     # standard_categories = [
     #     Category('0.0', 0.0),
     #     Category('0.2', 0.2),
@@ -89,16 +106,15 @@ def get_levers():
     #     CategoricalParameter('strikes_t', standard_categories),
     # ]
 
-    levers = [
-        RealParameter('mlit_select', 0.0, 1.0),
-        RealParameter('del_t', 0.0, 1.0),
-        RealParameter('rank_punish', -1.0, -0.0),
-        RealParameter('rank_t', 0.0, 1.0),
-        RealParameter('strikes_t', 0.0, 1.0),
-    ]
-
     return levers
 
 
 if __name__ == "__main__":
-    perform_my_experiments()
+    res = perform_my_experiments()
+    exp, out = results
+
+    out = pd.DataFrame(out)
+
+    for idx, row in outcomes.iterrows():
+        print(row)
+        print()
