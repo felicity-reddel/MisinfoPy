@@ -134,30 +134,31 @@ class MisinfoPy(Model):
             # TODO: Add percentage_above_threshold metric
             "Total seen posts": self.get_total_seen_posts,
             "Free speech constraint": self.get_free_speech_constraint,
-            "User effort": self.get_avg_user_effort,
-
-            # For additional plots in the browser
-            "Avg Vax-Belief": self.get_avg_belief,
-            "Avg Vax-Belief above threshold": lambda m: m.get_avg_belief_above_threshold(
-                threshold=belief_metric_threshold),
-            "Avg Vax-Belief below threshold": lambda m: m.get_avg_belief_below_threshold(
-                threshold=belief_metric_threshold)})
-
-        n_depicted = 10
-        ids = [*range(0, n_agents, math.floor(n_agents/n_depicted))]
-        # DataCollector2: follow individual agents
-        self.data_collector2 = DataCollector(model_reporters={  # As many as n_depicted
-            f"Agent 0": lambda m: m.get_belief(agent_id=ids[0]),
-            f"Agent 1": lambda m: m.get_belief(agent_id=ids[1]),
-            f"Agent 2": lambda m: m.get_belief(agent_id=ids[2]),
-            f"Agent 3": lambda m: m.get_belief(agent_id=ids[3]),
-            f"Agent 4": lambda m: m.get_belief(agent_id=ids[4]),
-            f"Agent 5": lambda m: m.get_belief(agent_id=ids[5]),
-            f"Agent 6": lambda m: m.get_belief(agent_id=ids[6]),
-            f"Agent 7": lambda m: m.get_belief(agent_id=ids[7]),
-            f"Agent 8": lambda m: m.get_belief(agent_id=ids[8]),
-            f"Agent 9": lambda m: m.get_belief(agent_id=ids[9]),
+            "User effort": self.get_avg_user_effort
         })
+
+        # # For additional plots in the browser
+        # "Avg Vax-Belief": self.get_avg_belief,
+        # "Avg Vax-Belief above threshold": lambda m: m.get_avg_belief_above_threshold(
+        #     threshold=belief_metric_threshold),
+        # "Avg Vax-Belief below threshold": lambda m: m.get_avg_belief_below_threshold(
+        #     threshold=belief_metric_threshold)})
+
+        # n_depicted = 10
+        # ids = [*range(0, n_agents, math.floor(n_agents / n_depicted))]
+        # DataCollector2: follow individual agents
+        # self.data_collector2 = DataCollector(model_reporters={  # As many as n_depicted
+        #     f"Agent 0": lambda m: m.get_belief(agent_id=ids[0]),
+        #     f"Agent 1": lambda m: m.get_belief(agent_id=ids[1]),
+        #     f"Agent 2": lambda m: m.get_belief(agent_id=ids[2]),
+        #     f"Agent 3": lambda m: m.get_belief(agent_id=ids[3]),
+        #     f"Agent 4": lambda m: m.get_belief(agent_id=ids[4]),
+        #     f"Agent 5": lambda m: m.get_belief(agent_id=ids[5]),
+        #     f"Agent 6": lambda m: m.get_belief(agent_id=ids[6]),
+        #     f"Agent 7": lambda m: m.get_belief(agent_id=ids[7]),
+        #     f"Agent 8": lambda m: m.get_belief(agent_id=ids[8]),
+        #     f"Agent 9": lambda m: m.get_belief(agent_id=ids[9]),
+        # })
 
         if show_n_connections:
             # Overview of how many agents have how many connections
@@ -178,7 +179,7 @@ class MisinfoPy(Model):
         """Advance the model by one step."""
         self.schedule.step()
         self.data_collector.collect(self)
-        self.data_collector2.collect(self)
+        # self.data_collector2.collect(self)
 
         if self.show_n_seen_posts:
             data = [x.n_seen_posts for x in self.schedule.agents]
@@ -229,8 +230,11 @@ class MisinfoPy(Model):
         avg_user_effort = self.get_avg_user_effort()
 
         return \
-            n_agents_above_belief_threshold, polarization_variance, polarization_kl_divergence_from_polarized, \
-            engagement, free_speech_constraint, avg_user_effort
+            n_agents_above_belief_threshold, \
+            polarization_variance, polarization_kl_divergence_from_polarized, \
+            engagement, \
+            free_speech_constraint, \
+            avg_user_effort
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions

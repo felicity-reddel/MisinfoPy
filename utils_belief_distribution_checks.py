@@ -12,11 +12,11 @@ def run_experiment(mlit_select, rank_punish, del_t, rank_t, strikes_t, belief_up
     Performs the requested experiments and returns the results wrt the belief distributions (before, after).
 
     # Lever values (for policies)
-    @param mlit_select: float (in range [0,1], %of agents selected for media literacy intervention)
-    @param rank_punish: float (in range [-1,-0], visibility may be reduced by this %)
-    @param del_t: float in range [-1,-0], p_true_treshold: if below -> may be deleted
-    @param rank_t: float in range [-1,-0], p_true_treshold: if below -> may be down-ranked
-    @param strikes_t: float in range [-1,-0], p_true_treshold: if below -> may be punished with a strike
+    @param mlit_select: float (in range [0.0, 1.0], %of agents selected for media literacy intervention)
+    @param rank_punish: float (in range [-0.0, -1.0], visibility may be reduced by this %)
+    @param del_t: float in range [0.0, 1.0], p_true_treshold: if below -> may be deleted
+    @param rank_t: float in range [0.0, 1.0], p_true_treshold: if below -> may be down-ranked
+    @param strikes_t: float in range [0.0, 1.0], p_true_treshold: if below -> may be punished with a strike
 
     # Other params
     @param belief_update: BeliefUpdate
