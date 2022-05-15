@@ -263,16 +263,6 @@ class BaseAgent(Agent):
 
         return post
 
-    def sample_seen_posts(self):
-        """
-        Sample which of the received posts are actually seen/consumed by the agent.
-        Result depends on the ranking implementation and whether the ranking intervention is applied.
-        :return: list of seen posts: [Post]
-        """
-        seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
-
-        return seen_posts
-
     def get_relative_n_followers(self, source):
         """
         Normalizes n_followers of agent.
@@ -302,7 +292,7 @@ class BaseAgent(Agent):
         for topic, value in post.tweet_beliefs.items():
             # Estimate their belief on 'topic' by looking at their last posts
             values = []
-            for p in post.source.visible_posts:
+            for p in post.source.visible_posts[-10:]:
                 if topic in p.tweet_beliefs:
                     value = p.tweet_beliefs[topic]
                     values.append(value)
@@ -368,7 +358,7 @@ class NormalUser(BaseAgent):
         # Agent can only update tweet_beliefs if it received posts in the first stage of the time tick
         if len(self.received_posts) > 0:
             # Sample which of the received posts are actually seen (depends on ranking).
-            seen_posts = self.sample_seen_posts()
+            seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
             self.n_seen_posts.append(len(seen_posts))
             self.n_total_seen_posts += len(seen_posts)
 
@@ -508,6 +498,6 @@ class Disinformer(BaseAgent):
         Second part of the Disinformer agent's step function. Disinformers don't update their tweet_beliefs
         """
         # To include disinformers into the profit metric of n_seen_posts:
-        seen_posts = self.sample_seen_posts()
+        seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
         self.n_seen_posts.append(len(seen_posts))
         # pass

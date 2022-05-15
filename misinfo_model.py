@@ -9,6 +9,27 @@ from mesa.space import NetworkGrid
 import numpy as np
 import math
 from matplotlib import pyplot as plt
+# # To profile the code:
+# import cProfile, pstats, io
+#
+#
+# def profile(fnc):
+#     """Decorator using cProfile to profile a provided function"""
+#
+#     def inner(*args, **kwargs):
+#
+#         pr = cProfile.Profile()
+#         pr.enable()
+#         retval = fnc(*args, **kwargs)
+#         pr.disable()
+#         s = io.StringIO()
+#         sortby = 'cumulative'
+#         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+#         ps.print_stats()
+#         print(s.getvalue())
+#         return retval
+#
+#     return inner
 
 
 class MisinfoPy(Model):
@@ -219,6 +240,7 @@ class MisinfoPy(Model):
         # self.data_collector.collect(self)
         # self.data_collector2.collect(self)
 
+    # @profile
     def __call__(
         self,
         # ––– Network –––
@@ -321,9 +343,9 @@ class MisinfoPy(Model):
             'avg_user_effort': avg_user_effort,
         }
 
-        print()
-        pretty = pd.Series(results_dict)
-        print(pretty)
+        # print()
+        # pretty = pd.Series(results_dict)
+        # print(pretty)
 
         return results_dict
 

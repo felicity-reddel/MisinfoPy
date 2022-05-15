@@ -26,36 +26,23 @@ class Post:
         self.visibility = self.get_visibility(rank_t)
 
     @staticmethod
-    def sample_beliefs(max_n_topics=1, agent=None) -> dict:
+    def sample_beliefs(agent=None) -> dict:
         """
         Generates and returns dict of tweet_beliefs for one post (i.e., topic & n_seen_posts_repl):  {Topic.TOPIC1: int}
-        :param max_n_topics:    int,    maximal number of topics in one post
         :param agent:  Agent,  if None: generate random belief,
                                if Agent: generate post-tweet_beliefs based that agent's tweet_beliefs
         :return: dict of tweet_beliefs (i.e., topics with n_seen_posts_repl)
         """
-        # Sample how many topics should be included in post.
-        n_topics = random.randint(1, max_n_topics)  # min. 1 topic per post
 
-        # Sample tweet_beliefs (belief = topic with n_seen_posts_repl)
-        tweet_beliefs = {}
+        # Sample tweet_belief on topic
+        if agent is not None:
+            current_agent_belief = agent.beliefs[Topic.VAX]
+            tweet_belief = np.random.normal(loc=current_agent_belief, scale=5, size=1)[0]
+            tweet_belief = max(min(tweet_belief, 100), 0)
+        else:
+            tweet_belief = random.randint(0, 100)
 
-        for _ in range(n_topics):
-
-            # Pick topic
-            topic = Topic.get_random()  # Ext: could adjust weights for diff. topics
-
-            # Sample n_seen_posts_repl on topic
-            if agent is None:
-                tweet_belief = random.randint(0, 100)
-            else:
-                current_agent_belief = agent.beliefs[topic]
-                tweet_belief = np.random.normal(loc=current_agent_belief, scale=5, size=1)[0]
-                tweet_belief = max(min(tweet_belief, 100), 0)
-
-            tweet_beliefs[topic] = tweet_belief
-
-        return tweet_beliefs
+        return {Topic.VAX: tweet_belief}
 
     def factcheck_algorithm(self, topic=Topic.VAX):
         """
