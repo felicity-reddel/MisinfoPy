@@ -53,17 +53,6 @@ class BaseAgent(Agent):
         mean += extremeness * max_mean_increase
         std_dev = self.vocality['std_dev']
 
-        # mean = self.vocality['mean']
-        # std_dev = self.vocality['std_dev']
-        # current_belief = self.beliefs[Topic.VAX]
-        # if current_belief < 15 or current_belief > 85:
-        #     # factor = current_belief / 10
-        #     mean += 2
-        # elif current_belief < 30 or current_belief > 70:
-        #     mean += 1
-        # # elif current_belief < 40 or current_belief > 60:
-        # #     mean += 1
-
         nr_of_posts = max(0, np.random.normal(mean, std_dev, 1)[0])
 
         # rounding and converting to int
@@ -98,23 +87,18 @@ class BaseAgent(Agent):
                 if (post.p_true <= self.model.strikes_t) and post.detected_as_misinfo:
                     # Strike
                     self.n_strikes += 1
+
                     # Apply strike consequences
-                    match self.n_strikes:
-                        case 1:
-                            # print(f'{self.n_strikes} strike, should CONTINUE the loop')
-                            pass
-                        case (2 | 3):
-                            # print(f'{self.n_strikes} strikes, should STOP the loop')
-                            break
-                        case 4:
-                            self.blocked_until = self.model.schedule.time + 7
-                            # print(f"7 tick-block, –––––––––––––––––––– "
-                            #       f"{post.p_true} <= {self.model.strikes_t}")
-                            break
-                        case self.n_strikes if self.n_strikes >= 5:
-                            self.blocked_until = math.inf
-                            # print(f"INFINITY-block – since tick {self.model.schedule.time}")
-                            break
+                    if self.n_strikes == 1:
+                        pass
+                    elif self.n_strikes == 2 or self.n_strikes == 3:
+                        break
+                    elif self.n_strikes == 4:
+                        self.blocked_until = self.model.schedule.time + 7
+                        break
+                    else:
+                        self.blocked_until = math.inf
+                        break
 
             # Share successful posts to followers
             for follower in self.followers:
@@ -383,15 +367,14 @@ class NormalUser(BaseAgent):
         Updates the tweet_beliefs with the required belief update function.
         :param post: Post
         """
-        match self.model.belief_update_fn:
-            case BeliefUpdate.SAMPLE:
-                self.update_beliefs_sample(post)
-            case BeliefUpdate.DEFFUANT:
-                self.update_beliefs_deffuant(post)
-            case BeliefUpdate.SIT:
-                self.update_beliefs_sit(post)
-            case _:
-                raise ValueError("Not a defined belief update function.")
+        if self.model.belief_update_fn == BeliefUpdate.SAMPLE:
+            self.update_beliefs_sample(post)
+        elif self.model.belief_update_fn == BeliefUpdate.DEFFUANT:
+            self.update_beliefs_deffuant(post)
+        elif self.model.belief_update_fn == BeliefUpdate.SIT:
+            self.update_beliefs_sit(post)
+        else:
+            raise ValueError("Not a defined belief update function.")
 
     def update_beliefs_sample(self, post):
         """
@@ -500,4 +483,3 @@ class Disinformer(BaseAgent):
         # To include disinformers into the profit metric of n_seen_posts:
         seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
         self.n_seen_posts.append(len(seen_posts))
-        # pass

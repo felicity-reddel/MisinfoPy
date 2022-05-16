@@ -680,7 +680,7 @@ def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
     """
     Generates a random graph à la Barabasi Albert.
     @param n_nodes:     int, number of nodes
-    @param m:           int, avg number of edges added per node
+    @param m:           int, number of edges added per node
     @param seed:        int, random seed
     @param directed:    bool, undirected or directed graph
 

@@ -4,6 +4,7 @@ from ema_workbench import (
     Policy,
     ema_logging,
     MultiprocessingEvaluator,
+    SequentialEvaluator,
     ScalarOutcome,
     CategoricalParameter,
     RealParameter,
@@ -36,7 +37,7 @@ def perform_my_experiments(n_scenarios=1, n_policies=10, n_agents=1000):
     model.levers = get_levers()
 
     # experiments
-    with MultiprocessingEvaluator(model) as evaluator:
+    with SequentialEvaluator(model) as evaluator:
         results = evaluator.perform_experiments(scenarios=n_scenarios, policies=n_policies)
 
     return results
@@ -111,10 +112,10 @@ def get_levers():
 
 if __name__ == "__main__":
     res = perform_my_experiments()
-    exp, out = results
+    exp, out = res
 
     out = pd.DataFrame(out)
 
-    for idx, row in outcomes.iterrows():
+    for idx, row in out.iterrows():
         print(row)
         print()
