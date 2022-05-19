@@ -1,5 +1,6 @@
 import networkx as nx
 import math
+from matplotlib import pyplot as plt
 import statistics as stats
 from scipy.special import rel_entr
 from enums import Topic
@@ -246,3 +247,19 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
+
+
+# def show_n_connections(misinfo_model):
+#     # Overview of how many agents have how many connections
+#     data = [len(agent.followers) for agent in self.schedule.agents]
+#
+#     bins = np.linspace(math.ceil(min(data)),
+#                        math.floor(max(data)),
+#                        40)  # a fixed number of bins
+#
+#     plt.xlim([min(data) - 5, max(data) + 5])
+#
+#     plt.hist(data, bins=bins, alpha=0.5)
+#     plt.xlabel(f'Number of followers (highest: {max(data)})')
+#     plt.ylabel('Agent count')
+#     plt.show()

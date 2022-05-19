@@ -317,7 +317,7 @@ class BaseAgent(Agent):
 class NormalUser(BaseAgent):
     """ NormalUser Agent """
 
-    def __init__(self, unique_id, model):
+    def __init__(self, unique_id, model, high_media_lit):
         """
         :param unique_id: int
         :param model: MisinfoPy
@@ -326,7 +326,8 @@ class NormalUser(BaseAgent):
 
         self.vocality = {'mean': self.model.mean_normal_user,
                          'std_dev': self.model.sigma}
-        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[0.7, 0.3], rng=self.model.random)  # {LOW, HIGH}
+        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[1-high_media_lit, high_media_lit],
+                                                       rng=self.model.random)  # {LOW, HIGH}
 
     def init_beliefs(self):
         """

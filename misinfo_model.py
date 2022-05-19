@@ -1,3 +1,5 @@
+import random
+
 import pandas as pd
 from agents import *  # incl.: utils import, enums
 import time
@@ -8,7 +10,6 @@ from mesa.time import StagedActivation
 from mesa.space import NetworkGrid
 import numpy as np
 import math
-from matplotlib import pyplot as plt
 
 
 # # To profile the code:
@@ -37,26 +38,15 @@ from matplotlib import pyplot as plt
 class MisinfoPy(Model):
     """Simple model with n agents."""
 
-    def __init__(  # New, Minimal init
-            self,
-            # ––– Network –––
-            n_agents=1000,
-            n_edges=2,
-            seed=None
-    ):
-        """
-        Initializes the MisinfoPy.
-
-        ––– Network –––
-        @param n_agents:                    int, how many agents the model should have
-        @param n_edges:                     int, with how many edges gets attached to the already built network
-        """
+    def __init__(self):
+        """Initializes the MisinfoPy."""
 
         super().__init__()
 
         # ––– Network & Setup –––
-        self.n_agents = n_agents
-        self.n_edges = n_edges
+        self.n_agents = None
+        self.n_edges = None
+        self.high_media_lit = None
         self.schedule = None  # StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
         self.G = None
         self.grid = None
@@ -92,40 +82,16 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.data_collector = None
 
-    def set_up(  # TODO: remove all default values? (provided by __call__) still kinda double/triple with the init?
-            self,
-            # ––– Network –––
-            ratio_normal_user=0.99,
-
-            # ––– Posting behavior –––
-            sigma=0.7,
-            mean_normal_user=1,
-            mean_disinformer=10,
-            adjustment_based_on_belief=2,
-
-            # ––– Levers –––
-            mlit_select=0.0,
-            mlit_dur_init=3600,
-            mlit_dur_low=3,
-            mlit_dur_high=30,
-            rank_punish=-0.0,
-            del_t=0.0,
-            rank_t=0.0,
-            strikes_t=0.0,
-
-            # ––– Belief updating behavior –––
-            belief_update_fn=BeliefUpdate.SAMPLE,
-            sampling_p_update=0.02,
-            deffuant_mu=0.02,
-            belief_metric_threshold=50.0,
-
-            # ––– Plots –––
-            show_n_connections=False
-    ):
+    def set_up(self, n_agents, n_edges, high_media_lit, ratio_normal_user, sigma, mean_normal_user, mean_disinformer,
+               adjustment_based_on_belief, mlit_select, mlit_dur_init, mlit_dur_low, mlit_dur_high, rank_punish, del_t,
+               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, belief_metric_threshold):
         """
         Sets up the initial, barebone MisinfoPy model.
 
         ––– Network –––
+        @param n_agents:                    int, how many agents the model should have
+        @param n_edges:                     int, with how many edges gets attached to the already built network
+        @param high_media_lit:              float, in range [0.0, 1.0], init ratio of agents with MediaLiteracy.HIGH
         @param ratio_normal_user:           float, in range [0.0, 1.0]
 
         ––– Posting behavior –––
@@ -153,11 +119,11 @@ class MisinfoPy(Model):
                                             post's belief.
         @param belief_metric_threshold:     float, threshold for the belief metric (agents above belief threshold)
 
-        ––– Plots –––
-        @param show_n_connections:          boolean
         """
+
         # ––– Network & Setup –––  # n_nodes=n_agents, exactly 1 agent per node
-        self.G = self.random_graph(rng=self.random, seed=self._seed, n_nodes=self.n_agents, m=self.n_edges)
+        self.n_agents = n_agents
+        self.G = self.random_graph(rng=self.random, seed=self._seed, n_nodes=n_agents, m=n_edges)
         self.grid = NetworkGrid(self.G)
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
 
@@ -181,6 +147,7 @@ class MisinfoPy(Model):
         self.strikes_t = strikes_t
 
         # ––– init agents –––
+        self.high_media_lit = high_media_lit
         self.init_agents(ratio_normal_user)
         self.init_followers_and_following()
 
@@ -222,63 +189,49 @@ class MisinfoPy(Model):
         #     f"Agent 9": lambda m: m.get_belief(agent_id=ids[9]),
         # })
 
-        if show_n_connections:
-            # Overview of how many agents have how many connections
-            data = [len(agent.followers) for agent in self.schedule.agents]
-
-            bins = np.linspace(math.ceil(min(data)),
-                               math.floor(max(data)),
-                               40)  # a fixed number of bins
-
-            plt.xlim([min(data) - 5, max(data) + 5])
-
-            plt.hist(data, bins=bins, alpha=0.5)
-            plt.xlabel(f'Number of followers (highest: {max(data)})')
-            plt.ylabel('Agent count')
-            plt.show()
-
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
         # self.data_collector.collect(self)
         # self.data_collector2.collect(self)
 
-    # @profile
-    def __call__(
-            self,
-            # ––– Network –––
-            ratio_normal_user=0.99,
+    # @profile  # To profile the code: Comment this line in.
+    def __call__(self,
+                 # ––– Network –––
+                 n_agents=1000,
+                 n_edges=3,
+                 high_media_lit=0.3,
+                 ratio_normal_user=0.99,
 
-            # ––– Posting behavior –––
-            sigma=0.7,
-            mean_normal_user=1,
-            mean_disinformer=10,
-            adjustment_based_on_belief=2,
+                 # ––– Posting behavior –––
+                 sigma=0.7,
+                 mean_normal_user=1,
+                 mean_disinformer=10,
+                 adjustment_based_on_belief=2,
 
-            # ––– Levers –––
-            mlit_select=0.0,
-            mlit_dur_init=3600,
-            mlit_dur_low=3,
-            mlit_dur_high=30,
-            rank_punish=-0.0,
-            del_t=0.0,
-            rank_t=0.0,
-            strikes_t=0.0,
+                 # ––– Levers –––
+                 mlit_select=0.0,
+                 mlit_dur_init=3600,
+                 mlit_dur_low=3,
+                 mlit_dur_high=30,
+                 rank_punish=-0.0,
+                 del_t=0.0,
+                 rank_t=0.0,
+                 strikes_t=0.0,
 
-            # ––– Belief updating behavior –––
-            belief_update_fn=BeliefUpdate.SAMPLE,
-            sampling_p_update=0.02,
-            deffuant_mu=0.02,
-            belief_metric_threshold=50.0,
+                 # ––– Belief updating behavior –––
+                 belief_update_fn=BeliefUpdate.SAMPLE,
+                 sampling_p_update=0.02,
+                 deffuant_mu=0.02,
+                 belief_metric_threshold=50.0,
 
-            # ––– Call parameters –––
-            steps=60,
-            time_tracking=False,
-            debug=False,
-    ):
+                 # ––– Call parameters –––
+                 steps=60,
+                 time_tracking=False,
+                 debug=False):
         """
         Runs the model for the specified number of steps.
-
+        # TODO: Doesn't this still need all the other params?
         @param steps:           int, number of model-steps the model should take
         @param time_tracking:   Boolean, whether to print timing information
         @param debug:           Boolean, whether to print details
@@ -287,6 +240,9 @@ class MisinfoPy(Model):
 
         self.set_up(
             # ––– Network –––
+            n_agents=n_agents,
+            n_edges=n_edges,
+            high_media_lit=high_media_lit,
             ratio_normal_user=ratio_normal_user,
 
             # ––– Posting behavior –––
@@ -370,7 +326,7 @@ class MisinfoPy(Model):
 
             # Add agent of that type
             if agent_type is NormalUser:
-                a = NormalUser(i, self)
+                a = NormalUser(i, self, self.high_media_lit)
                 self.schedule.add(a)
             elif agent_type is Disinformer:
                 a = Disinformer(i, self)
@@ -725,7 +681,7 @@ class MisinfoPy(Model):
 
 
 if __name__ == '__main__':
-    model = MisinfoPy(n_agents=100)
+    model = MisinfoPy()
     results = model(steps=15)
 
     [print(r) for r in results]

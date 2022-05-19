@@ -6,39 +6,49 @@ from ema_workbench import (
     MultiprocessingEvaluator,
     SequentialEvaluator,
     ScalarOutcome,
-    CategoricalParameter,
+    IntegerParameter,
     RealParameter,
-    Constant
+    Constant,
+    save_results
 )
 from ema_workbench.em_framework.parameters import Category
 from misinfo_model import MisinfoPy
 
-
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def perform_my_experiments(n_scenarios=1, n_policies=10, n_agents=1000):
+def perform_my_experiments(policies, scenarios, saving=False):
     """
     Sets up the model, performs experiments and returns the results.
 
-    @param n_scenarios: int, number of scenarios
-    @param n_policies: int, number of policies  # TODO: SPECIFY FURTHER, how to make all policies?
-    @param n_agents: int, number of agents
+    @param scenarios: int or list of scenarios
+    @param policies: int or list of policies
+    @param saving:
     @return:
     """
 
     # Setting up the model
-    model = MisinfoPy(n_agents=n_agents)
+    model = MisinfoPy()
     model = Model('MisinfoPy', function=model)
 
-    model.uncertainties = [RealParameter('belief_metric_threshold', 40.0, 60.0)]  # TODO: Fill fully
-    model.constants = [Constant('steps', 15)]  # TODO: Fill fully
+    model.uncertainties = [RealParameter('belief_metric_threshold', 40.0, 60.0),
+                           IntegerParameter('n_edges', 2, 3),
+                           RealParameter('ratio_normal_user', 0.95, 1.0),
+                           IntegerParameter('mean_normal_user', 0, 2),
+                           IntegerParameter('mean_disinformer', 5, 15),
+                           RealParameter('high_media_lit', 0.05, 0.4)]
+
+    model.constants = []
     model.outcomes = get_outcomes()
     model.levers = get_levers()
 
     # experiments
-    with SequentialEvaluator(model) as evaluator:
-        results = evaluator.perform_experiments(scenarios=n_scenarios, policies=n_policies)
+    with MultiprocessingEvaluator(model) as evaluator:
+        results = evaluator.perform_experiments(scenarios=scenarios, policies=policies)
+
+    if saving:
+        file_name = f"exploration_{scenarios}_scenarios"
+        save_results(results, file_name)
 
     return results
 
@@ -80,7 +90,7 @@ def get_levers():
         RealParameter('strikes_t', 0.0, 1.0),
     ]
 
-    # # Later: CategoricalParameter (to not do full exploration, but only specified values)
+    # # TODO: Move to IntegerParameter (to not do full exploration, but only specified values)
     # standard_categories = [
     #     Category('0.0', 0.0),
     #     Category('0.2', 0.2),
@@ -111,11 +121,25 @@ def get_levers():
 
 
 if __name__ == "__main__":
-    res = perform_my_experiments()
-    exp, out = res
 
-    out = pd.DataFrame(out)
+    policy_list = [
+        Policy('all off', **{'mlit_select': 0.0,
+                             'del_t': 0.0,
+                             'rank_punish': -0.0,
+                             'rank_t': 0.0,
+                             'strikes_t': 0.0}),
+        Policy('all max', **{'mlit_select': 1.0,
+                             'del_t': 0.5,
+                             'rank_punish': -1.0,
+                             'rank_t': 0.5,
+                             'strikes_t': 0.5}),
+    ]
 
-    for idx, row in out.iterrows():
-        print(row)
-        print()
+    res = perform_my_experiments(policies=policy_list, scenarios=10, saving=True)
+    # exp, out = res
+    #
+    # out = pd.DataFrame(out)
+    #
+    # for idx, row in out.iterrows():
+    #     print(row)
+    #     print()
