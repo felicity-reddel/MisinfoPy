@@ -1,5 +1,5 @@
 import pandas as pd
-from agents import *  # incl.: utils import
+from agents import *  # incl.: utils import, enums
 import time
 import statistics
 from mesa import Model
@@ -9,6 +9,8 @@ from mesa.space import NetworkGrid
 import numpy as np
 import math
 from matplotlib import pyplot as plt
+
+
 # # To profile the code:
 # import cProfile, pstats, io
 #
@@ -40,6 +42,7 @@ class MisinfoPy(Model):
             # ––– Network –––
             n_agents=1000,
             n_edges=2,
+            seed=None
     ):
         """
         Initializes the MisinfoPy.
@@ -154,7 +157,7 @@ class MisinfoPy(Model):
         @param show_n_connections:          boolean
         """
         # ––– Network & Setup –––
-        self.G = random_graph(n_nodes=self.n_agents, m=self.n_edges)  # n_nodes = n_agents, exactly 1 agent per node
+        self.G = self.random_graph(n_nodes=self.n_agents, m=self.n_edges)  # n_nodes=n_agents, exactly 1 agent per node
         self.grid = NetworkGrid(self.G)
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
 
@@ -242,36 +245,36 @@ class MisinfoPy(Model):
 
     # @profile
     def __call__(
-        self,
-        # ––– Network –––
-        ratio_normal_user=0.99,
+            self,
+            # ––– Network –––
+            ratio_normal_user=0.99,
 
-        # ––– Posting behavior –––
-        sigma=0.7,
-        mean_normal_user=1,
-        mean_disinformer=10,
-        adjustment_based_on_belief=2,
+            # ––– Posting behavior –––
+            sigma=0.7,
+            mean_normal_user=1,
+            mean_disinformer=10,
+            adjustment_based_on_belief=2,
 
-        # ––– Levers –––
-        mlit_select=0.0,
-        mlit_dur_init=3600,
-        mlit_dur_low=3,
-        mlit_dur_high=30,
-        rank_punish=-0.0,
-        del_t=0.0,
-        rank_t=0.0,
-        strikes_t=0.0,
+            # ––– Levers –––
+            mlit_select=0.0,
+            mlit_dur_init=3600,
+            mlit_dur_low=3,
+            mlit_dur_high=30,
+            rank_punish=-0.0,
+            del_t=0.0,
+            rank_t=0.0,
+            strikes_t=0.0,
 
-        # ––– Belief updating behavior –––
-        belief_update_fn=BeliefUpdate.SIT,
-        sampling_p_update=0.02,
-        deffuant_mu=0.02,
-        belief_metric_threshold=50.0,
+            # ––– Belief updating behavior –––
+            belief_update_fn=BeliefUpdate.SIT,
+            sampling_p_update=0.02,
+            deffuant_mu=0.02,
+            belief_metric_threshold=50.0,
 
-        # ––– Call parameters –––
-        steps=60,
-        time_tracking=False,
-        debug=False,
+            # ––– Call parameters –––
+            steps=60,
+            time_tracking=False,
+            debug=False,
     ):
         """
         Runs the model for the specified number of steps.
@@ -675,49 +678,48 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
+    def random_graph(self, n_nodes, m, seed=None, directed=True) -> nx.Graph:
+        """
+        Generates a random graph à la Barabasi Albert.
+        @param n_nodes:     int, number of nodes
+        @param m:           int, number of edges added per node
+        @param seed:        int, random seed
+        @param directed:    bool, undirected or directed graph
 
-def random_graph(n_nodes, m, seed=None, directed=True) -> nx.Graph:
-    """
-    Generates a random graph à la Barabasi Albert.
-    @param n_nodes:     int, number of nodes
-    @param m:           int, number of edges added per node
-    @param seed:        int, random seed
-    @param directed:    bool, undirected or directed graph
+        @return:            nx.Graph, the resulting stochastic graph (barabasi albert G)
 
-    @return:            nx.Graph, the resulting stochastic graph (barabasi albert G)
+        # Note:     Using Barabasi Albert graphs, because they are fitting for social networks.
+        #           ( https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model )
+        # Later:    Potential extension: parameter for skew of node degree.
+        # FYI:      n=10, m=3, doesn't create 30 edges, but only e.g., 21. Not each node has 3 edges.
+        """
+        graph = nx.barabasi_albert_graph(n_nodes, m, seed)
 
-    # Note:     Using Barabasi Albert graphs, because they are fitting for social networks.
-    #           ( https://en.wikipedia.org/wiki/Barab%C3%A1si%E2%80%93Albert_model )
-    # Later:    Potential extension: parameter for skew of node degree.
-    # FYI:      n=10, m=3, doesn't create 30 edges, but only e.g., 21. Not each node has 3 edges.
-    """
-    graph = nx.barabasi_albert_graph(n_nodes, m, seed)
+        if directed:  # --> has key
+            # Make graph directed (i.e., asymmetric edges possible = multiple directed edges)
+            graph = nx.MultiDiGraph(graph)  # undirected --> "=bidirectional"
 
-    if directed:  # --> has key
-        # Make graph directed (i.e., asymmetric edges possible = multiple directed edges)
-        graph = nx.MultiDiGraph(graph)  # undirected --> "=bidirectional"
+            # Add edge weights
+            for edge in graph.edges:
+                from_e = edge[0]
+                to_e = edge[1]
+                key = edge[2]
 
-        # Add edge weights
-        for edge in graph.edges:
-            from_e = edge[0]
-            to_e = edge[1]
-            key = edge[2]
+                # Sample weights & save them
+                weight = self.random.randint(0, 100)
+                graph.edges[from_e, to_e, key]['weight'] = weight
 
-            # Sample weights & save them
-            weight = random.randint(0, 100)
-            graph.edges[from_e, to_e, key]['weight'] = weight
+        else:  # not directed --> no key
+            # Add edge weights
+            for edge in graph.edges:
+                from_e = edge[0]
+                to_e = edge[1]
 
-    else:  # not directed --> no key
-        # Add edge weights
-        for edge in graph.edges:
-            from_e = edge[0]
-            to_e = edge[1]
+                # Sample weights & save them
+                weight = 1 + random.random() * random.choice([-1, 1])  # weights in range [0,2]: no visible change
+                graph.edges[from_e, to_e]['weight'] = weight
 
-            # Sample weights & save them
-            weight = 1 + random.random() * random.choice([-1, 1])  # weights in range [0,2]: no visible change
-            graph.edges[from_e, to_e]['weight'] = weight
-
-    return graph
+        return graph
 
 
 if __name__ == '__main__':

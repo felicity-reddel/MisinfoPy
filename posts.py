@@ -1,5 +1,5 @@
 import numpy as np
-from enums import *
+from enums import GroundTruth, MediaLiteracy, SelectAgentsBy, BeliefUpdate
 from utils import *
 
 
@@ -25,24 +25,7 @@ class Post:
         self.detected_as_misinfo = self.detected_as_misinfo()
         self.visibility = self.get_visibility(rank_t)
 
-    @staticmethod
-    def sample_beliefs(agent=None) -> dict:
-        """
-        Generates and returns dict of tweet_beliefs for one post (i.e., topic & n_seen_posts_repl):  {Topic.TOPIC1: int}
-        :param agent:  Agent,  if None: generate random belief,
-                               if Agent: generate post-tweet_beliefs based that agent's tweet_beliefs
-        :return: dict of tweet_beliefs (i.e., topics with n_seen_posts_repl)
-        """
-
-        # Sample tweet_belief on topic
-        if agent is not None:
-            current_agent_belief = agent.beliefs[Topic.VAX]
-            tweet_belief = np.random.normal(loc=current_agent_belief, scale=5, size=1)[0]
-            tweet_belief = max(min(tweet_belief, 100), 0)
-        else:
-            tweet_belief = random.randint(0, 100)
-
-        return {Topic.VAX: tweet_belief}
+    # @staticmethod
 
     def factcheck_algorithm(self, topic=Topic.VAX):
         """
@@ -85,8 +68,7 @@ class Post:
 
         return visibility
 
-    @staticmethod
-    def detected_as_misinfo(p_detected=0.41):
+    def detected_as_misinfo(self, p_detected=0.41):
         """
         Determines whether a misinfo-post is detected as such.
 
@@ -103,6 +85,7 @@ class Post:
         :param p_detected: float, in range [0.0, 1.0]
         :return: Boolean
         """
-        detected = random.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
+        rd = self.source.model.random
+        detected = rd.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
 
         return detected

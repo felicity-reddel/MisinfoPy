@@ -235,9 +235,9 @@ class BaseAgent(Agent):
         self.model.post_id_counter += 1
 
         if based_on_beliefs:
-            tweet_beliefs = Post.sample_beliefs(agent=self)
+            tweet_beliefs = sample_beliefs(agent=self)
         else:
-            tweet_beliefs = Post.sample_beliefs()
+            tweet_beliefs = sample_beliefs()
 
         # Create post
         post = Post(post_id,
