@@ -38,7 +38,7 @@ def perform_my_experiments(policies, scenarios, saving=False):
                            IntegerParameter('mean_disinformer', 5, 15),
                            RealParameter('high_media_lit', 0.05, 0.4)]
 
-    model.constants = []
+    model.constants = [Constant('steps', 15)]
     model.outcomes = get_outcomes()
     model.levers = get_levers()
 

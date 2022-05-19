@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 import statistics as stats
 from scipy.special import rel_entr
 from enums import Topic
+import cProfile, pstats, io
 
 
 def sample_beliefs(agent=None) -> dict:
@@ -247,6 +248,26 @@ def calculate_percentage_agents_above_threshold(misinfo_model, threshold):
     n_above: int = sum([1 for a_belief in agent_beliefs if a_belief >= threshold])
     percentage_above = n_above / len(misinfo_model.schedule.agents)
     return percentage_above
+
+
+# To profile the code:
+def profile(fnc):
+    """Decorator using cProfile to profile a provided function"""
+
+    def inner(*args, **kwargs):
+
+        pr = cProfile.Profile()
+        pr.enable()
+        retval = fnc(*args, **kwargs)
+        pr.disable()
+        s = io.StringIO()
+        sortby = 'cumulative'
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
+        return retval
+
+    return inner
 
 
 # def show_n_connections(misinfo_model):

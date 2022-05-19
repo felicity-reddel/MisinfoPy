@@ -1,5 +1,4 @@
 import random
-
 import pandas as pd
 from agents import *  # incl.: utils import, enums
 import time
@@ -10,29 +9,6 @@ from mesa.time import StagedActivation
 from mesa.space import NetworkGrid
 import numpy as np
 import math
-
-
-# # To profile the code:
-# import cProfile, pstats, io
-#
-#
-# def profile(fnc):
-#     """Decorator using cProfile to profile a provided function"""
-#
-#     def inner(*args, **kwargs):
-#
-#         pr = cProfile.Profile()
-#         pr.enable()
-#         retval = fnc(*args, **kwargs)
-#         pr.disable()
-#         s = io.StringIO()
-#         sortby = 'cumulative'
-#         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-#         ps.print_stats()
-#         print(s.getvalue())
-#         return retval
-#
-#     return inner
 
 
 class MisinfoPy(Model):
