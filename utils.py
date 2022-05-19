@@ -14,13 +14,13 @@ def sample_beliefs(agent=None) -> dict:
     """
 
     # Sample tweet_belief on topic
+    rng = agent.model.random
     if agent is not None:
         current_agent_belief = agent.beliefs[Topic.VAX]
-        rd = agent.model.random
-        tweet_belief = rd.normalvariate(mu=current_agent_belief, sigma=5)
+        tweet_belief = rng.normalvariate(mu=current_agent_belief, sigma=5)
         tweet_belief = max(min(tweet_belief, 100), 0)
     else:
-        tweet_belief = random.randint(0, 100)
+        tweet_belief = rng.randint(0, 100)
 
     return {Topic.VAX: tweet_belief}
 

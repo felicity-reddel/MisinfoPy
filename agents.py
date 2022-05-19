@@ -1,8 +1,8 @@
 from posts import *
-import numpy as np
+# import numpy as np
 
 import math
-import random
+# import random
 
 from mesa import Agent
 
@@ -53,7 +53,7 @@ class BaseAgent(Agent):
         mean += extremeness * max_mean_increase
         std_dev = self.vocality['std_dev']
 
-        nr_of_posts = max(0, np.random.normal(mean, std_dev, 1)[0])
+        nr_of_posts = max(0, self.model.random.normalvariate(mu=mean, sigma=std_dev))
 
         # rounding and converting to int
         nr_of_posts = round(nr_of_posts)
@@ -326,14 +326,14 @@ class NormalUser(BaseAgent):
 
         self.vocality = {'mean': self.model.mean_normal_user,
                          'std_dev': self.model.sigma}
-        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[0.7, 0.3])  # {LOW, HIGH}
+        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[0.7, 0.3], rng=self.model.random)  # {LOW, HIGH}
 
     def init_beliefs(self):
         """
         Initialize for each topic a random belief.
         """
         for topic in Topic:
-            self.beliefs[topic] = self.random.randint(0, 100)
+            self.beliefs[topic] = self.model.random.randint(0, 100)
 
     def update_beliefs_stage(self):
         """
@@ -342,7 +342,8 @@ class NormalUser(BaseAgent):
         # Agent can only update tweet_beliefs if it received posts in the first stage of the time tick
         if len(self.received_posts) > 0:
             # Sample which of the received posts are actually seen (depends on ranking).
-            seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
+            rng = self.model.random
+            seen_posts = [post for post in self.received_posts if (rng.random() < post.visibility)]
             self.n_seen_posts.append(len(seen_posts))
             self.n_total_seen_posts += len(seen_posts)
 
@@ -384,7 +385,7 @@ class NormalUser(BaseAgent):
         old = self.beliefs[Topic.VAX]
         tweet_belief = post.tweet_beliefs[Topic.VAX]
         p_update = self.model.sampling_p_update
-        if random.random() <= p_update:
+        if self.model.random.random() <= p_update:
             new = (old + tweet_belief) / 2
             self.beliefs[Topic.VAX] = new
 
@@ -452,7 +453,7 @@ class NormalUser(BaseAgent):
             p_judged_as_truthful = 1.0  # People with Medialiteracy.LOW will always update
 
         # Sample whether post is judged as truthful
-        if random.random() < p_judged_as_truthful:
+        if self.model.random.random() < p_judged_as_truthful:
             judged_truthfulness = True
         else:
             judged_truthfulness = False
@@ -474,12 +475,12 @@ class Disinformer(BaseAgent):
         Initialize for each topic a random extreme belief. Currently, always at the lower end of [0,100].
         """
         for topic in Topic:
-            self.beliefs[topic] = self.random.randint(0, 10)
+            self.beliefs[topic] = self.model.random.randint(0, 10)
 
     def update_beliefs_stage(self):
         """
         Second part of the Disinformer agent's step function. Disinformers don't update their tweet_beliefs
         """
         # To include disinformers into the profit metric of n_seen_posts:
-        seen_posts = [post for post in self.received_posts if (random.random() < post.visibility)]
+        seen_posts = [post for post in self.received_posts if (self.model.random.random() < post.visibility)]
         self.n_seen_posts.append(len(seen_posts))

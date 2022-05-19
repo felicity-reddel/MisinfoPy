@@ -92,7 +92,7 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.data_collector = None
 
-    def set_up(
+    def set_up(  # TODO: remove all default values? (provided by __call__) still kinda double/triple with the init?
             self,
             # ––– Network –––
             ratio_normal_user=0.99,
@@ -114,7 +114,7 @@ class MisinfoPy(Model):
             strikes_t=0.0,
 
             # ––– Belief updating behavior –––
-            belief_update_fn=BeliefUpdate.SIT,
+            belief_update_fn=BeliefUpdate.SAMPLE,
             sampling_p_update=0.02,
             deffuant_mu=0.02,
             belief_metric_threshold=50.0,
@@ -156,8 +156,8 @@ class MisinfoPy(Model):
         ––– Plots –––
         @param show_n_connections:          boolean
         """
-        # ––– Network & Setup –––
-        self.G = self.random_graph(n_nodes=self.n_agents, m=self.n_edges)  # n_nodes=n_agents, exactly 1 agent per node
+        # ––– Network & Setup –––  # n_nodes=n_agents, exactly 1 agent per node
+        self.G = self.random_graph(rng=self.random, seed=self._seed, n_nodes=self.n_agents, m=self.n_edges)
         self.grid = NetworkGrid(self.G)
         self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
 
@@ -266,7 +266,7 @@ class MisinfoPy(Model):
             strikes_t=0.0,
 
             # ––– Belief updating behavior –––
-            belief_update_fn=BeliefUpdate.SIT,
+            belief_update_fn=BeliefUpdate.SAMPLE,
             sampling_p_update=0.02,
             deffuant_mu=0.02,
             belief_metric_threshold=50.0,
@@ -366,7 +366,7 @@ class MisinfoPy(Model):
         # Create agents & add them to the scheduler
         for i in range(self.n_agents):
             # Pick which type should be added
-            agent_type = random.choices(population=types, weights=percentages, k=1)[0]
+            agent_type = self.random.choices(population=types, weights=percentages, k=1)[0]
 
             # Add agent of that type
             if agent_type is NormalUser:
@@ -439,7 +439,7 @@ class MisinfoPy(Model):
         @return:            list of agents, [(Base)Agent, (Base)Agent, ...]
         """
         if select_by.__eq__(SelectAgentsBy.RANDOM):
-            selected_agents = random.choices(self.schedule.agents, k=n_select)
+            selected_agents = self.random.choices(population=self.schedule.agents, k=n_select)
         else:
             raise ValueError(f'Selection style {select_by} has not yet been implemented. '
                              f'To sample which agents will be empowered by the media literacy intervention,'
@@ -678,9 +678,11 @@ class MisinfoPy(Model):
         belief = agent_i.beliefs[topic]
         return belief
 
-    def random_graph(self, n_nodes, m, seed=None, directed=True) -> nx.Graph:
+    @staticmethod
+    def random_graph(rng, n_nodes, m, seed, directed=True) -> nx.Graph:
         """
         Generates a random graph à la Barabasi Albert.
+        @param rng: Random number generator from mesa or normal Python random
         @param n_nodes:     int, number of nodes
         @param m:           int, number of edges added per node
         @param seed:        int, random seed
@@ -706,7 +708,7 @@ class MisinfoPy(Model):
                 key = edge[2]
 
                 # Sample weights & save them
-                weight = self.random.randint(0, 100)
+                weight = rng.randint(0, 100)
                 graph.edges[from_e, to_e, key]['weight'] = weight
 
         else:  # not directed --> no key
@@ -715,8 +717,8 @@ class MisinfoPy(Model):
                 from_e = edge[0]
                 to_e = edge[1]
 
-                # Sample weights & save them
-                weight = 1 + random.random() * random.choice([-1, 1])  # weights in range [0,2]: no visible change
+                # Sample weights & save them (weights in range [0,2]: no visible change)
+                weight = 1 + rng.random() * rng.choice([-1, 1])
                 graph.edges[from_e, to_e]['weight'] = weight
 
         return graph

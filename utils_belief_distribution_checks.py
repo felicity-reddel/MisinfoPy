@@ -66,7 +66,7 @@ def create_subplot(data, n_rows=3, n_cols=3, saving=False, title="", x_ticks=5, 
     # Sample which runs to include in the plot
     n_runs = len(data)
     all_run_ids = [*range(n_runs)]
-    plot_ids = random.sample(all_run_ids, k=n_rows*n_cols)
+    plot_ids = random.sample(all_run_ids, k=n_rows*n_cols)  # outside of model performance, can use non-model random
 
     # Create subplots
     fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, sharex="all", sharey="all", figsize=(10.8, 8))

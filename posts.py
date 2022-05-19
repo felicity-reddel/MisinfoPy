@@ -20,12 +20,11 @@ class Post:
         else:
             self.tweet_beliefs = tweet_beliefs
 
-        self.ground_truth = GroundTruth.get_groundtruth(tweet_belief=self.tweet_beliefs[Topic.VAX])
+        self.ground_truth = GroundTruth.get_groundtruth(rng=self.source.model.random,
+                                                        tweet_belief=self.tweet_beliefs[Topic.VAX])
         self.p_true = self.factcheck_algorithm()
         self.detected_as_misinfo = self.detected_as_misinfo()
         self.visibility = self.get_visibility(rank_t)
-
-    # @staticmethod
 
     def factcheck_algorithm(self, topic=Topic.VAX):
         """
@@ -85,7 +84,7 @@ class Post:
         :param p_detected: float, in range [0.0, 1.0]
         :return: Boolean
         """
-        rd = self.source.model.random
-        detected = rd.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
+        rng = self.source.model.random
+        detected = rng.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
 
         return detected
