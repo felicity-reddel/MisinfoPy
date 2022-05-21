@@ -15,11 +15,11 @@ if __name__ == '__main__':
 
     # Experiment-Conditions are a combination of: Policies + BeliefUpdateFn
     # (Policies themselves = combinations of intervention values)
-    mlit_select_values = [0.0]  # , 0.1, 0.25, 1.0]
-    rank_punish_values = [-0.0]  # by default no ranking adjustment
-    del_t_values = [0.0]  # by default no deleting
-    rank_t_values = [0.0]  # by default no ranking
-    strikes_t_values = [0.0]  # by default no strike system
+    mlit_select_values = [0]  # , 0.1, 0.25, 1.0]
+    rank_punish_values = [-0]  # by default no ranking adjustment
+    del_t_values = [0]  # by default no deleting
+    rank_t_values = [0]  # by default no ranking
+    strikes_t_values = [0]  # by default no strike system
     belief_update_fn_values = list(BeliefUpdate)
 
     policies = list(itertools.product(mlit_select_values,

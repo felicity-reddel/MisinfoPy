@@ -77,7 +77,7 @@ class BaseAgent(Agent):
                 post = self.create_post(rank_t=self.model.rank_t)
 
                 # Deleting: Posts that have a very low probability of being true might be deleted
-                if (post.p_true <= self.model.del_t) and post.detected_as_misinfo:
+                if (post.p_true <= self.model.del_t/100) and post.detected_as_misinfo:
                     # Delete post by not appending it and advancing the delete-counter
                     self.model.n_posts_deleted += 1
                 else:
@@ -224,7 +224,7 @@ class BaseAgent(Agent):
         """
         pass
 
-    def create_post(self, based_on_beliefs=True, rank_t=0.1):
+    def create_post(self, based_on_beliefs=True, rank_t=10):
         """
         Creates a new post. Either random or based on own tweet_beliefs.
         :return: Post

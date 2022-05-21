@@ -53,11 +53,11 @@ def show_visualization(model,
                        n_agents=100,
                        n_edges=3,
                        ratio_normal_user=0.99,
-                       mlit_select=0.0,
-                       del_t=-0.1,
-                       rank_t=-0.1,
-                       strikes_t=-0.1,
-                       rank_punish=-0.0,
+                       mlit_select=0,
+                       del_t=-10,
+                       rank_t=-10,
+                       strikes_t=-10,
+                       rank_punish=-0,
                        belief_update_fn=BeliefUpdate.SIT,
                        sampling_p_update=0.02,
                        deffuant_mu=0.02
@@ -69,11 +69,11 @@ def show_visualization(model,
     :param n_agents:    int
     :param n_edges:     int
     :param ratio_normal_user: float, in range [0.0, 1.0]
-    :param mlit_select:  tuple: (percentage_reached, how_to_select_agents)  (float, Enum)
-    :param del_t: float, in range [0.0, 1.0]
-    :param rank_t: float, in range [0.0, 1.0]
-    :param strikes_t: float, in range [0.0, 1.0]
-    :param rank_punish: float, -0.0 if no adjustment, in range [-0.0, -1.0]
+    :param mlit_select:  tuple: (int_percentage_reached, how_to_select_agents)  (float, Enum)
+    :param del_t: int in range [0, 100]
+    :param rank_t: int in range [0, 100]
+    :param strikes_t: int in range [0, 100]
+    :param rank_punish: int in range [-100, 0]
     :param belief_update_fn:  BeliefUpdate
     :param sampling_p_update: float, probability that agent updates belief based on a seen post
     :param deffuant_mu: float, "step size" (in percent) with which the agent moves its belief towards the post's belief

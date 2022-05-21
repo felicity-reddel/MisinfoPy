@@ -5,7 +5,7 @@ from utils import *
 
 class Post:
 
-    def __init__(self, unique_id, source, tweet_beliefs=None, rank_t=0.0):
+    def __init__(self, unique_id, source, tweet_beliefs=None, rank_t=0):
         """
         :param unique_id: int
         :param source: Agent (NormalUser or Disinformer)
@@ -32,9 +32,9 @@ class Post:
         The factcheck algorithm assigns the post a probability of having GroundTruth.TRUE by using the post's belief.
         This probability is returned.
         :param topic: Topic
-        :return: float, in range [0,1]
+        :return: int, in range [0,100]
         """
-        p_true = self.tweet_beliefs[topic] / 100
+        p_true = self.tweet_beliefs[topic]
         return p_true
 
     def estimate_visibility(self):
@@ -48,14 +48,14 @@ class Post:
 
         return engagement
 
-    def get_visibility(self, rank_t=0.1):
+    def get_visibility(self, rank_t=10):
         """
         The ranking intervention is applied. This method adjusts the visibility of the posts if the factcheck result
         is of sufficient certainty that the post is false (i.e., post has a sufficiently low p_true).
         This adjustment is dependent on the Post's GroundTruth:
             if TRUE     -> same visibility
             if FALSE    -> visibility reduced by 50%
-        :param rank_t: float, range [0.0, 1.0]
+        :param rank_t: int, range [0, 100]
         :return:  float, [0,1)
         """
         visibility = self.estimate_visibility()

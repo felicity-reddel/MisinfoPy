@@ -78,14 +78,14 @@ class MisinfoPy(Model):
         @param adjustment_based_on_belief:  float, the extremeness of an agent adjusts the mean for sampling n_posts
 
         ––– Levers –––
-        @param mlit_select: float, in domain [0,1], Percentage of agents empowered by media literacy intervention.
+        @param mlit_select: int, in domain [0,100], Percentage of agents empowered by media literacy intervention.
         @param mlit_dur_init: int, how long the initial media literacy intervention takes for a user
         @param mlit_dur_low: int, how long a person with LOW media literacy takes to judge the truthfulness of a post
         @param mlit_dur_high: int, how long a person with HIGH media literacy takes to judge the truthfulness of a post
-        @param rank_punish: float, range [-0.0, -1.0], relative visibility change for posts with GroundTruth.FALSE
-        @param del_t: float, range [0.0, 1.0], p_true_threshold for deleting (below -> may be deleted)
-        @param rank_t: float, range [0.0, 1.0], p_true_threshold for down-ranking (below -> may be down-ranked)
-        @param strikes_t: float, range [0.0, 1.0], p_true_threshold for strike system (below -> may result in strike)
+        @param rank_punish: int, in domain [-100,0], relative visibility change for posts with GroundTruth.FALSE
+        @param del_t: int, in domain [0,100], p_true_threshold for deleting (below -> may be deleted)
+        @param rank_t: int, in domain [0,100], p_true_threshold for down-ranking (below -> may be down-ranked)
+        @param strikes_t: int, in domain [0,100], p_true_threshold for strike system (below -> may result in strike)
 
         ––– Belief updating behavior –––
         @param belief_update_fn:            BeliefUpdate (enum)
@@ -114,9 +114,9 @@ class MisinfoPy(Model):
         self.mlit_dur_low = mlit_dur_low
         self.mlit_dur_high = mlit_dur_high
         self.apply_media_literacy_intervention(mlit_select)
-        if not (-1.0 <= rank_punish <= -0.0):
+        if not (-100 <= rank_punish <= -0):
             raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
-                             f"while it should be in range [-0.0, -1.0]")
+                             f"while it should be in range [-100, 0]")
         self.del_t = del_t
         self.rank_t = rank_t
         self.rank_punish = rank_punish
@@ -186,14 +186,14 @@ class MisinfoPy(Model):
                  adjustment_based_on_belief=2,
 
                  # ––– Levers –––
-                 mlit_select=0.0,
+                 mlit_select=0,
                  mlit_dur_init=3600,
                  mlit_dur_low=3,
                  mlit_dur_high=30,
-                 rank_punish=-0.0,
-                 del_t=0.0,
-                 rank_t=0.0,
-                 strikes_t=0.0,
+                 rank_punish=0,
+                 del_t=0,
+                 rank_t=0,
+                 strikes_t=0,
 
                  # ––– Belief updating behavior –––
                  belief_update_fn=BeliefUpdate.SAMPLE,
@@ -213,6 +213,13 @@ class MisinfoPy(Model):
         @param debug:           Boolean, whether to print details
         @return: tuple: metrics values for this run (n_above_belief_threshold, variance, ...)
         """
+
+        # Workaround until I understand the "resolution" from IntegerParam
+        [mlit_select, del_t, rank_punish, rank_t, strikes_t] = map_levers(mlit_select,
+                                                                          del_t,
+                                                                          rank_punish,
+                                                                          rank_t,
+                                                                          strikes_t)
 
         self.set_up(
             # ––– Network –––
@@ -347,16 +354,16 @@ class MisinfoPy(Model):
         self.agents_data["n_following_range"] = (min_n_following, max_n_following)
         self.agents_data["n_followers_range"] = (min_n_followers, max_n_followers)
 
-    def apply_media_literacy_intervention(self, percentage_selected=0.0, select_by=SelectAgentsBy.RANDOM):
+    def apply_media_literacy_intervention(self, percentage_selected=0, select_by=SelectAgentsBy.RANDOM):
         """
         Applies the media literacy intervention (if needed).
-        @param percentage_selected: float, [0,1], Percentage of agents empowered by media literacy intervention.
+        @param percentage_selected: int, in domain [0,100], Percentage of agents empowered by mlit-intervention
         @param select_by: SelectAgentsBy, enum how to select agents
         """
         # If media literacy intervention is used: select agents for intervention, adjust their media literacy.
         # (i.e., if some percentage of agents is targeted with it)
-        if percentage_selected > 0.0:
-            n_select = int(len(self.schedule.agents) * percentage_selected)
+        if percentage_selected > 0:
+            n_select = int(len(self.schedule.agents) * (percentage_selected / 100))
             selected_agents = self.select_agents_for_media_literacy_intervention(n_select, select_by)
 
             for agent in selected_agents:
@@ -405,7 +412,7 @@ class MisinfoPy(Model):
         n_prevented = total_posts - n_posted
         n_downranked = sum([a.n_downranked for a in self.schedule.agents])
 
-        constraint = n_prevented + (n_downranked * abs(self.rank_punish))
+        constraint = n_prevented + (n_downranked * abs(self.rank_punish / 100))
         rel_constraint = constraint / total_posts
 
         return rel_constraint
@@ -654,6 +661,24 @@ class MisinfoPy(Model):
                 graph.edges[from_e, to_e]['weight'] = weight
 
         return graph
+
+
+def map_levers(mlit_select, del_t, rank_punish, rank_t, strikes_t):
+    """Workaround until I understand the "resolution" from IntegerParam."""
+
+    mapping = {0: 10,
+               1: 30,
+               2: 50,
+               3: 70,
+               4: 90}
+
+    mlit_select = mapping[mlit_select]
+    del_t = mapping[del_t]
+    rank_punish = -1 * mapping[rank_punish]
+    rank_t = mapping[rank_t]
+    strikes_t = mapping[strikes_t]
+
+    return mlit_select, del_t, rank_punish, rank_t, strikes_t
 
 
 if __name__ == '__main__':

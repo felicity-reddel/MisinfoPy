@@ -13,14 +13,17 @@ from ema_workbench import (
 )
 from ema_workbench.em_framework.parameters import Category
 from misinfo_model import MisinfoPy
+from enums import BeliefUpdate
 
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def perform_my_experiments(policies, scenarios, saving=False):
+def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60, saving=False, file_name=None):
     """
     Sets up the model, performs experiments and returns the results.
 
+    @param steps:
+    @param belief_update_fn:
     @param scenarios: int or list of scenarios
     @param policies: int or list of policies
     @param saving:
@@ -38,7 +41,8 @@ def perform_my_experiments(policies, scenarios, saving=False):
                            IntegerParameter('mean_disinformer', 5, 15),
                            RealParameter('high_media_lit', 0.05, 0.4)]
 
-    model.constants = [Constant('steps', 15)]
+    model.constants = [Constant('steps', steps),
+                       Constant('belief_update_fn', belief_update_fn)]
     model.outcomes = get_outcomes()
     model.levers = get_levers()
 
@@ -47,7 +51,8 @@ def perform_my_experiments(policies, scenarios, saving=False):
         results = evaluator.perform_experiments(scenarios=scenarios, policies=policies)
 
     if saving:
-        file_name = f"exploration_{scenarios}_scenarios"
+        if file_name is None:
+            file_name = f"exploration_{scenarios}_scenarios"
         save_results(results, file_name)
 
     return results
@@ -80,66 +85,58 @@ def get_levers():
     @return: list of CategoricalParameter
     """
 
-    # Currently, as RealParameter (to make sure that issue is not
-    # with the potentially incorrect use of CategoricalParameter)
-    levers = [
-        RealParameter('mlit_select', 0.0, 1.0),
-        RealParameter('del_t', 0.0, 1.0),
-        RealParameter('rank_punish', -1.0, -0.0),
-        RealParameter('rank_t', 0.0, 1.0),
-        RealParameter('strikes_t', 0.0, 1.0),
-    ]
-
-    # # TODO: Move to IntegerParameter (to not do full exploration, but only specified values)
-    # standard_categories = [
-    #     Category('0.0', 0.0),
-    #     Category('0.2', 0.2),
-    #     Category('0.4', 0.4),
-    #     Category('0.6', 0.6),
-    #     Category('0.8', 0.8),
-    #     Category('1.0', 1.0),
-    # ]
-    #
-    # negative_categories = [
-    #     Category('-0.0', -0.0),
-    #     Category('-0.2', -0.2),
-    #     Category('-0.4', -0.4),
-    #     Category('-0.6', -0.6),
-    #     Category('-0.8', -0.8),
-    #     Category('-1.0', -1.0),
-    # ]
-    #
+    # Currently, as RealParameter
     # levers = [
-    #     CategoricalParameter('mlit_select', standard_categories),
-    #     CategoricalParameter('del_t', standard_categories),
-    #     CategoricalParameter('rank_punish', negative_categories),
-    #     CategoricalParameter('rank_t', standard_categories),
-    #     CategoricalParameter('strikes_t', standard_categories),
+    #     RealParameter('mlit_select', 0.0, 1.0),
+    #     RealParameter('del_t', 0.0, 1.0),
+    #     RealParameter('rank_punish', -1.0, -0.0),
+    #     RealParameter('rank_t', 0.0, 1.0),
+    #     RealParameter('strikes_t', 0.0, 1.0),
     # ]
+
+    levers = [  # TODO: FIRST ADJUST MODEL TO BE ABLE TO USE INTEGERS! RESCALE.
+        IntegerParameter('mlit_select', lower_bound=0, upper_bound=4),
+        IntegerParameter('del_t', lower_bound=0, upper_bound=4),
+        IntegerParameter('rank_punish', lower_bound=0, upper_bound=4),
+        IntegerParameter('rank_t', lower_bound=0, upper_bound=4),
+        IntegerParameter('strikes_t', lower_bound=0, upper_bound=4),
+
+        # IntegerParameter('del_t', 0, 100, resolution=[5]),
+        # IntegerParameter('rank_punish', -100, 0, resolution=[-5]),
+        # IntegerParameter('rank_t', 0, 100, resolution=[5]),
+        # IntegerParameter('strikes_t', 0, 100, resolution=[5])
+    ]
 
     return levers
 
 
 if __name__ == "__main__":
 
-    policy_list = [
-        Policy('all off', **{'mlit_select': 0.0,
-                             'del_t': 0.0,
-                             'rank_punish': -0.0,
-                             'rank_t': 0.0,
-                             'strikes_t': 0.0}),
-        Policy('all max', **{'mlit_select': 1.0,
-                             'del_t': 0.5,
-                             'rank_punish': -1.0,
-                             'rank_t': 0.5,
-                             'strikes_t': 0.5}),
-    ]
+    # policy_list = [
+    #     Policy('all off', **{'mlit_select': 0,
+    #                          'del_t': 0,
+    #                          'rank_punish': 0,
+    #                          'rank_t': 0,
+    #                          'strikes_t': 0}),
+    #     Policy('all max', **{'mlit_select': 4,
+    #                          'del_t': 2,
+    #                          'rank_punish': 4,
+    #                          'rank_t': 2,
+    #                          'strikes_t': 2}),
+    # ]
 
-    res = perform_my_experiments(policies=policy_list, scenarios=10, saving=True)
-    # exp, out = res
-    #
-    # out = pd.DataFrame(out)
-    #
-    # for idx, row in out.iterrows():
-    #     print(row)
-    #     print()
+    # res = perform_my_experiments(policies=policy_list, scenarios=10, saving=True)
+    policies = 50
+    scenarios = 50
+    steps = 60
+
+    beliefs = list(BeliefUpdate)
+
+    for belief in beliefs:
+        perform_my_experiments(policies=policies,
+                               scenarios=scenarios,
+                               belief_update_fn=belief,
+                               steps=steps,
+                               saving=True,
+                               file_name=f"open_exploration_{belief.name}")
+
