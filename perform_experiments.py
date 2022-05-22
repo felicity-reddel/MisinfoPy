@@ -30,12 +30,12 @@ def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60, savi
     """
     Sets up the model, performs experiments and returns the results.
 
-    @param steps:
-    @param belief_update_fn:
-    @param scenarios: int or list of scenarios
-    @param policies: int or list of policies
-    @param saving:
-    @param file_name:
+    @param steps:               int, number of model steps
+    @param belief_update_fn:    BeliefUpdateFn (Enum)
+    @param scenarios:           int or list of scenarios
+    @param policies:            int or list of policies
+    @param saving:              boolean
+    @param file_name:           string
     @return:
     """
 
@@ -44,7 +44,7 @@ def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60, savi
     model = Model('MisinfoPy', function=model)
 
     model.uncertainties = get_uncertainties()
-    model.constants = get_constants()
+    model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
     model.outcomes = get_outcomes()
     model.levers = get_levers()
 

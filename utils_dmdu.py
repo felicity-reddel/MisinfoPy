@@ -11,9 +11,11 @@ from ema_workbench import (
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-def get_constants():
+def get_constants(steps, belief_update_fn):
     """
     Returns the constants. In the fitting format for the ema_workbench.
+    @param steps: int, number of model steps
+    @param belief_update_fn: BeliefUpdateFn (Enum)
     @return: list of ema_workbench Constants
     """
     constants = [Constant('steps', steps),
