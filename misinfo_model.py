@@ -50,6 +50,7 @@ class MisinfoPy(Model):
         self.belief_update_fn = None
         self.sampling_p_update = None
         self.deffuant_mu = None
+        self.n_posts_estimate_similarity = None
 
         # ––– Plots –––
         self.belief_metric_threshold = None
@@ -60,7 +61,7 @@ class MisinfoPy(Model):
 
     def set_up(self, n_agents, n_edges, high_media_lit, ratio_normal_user, sigma, mean_normal_user, mean_disinformer,
                adjustment_based_on_belief, mlit_select, mlit_dur_init, mlit_dur_low, mlit_dur_high, rank_punish, del_t,
-               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, belief_metric_threshold, seed):
+               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, n_posts_estimate_similarity, belief_metric_threshold, seed):
         """
         Sets up the initial, barebone MisinfoPy model.
 
@@ -134,6 +135,7 @@ class MisinfoPy(Model):
         self.belief_update_fn = belief_update_fn
         self.sampling_p_update = sampling_p_update
         self.deffuant_mu = deffuant_mu
+        self.n_posts_estimate_similarity = n_posts_estimate_similarity
 
         # ––– Plots –––
         self.belief_metric_threshold = belief_metric_threshold
@@ -203,6 +205,7 @@ class MisinfoPy(Model):
                  sampling_p_update=0.02,
                  deffuant_mu=0.02,
                  belief_metric_threshold=50.0,
+                 n_posts_estimate_similarity=10,
 
                  # ––– Call parameters –––
                  steps=60,
@@ -253,6 +256,7 @@ class MisinfoPy(Model):
             belief_update_fn=belief_update_fn,
             sampling_p_update=sampling_p_update,
             deffuant_mu=deffuant_mu,
+            n_posts_estimate_similarity=n_posts_estimate_similarity,
             belief_metric_threshold=belief_metric_threshold,
 
             seed=seed

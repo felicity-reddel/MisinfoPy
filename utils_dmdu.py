@@ -35,6 +35,11 @@ def get_uncertainties():
                      IntegerParameter('mean_normal_user', 0, 2),
                      IntegerParameter('mean_disinformer', 8, 12),
                      RealParameter('high_media_lit', 0.25, 0.35),   # other parts need this to stay RealParam
+
+                     RealParameter('deffuant_mu', 0.01, 0.03),  # DEFFUANT-specific
+                     RealParameter('sampling_p_update', 0.01, 0.03),  # SAMPLING-specific
+                     IntegerParameter('n_posts_estimate_similarity', 5, 15),  # SIT-specific
+
                      RealParameter('seed', 0.0, 1000000.0)]
     return uncertainties
 

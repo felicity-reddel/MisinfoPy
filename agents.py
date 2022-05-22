@@ -272,11 +272,12 @@ class BaseAgent(Agent):
         """
         # Estimate other person's tweet_beliefs (on topics in current post)
         estimated_beliefs = {}
+        n_posts = self.model.n_posts_estimate_similarity
 
         for topic, value in post.tweet_beliefs.items():
-            # Estimate their belief on 'topic' by looking at their last posts
+            # Estimate their belief on 'topic' by looking at their last n_posts
             values = []
-            for p in post.source.visible_posts[-10:]:
+            for p in post.source.visible_posts[-n_posts:]:
                 if topic in p.tweet_beliefs:
                     value = p.tweet_beliefs[topic]
                     values.append(value)
