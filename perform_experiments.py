@@ -112,23 +112,55 @@ def get_levers():
 
 if __name__ == "__main__":
 
-    # policy_list = [
-    #     Policy('all off', **{'mlit_select': 0,
-    #                          'del_t': 0,
-    #                          'rank_punish': 0,
-    #                          'rank_t': 0,
-    #                          'strikes_t': 0}),
-    #     Policy('all max', **{'mlit_select': 4,
-    #                          'del_t': 2,
-    #                          'rank_punish': 4,
-    #                          'rank_t': 2,
-    #                          'strikes_t': 2}),
+    # all-off & all-max
+    policies = [
+        Policy('all off', **{'mlit_select': 0,
+                             'del_t': 0,
+                             'rank_punish': 0,
+                             'rank_t': 0,
+                             'strikes_t': 0}),
+        Policy('all max', **{'mlit_select': 4,
+                             'del_t': 2,
+                             'rank_punish': 4,
+                             'rank_t': 2,
+                             'strikes_t': 2}),
+    ]
+
+    # # indiv-max
+    # policies = [
+    #     Policy('mlit_select max', **{'mlit_select': 4,
+    #                                  'del_t': 0,
+    #                                  'rank_punish': 0,
+    #                                  'rank_t': 0,
+    #                                  'strikes_t': 0}),
+    #     Policy('del_t max', **{'mlit_select': 0,
+    #                            'del_t': 2,
+    #                            'rank_punish': 0,
+    #                            'rank_t': 0,
+    #                            'strikes_t': 0}),
+    #     Policy('rank_punish max', **{'mlit_select': 0,
+    #                                  'del_t': 0,
+    #                                  'rank_punish': 4,
+    #                                  'rank_t': 0,
+    #                                  'strikes_t': 0}),
+    #     Policy('rank_t max', **{'mlit_select': 0,
+    #                             'del_t': 0,
+    #                             'rank_punish': 0,
+    #                             'rank_t': 2,
+    #                             'strikes_t': 0}),
+    #     Policy('strikes_t max', **{'mlit_select': 0,
+    #                                'del_t': 0,
+    #                                'rank_punish': 0,
+    #                                'rank_t': 0,
+    #                                'strikes_t': 2}),
     # ]
 
     # res = perform_my_experiments(policies=policy_list, scenarios=10, saving=True)
-    policies = 50
+    # policies = 50
     scenarios = 50
     steps = 60
+    exp_name = "all_off_all_max"
+    # exp_name = "indiv_max"
 
     beliefs = list(BeliefUpdate)
 
@@ -138,5 +170,4 @@ if __name__ == "__main__":
                                belief_update_fn=belief,
                                steps=steps,
                                saving=True,
-                               file_name=f"open_exploration_{belief.name}")
-
+                               file_name=f"open_exploration_{exp_name}_{belief.name}")
