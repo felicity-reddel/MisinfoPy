@@ -207,7 +207,7 @@ class MisinfoPy(Model):
                  debug=False):
         """
         Runs the model for the specified number of steps.
-        # TODO: Doesn't this still need all the other params?
+        # TODO: Add all the other params
         @param steps:           int, number of model-steps the model should take
         @param time_tracking:   Boolean, whether to print timing information
         @param debug:           Boolean, whether to print details
@@ -666,11 +666,7 @@ class MisinfoPy(Model):
 def map_levers(mlit_select, del_t, rank_punish, rank_t, strikes_t):
     """Workaround until I understand the "resolution" from IntegerParam."""
 
-    mapping = {0: 10,
-               1: 30,
-               2: 50,
-               3: 70,
-               4: 90}
+    mapping = {v: v*10 for v in range(11)}
 
     mlit_select = mapping[mlit_select]
     del_t = mapping[del_t]
