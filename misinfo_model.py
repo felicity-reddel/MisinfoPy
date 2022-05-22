@@ -60,7 +60,7 @@ class MisinfoPy(Model):
 
     def set_up(self, n_agents, n_edges, high_media_lit, ratio_normal_user, sigma, mean_normal_user, mean_disinformer,
                adjustment_based_on_belief, mlit_select, mlit_dur_init, mlit_dur_low, mlit_dur_high, rank_punish, del_t,
-               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, belief_metric_threshold):
+               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, belief_metric_threshold, seed):
         """
         Sets up the initial, barebone MisinfoPy model.
 
@@ -94,8 +94,11 @@ class MisinfoPy(Model):
                                             towards the post's belief. If mu=0.1, the update is 10% towards the
                                             post's belief.
         @param belief_metric_threshold:     float, threshold for the belief metric (agents above belief threshold)
+        @param seed: int
 
         """
+        # Make model use the seed
+        self.reset_randomizer(seed=seed)
 
         # ––– Network & Setup –––  # n_nodes=n_agents, exactly 1 agent per node
         self.n_agents = n_agents
@@ -203,6 +206,7 @@ class MisinfoPy(Model):
 
                  # ––– Call parameters –––
                  steps=60,
+                 seed=None,
                  time_tracking=False,
                  debug=False):
         """
@@ -213,7 +217,8 @@ class MisinfoPy(Model):
         @param debug:           Boolean, whether to print details
         @return: tuple: metrics values for this run (n_above_belief_threshold, variance, ...)
         """
-
+        # Convert seed into integer
+        seed = int(seed)
         # Workaround until I understand the "resolution" from IntegerParam
         [mlit_select, del_t, rank_punish, rank_t, strikes_t] = map_levers(mlit_select,
                                                                           del_t,
@@ -249,6 +254,8 @@ class MisinfoPy(Model):
             sampling_p_update=sampling_p_update,
             deffuant_mu=deffuant_mu,
             belief_metric_threshold=belief_metric_threshold,
+
+            seed=seed
         )
 
         start_time = time.time()

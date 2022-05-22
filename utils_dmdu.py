@@ -34,7 +34,8 @@ def get_uncertainties():
                      RealParameter('ratio_normal_user', 0.98, 0.995),  # other parts need this to stay RealParam
                      IntegerParameter('mean_normal_user', 0, 2),
                      IntegerParameter('mean_disinformer', 8, 12),
-                     RealParameter('high_media_lit', 0.25, 0.35)]  # other parts need this to stay RealParam
+                     RealParameter('high_media_lit', 0.25, 0.35),   # other parts need this to stay RealParam
+                     RealParameter('seed', 0.0, 1000000.0)]
     return uncertainties
 
 
