@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     # (3) [open exploration] Experiment
     policies = 50
-    exp_name = "sampled"
+    exp_name = f"{policies}_policies"
 
     scenarios = 50
     beliefs = list(BeliefUpdate)
