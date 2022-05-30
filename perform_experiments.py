@@ -69,11 +69,15 @@ if __name__ == "__main__":
     # policies = get_policies_indiv()
     # exp_name = "indiv"
 
-    # (3) [open exploration] Experiment
-    policies = 50
-    exp_name = f"{policies}_policies"
+    # # (3) [open exploration] Experiment
+    # policies = 50
+    # exp_name = f"{policies}_policies"
 
-    scenarios = 50
+    # (4) no-policy Experiment
+    policies = get_policies_all()[0]
+    exp_name = "no_policy"
+
+    scenarios = 100
     beliefs = list(BeliefUpdate)
     steps = 60
 
