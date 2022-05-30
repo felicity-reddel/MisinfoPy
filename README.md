@@ -82,7 +82,7 @@ Table 1 shows the main parameters that can be passed to the initialization metho
 The most important KPI is the belief distribution within the network. Figure 2 shows an example for such a belief distribution. The blue bars represent the belief distribution at initialization of the model. The red bars represent the belief distribution at the end of the simulation (the default is after 60 days).
 
 
-![image info](results/images/validation_media_literacy.png)
+![image info](model/verification/data/images/validation_media_literacy.png)
 <figcaption ><b>Fig.2 - Example belief distribution of 1000 agents, before and after a model run of 60 days.</b></figcaption>
 
 First the agents are randomly and rather uniformly distributed (blue). When enough time passes (e.g., 60 days), we can observe that without any interventions, some polarization is emerging. But the mode with low belief-values is substantially stronger.

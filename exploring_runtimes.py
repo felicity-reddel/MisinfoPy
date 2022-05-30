@@ -1,4 +1,4 @@
-from misinfo_model import *
+from model.misinfo_model import *
 
 
 if __name__ == "__main__":

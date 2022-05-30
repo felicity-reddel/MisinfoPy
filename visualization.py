@@ -1,11 +1,10 @@
 import matplotlib.colors as colors
 import matplotlib.cm as cmx
-from matplotlib import pyplot as plt
 from numpy import interp
 from mesa.visualization.modules import ChartModule, NetworkModule
 from mesa.visualization.ModularVisualization import ModularServer
 
-from agents import *
+from model.agents import *
 
 
 def get_node_color(agent):
