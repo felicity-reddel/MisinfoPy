@@ -141,3 +141,41 @@ def get_policies_indiv():
     ]
 
     return policy_list
+
+
+def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, minimize=None):
+    """
+    Helps to explore which epsilon-values would be suitable.
+
+    @param outcomes: dataframe
+    @param bufn: BeliefUpdateFn
+    @param metric: string (/ Metric  #TODO: HAVE ENUM FOR METRICS?)
+    @param divide_by: int
+    @param best_quantile: float, in range [0.0, 1.0]
+    @param minimize: list of strings (metric names)  # TODO: ALSO ADJUST IF ENUM METRIC
+    @return: tuple, (dataframe, float)
+    """
+
+    subset = outcomes[outcomes["belief_update_fn"] == bufn]
+
+    if minimize is None:
+        minimize = ['polarization_variance', 'free_speech_constraint', 'avg_user_effort']
+
+    if metric in minimize:
+        lower_bound = min(subset[metric])
+        quantile_value = subset.quantile(q=best_quantile)[metric]
+        relevant_range = lower_bound + quantile_value
+        epsilon = relevant_range / float(divide_by)
+        upper_bound = lower_bound + epsilon
+        within_1_epsilon = subset.loc[subset[metric] <= upper_bound]
+        within_1_epsilon = within_1_epsilon[metric]
+    else:  # maximize metric
+        upper_bound = max(subset[metric])
+        quantile_value = subset.quantile(q=1 - best_quantile)[metric]
+        relevant_range = float(upper_bound - quantile_value)
+        epsilon = relevant_range / divide_by
+        lower_bound = upper_bound - epsilon
+        within_1_epsilon = subset.loc[subset[metric] >= lower_bound]
+        within_1_epsilon = within_1_epsilon[metric]
+
+    return within_1_epsilon, epsilon

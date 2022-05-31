@@ -104,3 +104,14 @@ class BeliefUpdate(Enum):
     SAMPLE = 0  # Sampling, used by e.g., Sari et al. (2021), Wang et al. (2019), and Gausen et al. (2021)
     DEFFUANT = 1  # Deffuant, used by e.g., Du et al. (2021), Rajabi et al. (2020), and Mason et al. (2020)
     SIT = 2  # Social Impact Theory, adjusted to the social media environment by Reddel (2021)
+
+
+class Metrics(Enum):
+    """
+    The considered objectives.
+    """
+    N_AGENTS_ABOVE_BELIEF_THRESHOLD = 0
+    POLARIZATION_VARIANCE = 1
+    ENGAGEMENT = 2
+    FREE_SPEECH_CONSTRAINT = 3
+    AVG_USER_EFFORT = 4
