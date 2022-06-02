@@ -70,11 +70,11 @@ if __name__ == "__main__":
     # policies = 50
     # exp_name = f"{policies}_policies"
 
-    # (4) no-policy Experiment
+    # (4) no-policy Experiment (for picking ref_scenario)
     policies = get_policies_all()[0]
     exp_name = "no_policy"
 
-    scenarios = 3
+    scenarios = 100
     beliefs = list(BeliefUpdate)
     steps = 60
 
