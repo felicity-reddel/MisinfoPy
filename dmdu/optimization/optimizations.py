@@ -1,7 +1,7 @@
 # Project
 from model.misinfo_model import MisinfoPy
 from model.enums import BeliefUpdate
-from dmdu.utils_dmdu import model_setup, get_epsilons
+from dmdu.utils_dmdu import model_setup, get_epsilons, make_sure_path_exists
 
 # General
 import os
@@ -30,21 +30,14 @@ def run_my_optimization(bufn, nfe=100000, steps=60, saving=True, dir_path=None):
         # Create path name
         if dir_path is None:
             dir_path = os.path.join(os.getcwd(), 'data', bufn.name)
+        make_sure_path_exists(dir_path)
 
-        # Make sure the directory exists
-        if not os.path.exists(dir_path):
-            try:
-                os.makedirs(dir_path)
-            except OSError:
-                print("Creation of the directory failed")
-                raise
-
-        path_results = os.path.join(dir_path, f"results.csv")
-        path_epsilon_progress = os.path.join(dir_path, f"epsilon_progress.csv")
+        results_path = os.path.join(dir_path, f"results.csv")
+        epsilon_progress_path = os.path.join(dir_path, f"epsilon_progress.csv")
 
         # Save data
-        results.to_csv(path_results)
-        epsilon_progress.to_csv(path_epsilon_progress)
+        results.to_csv(results_path)
+        epsilon_progress.to_csv(epsilon_progress_path)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,5 @@
+from model.misinfo_model import MisinfoPy
+import os
 from ema_workbench import (
     Policy,
     ScalarOutcome,
@@ -6,7 +8,6 @@ from ema_workbench import (
     Constant,
     Model
 )
-from model.misinfo_model import MisinfoPy
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Get main inputs for DMDU
@@ -40,9 +41,7 @@ def get_uncertainties():
 
                      RealParameter('deffuant_mu', 0.01, 0.03),  # DEFFUANT-specific
                      RealParameter('sampling_p_update', 0.01, 0.03),  # SAMPLING-specific
-                     IntegerParameter('n_posts_estimate_similarity', 5, 15),  # SIT-specific
-
-                     RealParameter('seed', 0.0, 1000000.0)]
+                     IntegerParameter('n_posts_estimate_similarity', 5, 15)]  # SIT-specific
     return uncertainties
 
 
@@ -211,3 +210,16 @@ def model_setup(belief_update_fn, steps):
     model.levers = get_levers()
 
     return model
+
+
+def make_sure_path_exists(path):
+    """
+    Makes sure the directory exists. If the path doesn't exist yet, it is created.
+    @param path: string
+    """
+
+    if not os.path.exists(path):
+        try:
+            os.makedirs(path)
+        except OSError:
+            raise OSError("Creation of the directory failed")
