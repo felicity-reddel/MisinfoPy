@@ -62,7 +62,8 @@ class MisinfoPy(Model):
 
     def set_up(self, n_agents, n_edges, high_media_lit, ratio_normal_user, sigma, mean_normal_user, mean_disinformer,
                adjustment_based_on_belief, mlit_select, mlit_dur_init, mlit_dur_low, mlit_dur_high, rank_punish, del_t,
-               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, n_posts_estimate_similarity, belief_metric_threshold, seed):
+               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, n_posts_estimate_similarity,
+               belief_metric_threshold, seed):
         """
         Sets up the initial, barebone MisinfoPy model.
 
@@ -96,6 +97,7 @@ class MisinfoPy(Model):
                                             towards the post's belief. If mu=0.1, the update is 10% towards the
                                             post's belief.
         @param belief_metric_threshold:     float, threshold for the belief metric (agents above belief threshold)
+        @param n_posts_estimate_similarity:
         @param seed: int
 
         """
@@ -143,7 +145,7 @@ class MisinfoPy(Model):
 
         # self.data_collector = DataCollector(model_reporters={
         #     "n_agents_above_belief_threshold": self.get_n_above_belief_threshold,
-        #     "engagement": self.get_total_seen_posts,
+        #     "engagement": self.get_total_seen_posts / self.n_agents,
         #     "free_speech_constraint": self.get_free_speech_constraint,
         #     "avg_user_effort": self.get_avg_user_effort
         # })
