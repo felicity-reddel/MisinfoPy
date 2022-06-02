@@ -4,7 +4,9 @@ from ema_workbench import (
     IntegerParameter,
     RealParameter,
     Constant,
+    Model
 )
+from model.misinfo_model import MisinfoPy
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Get main inputs for DMDU
@@ -58,6 +60,18 @@ def get_outcomes():
     ]
 
     return outcomes
+
+
+def get_epsilons():
+    """
+    Returns the epsilon values for all outcomes. In the same order as the outcomes list.
+    These values stem from the analysis in epsilon_values.ipynb.
+
+    @return: list of floats
+    """
+    epsilons = [1.0, 1.0, 10.0, 0.01, 0.5]
+
+    return epsilons
 
 
 def get_levers():
@@ -149,10 +163,10 @@ def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, min
 
     @param outcomes: dataframe
     @param bufn: BeliefUpdateFn
-    @param metric: string (/ Metric  #TODO: HAVE ENUM FOR METRICS?)
+    @param metric: string
     @param divide_by: int
     @param best_quantile: float, in range [0.0, 1.0]
-    @param minimize: list of strings (metric names)  # TODO: ALSO ADJUST IF ENUM METRIC
+    @param minimize: list of strings (metric names)
     @return: tuple, (dataframe, float)
     """
 
@@ -179,3 +193,21 @@ def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, min
         within_1_epsilon = within_1_epsilon[metric]
 
     return within_1_epsilon, epsilon
+
+
+def model_setup(belief_update_fn, steps):
+    """
+    Sets up a MisinfoPy model for the ema_workbench.
+    @return: MisinfoPy
+    """
+
+    # Setting up the model
+    model = MisinfoPy()
+    model = Model('MisinfoPy', function=model)
+
+    model.uncertainties = get_uncertainties()
+    model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
+    model.outcomes = get_outcomes()
+    model.levers = get_levers()
+
+    return model

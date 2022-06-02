@@ -224,7 +224,7 @@ class MisinfoPy(Model):
         @return: tuple: metrics values for this run (n_above_belief_threshold, variance, ...)
         """
         # Convert seed into integer
-        seed = int(seed)
+        # seed = int(seed)
         # Workaround until I understand the "resolution" from IntegerParam
         [mlit_select, del_t, rank_punish, rank_t, strikes_t] = map_levers(mlit_select,
                                                                           del_t,

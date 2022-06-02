@@ -11,7 +11,8 @@ from dmdu.utils_dmdu import (
     get_uncertainties,
     get_levers,
     get_outcomes,
-    get_policies_all
+    get_policies_all,
+    model_setup
 )
 import os
 
@@ -34,13 +35,7 @@ def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60,
     """
 
     # Setting up the model
-    model = MisinfoPy()
-    model = Model('MisinfoPy', function=model)
-
-    model.uncertainties = get_uncertainties()
-    model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
-    model.outcomes = get_outcomes()
-    model.levers = get_levers()
+    model = model_setup(belief_update_fn, steps)
 
     # experiments
     with MultiprocessingEvaluator(model) as evaluator:
