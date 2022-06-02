@@ -284,7 +284,7 @@ class MisinfoPy(Model):
         n_agents_above_belief_threshold = self.get_n_above_belief_threshold()
         polarization_variance = variance(model=self)
         polarization_kl_divergence_from_polarized = kl_divergence(model=self)
-        engagement = self.get_total_seen_posts()
+        engagement = self.get_total_seen_posts() / self.n_agents
         free_speech_constraint = self.get_free_speech_constraint()
         avg_user_effort = self.get_avg_user_effort()
 
