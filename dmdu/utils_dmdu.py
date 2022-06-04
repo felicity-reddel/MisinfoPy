@@ -1,5 +1,6 @@
 from model.misinfo_model import MisinfoPy
 import os
+import pandas as pd
 from ema_workbench import (
     Policy,
     ScalarOutcome,
@@ -223,3 +224,55 @@ def make_sure_path_exists(path):
             os.makedirs(path)
         except OSError:
             raise OSError("Creation of the directory failed")
+
+
+def calculate_quantiles(outcomes_data, outcome, quantiles):
+    """
+    Calculates the quantile data
+    @param outcomes_data: pd.Dataframe (with 'seed' column)
+    @param outcome: str, name of the outcome
+    @param quantiles: list of floats, each in range [0.0, 1.0]
+
+    @return: pd.Dataframe,
+        col-header: quantile values,
+        row-header: quantile was calculated over this many seeds (first n)
+    """
+    # Preparation
+    seeds = outcomes_data['seed'].unique().tolist()
+    n_seeds_column = [s for s in range(len(seeds) + 1) if s != 0]
+    data_dict = dict.fromkeys(n_seeds_column)
+
+    # Actual calculation
+    for n_seeds in n_seeds_column:
+        considered_seeds = seeds[0:n_seeds]
+        # subsetted dataframe: only the specific 'outcome' column and the 'seed' column
+        subset = outcomes_data[[outcome, 'seed']]
+        # subsetted dataframe: only the rows of the seeds that should currently be considered
+        subset = subset.loc[subset['seed'].isin(considered_seeds)]
+
+        q_data = []
+        for q in quantiles:
+            q_value = subset[outcome].quantile(q)
+            q_value = round(q_value, 2)
+            q_data.append(q_value)
+
+        data_dict[n_seeds] = q_data
+
+    quantile_data = pd.DataFrame(data_dict)
+
+    # Transform dataframe (to be clearer and more user-friendly)
+    # 1) transposing
+    quantile_data = quantile_data.transpose()
+
+    #  2) changing headers (quantiles, n_seeds)
+    old_headers = list(quantile_data.columns)
+    header_mapping = list(zip(old_headers, quantiles))
+    renaming_dict = {}
+
+    for mapping in header_mapping:
+        old, new = mapping
+        renaming_dict[old] = new
+
+    quantile_data = quantile_data.rename(columns=renaming_dict)
+
+    return quantile_data
