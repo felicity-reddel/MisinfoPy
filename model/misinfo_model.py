@@ -303,7 +303,7 @@ class MisinfoPy(Model):
         # pretty = pd.Series(results_dict)
         # print(pretty)
 
-        return results_dict
+        return {k:float(v) for k, v in results_dict.items()}
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions

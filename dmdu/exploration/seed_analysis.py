@@ -8,7 +8,9 @@ import pandas as pd
 import os
 
 # ema_workbench
-from ema_workbench import Model, Constant, MultiprocessingEvaluator, save_results
+from ema_workbench import (Model, Constant, MultiprocessingEvaluator,
+                           save_results, SequentialEvaluator)
+
 
 
 if __name__ == "__main__":
