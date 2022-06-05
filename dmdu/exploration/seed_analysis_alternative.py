@@ -12,8 +12,6 @@ import os
 from ema_workbench import (Model, Constant, MultiprocessingEvaluator, ArrayOutcome,
                            save_results, SequentialEvaluator, ReplicatorModel)
 
-
-
 if __name__ == "__main__":
     n_experiments = 400
     only_one_model = False
@@ -31,7 +29,7 @@ if __name__ == "__main__":
 
     models = [BeliefUpdate.SIT] if only_one_model else list(BeliefUpdate)
     seeds = [577747, 914425]
-    seeds = [dict(seed=entry) for entry in seeds]
+    seeds = [dict(seed=entry) for entry in seeds]  # ReplicatorModel alternative
 
     # Gather data for each model individually
     for belief_update_fn in models:
@@ -40,17 +38,16 @@ if __name__ == "__main__":
         all_experiments = []
         all_outcomes = []
 
-
         # Setting up the model
         model_function = MisinfoPy()
-        model = ReplicatorModel('MisinfoPy', function=model_function)
-        model.replications = seeds
+        model = ReplicatorModel('MisinfoPy', function=model_function)  # ReplicatorModel alternative
+        model.replications = seeds  # ReplicatorModel alternative
         steps = 60
 
         # Combining uncertainties and levers (for better sampling coverage)
         model.uncertainties = get_uncertainties() + get_levers()
         model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
-        model.outcomes = [ArrayOutcome('n_agents_above_belief_threshold'),
+        model.outcomes = [ArrayOutcome('n_agents_above_belief_threshold'),  # ReplicatorModel alternative
                           ArrayOutcome('polarization_variance'),
                           ArrayOutcome('engagement'),
                           ArrayOutcome('free_speech_constraint'),
@@ -64,7 +61,7 @@ if __name__ == "__main__":
 
         # Add seed column to outcomes
         outcomes = pd.DataFrame(outcomes)
-        # outcomes['seed'] = seed
+        # outcomes['seed'] = seed  # ReplicatorModel alternative
 
         # Save results from this seed
         all_experiments.append(experiments)
@@ -85,3 +82,8 @@ if __name__ == "__main__":
             # Save to csv
             experiments.to_csv(experiments_path)
             outcomes.to_csv(outcomes_path)
+
+# Thoughts on ReplicatorModel alternative:
+# Are the main benefits of it:
+#   - that the seed doesn't need to be passed as a constant, and
+#   - that the seed doesn't need to be explicitly saved to the outcomes?
