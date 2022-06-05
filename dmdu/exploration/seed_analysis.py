@@ -12,7 +12,6 @@ from ema_workbench import (Model, Constant, MultiprocessingEvaluator,
                            save_results, SequentialEvaluator)
 
 
-
 if __name__ == "__main__":
 
     test_version = True
