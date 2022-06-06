@@ -7,8 +7,11 @@ from ema_workbench import (
     IntegerParameter,
     RealParameter,
     Constant,
-    Model
+    Model,
+    ReplicatorModel,
+    ArrayOutcome
 )
+
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 # Get main inputs for DMDU
@@ -38,7 +41,7 @@ def get_uncertainties():
                      RealParameter('ratio_normal_user', 0.98, 0.995),  # other parts need this to stay RealParam
                      IntegerParameter('mean_normal_user', 0, 2),
                      IntegerParameter('mean_disinformer', 8, 12),
-                     RealParameter('high_media_lit', 0.25, 0.35),   # other parts need this to stay RealParam
+                     RealParameter('high_media_lit', 0.25, 0.35),  # other parts need this to stay RealParam
 
                      RealParameter('deffuant_mu', 0.01, 0.03),  # DEFFUANT-specific
                      RealParameter('sampling_p_update', 0.01, 0.03),  # SAMPLING-specific
@@ -57,6 +60,22 @@ def get_outcomes():
         ScalarOutcome('engagement', ScalarOutcome.MAXIMIZE),
         ScalarOutcome('free_speech_constraint', ScalarOutcome.MINIMIZE),
         ScalarOutcome('avg_user_effort', ScalarOutcome.MINIMIZE)
+    ]
+
+    return outcomes
+
+
+def get_replicator_outcomes():
+    """
+        Returns the outcomes. In the fitting format for the ema_workbench.
+        @return: list of ema_workbench Outcomes
+        """
+    outcomes = [
+        ArrayOutcome('n_agents_above_belief_threshold'),
+        ArrayOutcome('polarization_variance'),
+        ArrayOutcome('engagement'),
+        ArrayOutcome('free_speech_constraint'),
+        ArrayOutcome('avg_user_effort')
     ]
 
     return outcomes
@@ -197,7 +216,7 @@ def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, min
 
 def model_setup(belief_update_fn, steps):
     """
-    Sets up a MisinfoPy model for the ema_workbench.
+    Sets up a MisinfoPy model for the ema_workbench. Uses the standard (single) Model.
     @return: MisinfoPy
     """
 
@@ -208,6 +227,36 @@ def model_setup(belief_update_fn, steps):
     model.uncertainties = get_uncertainties()
     model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
     model.outcomes = get_outcomes()
+    model.levers = get_levers()
+
+    return model
+
+
+def replicator_model_setup(belief_update_fn, steps, replications):
+    """
+    Sets up a MisinfoPy model for the ema_workbench. Uses the ReplicatorModel.
+    @return: MisinfoPy
+    """
+    # Setting up the seeds
+    seeds_100 = [577747, 914425, 445063, 977049, 617127, 639676, 137294, 845058, 718814, 119679, 435223, 347541, 666852,
+                 701324, 604437, 908374, 941595, 800210, 745388, 399447, 140918, 910967, 917428, 497096, 222919, 726572,
+                 748497, 185669, 610661, 709441, 801330, 506120, 891889, 298223, 164318, 929955, 854094, 553307, 279254,
+                 597549, 223105, 708080, 220244, 126086, 634792, 458729, 822070, 972244, 751076, 130675, 100289, 252061,
+                 262114, 449996, 206219, 764775, 285626, 385767, 111989, 812234, 305433, 822474, 312966, 877990, 598853,
+                 389796, 777981, 937667, 943990, 393412, 913947, 594493, 543410, 199872, 519301, 577412, 615253, 914266,
+                 136560, 705707, 433804, 414487, 198043, 325188, 906659, 507433, 268008, 894819, 994630, 427593, 129353,
+                 207160, 780566, 131963, 158586, 428856, 485180, 445734, 806806, 958623]
+
+    seeds = seeds_100[0:replications]
+    seeds = [dict(seed=s) for s in seeds]
+
+    # Setting up the model
+    model = MisinfoPy()
+    model = ReplicatorModel('MisinfoPy', function=model)
+    model.replications = seeds
+    model.uncertainties = get_uncertainties()
+    model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
+    model.outcomes = get_replicator_outcomes()
     model.levers = get_levers()
 
     return model
