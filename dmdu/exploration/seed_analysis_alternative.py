@@ -86,4 +86,5 @@ if __name__ == "__main__":
 # Thoughts on ReplicatorModel alternative:
 # Are the main benefits of it:
 #   - that the seed doesn't need to be passed as a constant, and
-#   - that the seed doesn't need to be explicitly saved to the outcomes?
+# Drawback:
+#   - seed is not in outcomes?
