@@ -74,16 +74,17 @@ if __name__ == "__main__":
     # (4) no-policy Experiment (for picking ref_scenario)
     policies = get_policies_all()[0]
     exp_name = "no_policy"
-    replications = 3  # 30
-    scenarios = 4  # 200
+    replications = 30  # 3
+    scenarios = 200  # 4
     beliefs = list(BeliefUpdate)
     steps = 60
 
     for belief in beliefs:
-        perform_my_experiments(policies=policies,
-                               scenarios=scenarios,
-                               belief_update_fn=belief,
-                               steps=steps,
-                               replications=replications,
-                               saving=True,
-                               file_name=f"ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief.name}")
+        perform_my_experiments(
+            policies=policies,
+            scenarios=scenarios,
+            belief_update_fn=belief,
+            steps=steps,
+            replications=replications,
+            saving=True,
+            file_name=f"ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief.name}")
