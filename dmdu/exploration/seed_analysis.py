@@ -1,6 +1,13 @@
 # Project
 from model.misinfo_model import MisinfoPy
-from dmdu.utils_dmdu import get_uncertainties, get_constants, get_outcomes, get_levers, make_sure_path_exists
+from dmdu.utils_dmdu import (
+    get_uncertainties,
+    get_constants,
+    get_outcomes,
+    get_levers,
+    make_sure_path_exists,
+    get_100_seeds
+)
 from model.enums import BeliefUpdate
 
 # General
@@ -25,14 +32,7 @@ if __name__ == "__main__":
         # Params for real version
         n_experiments = 400
         models = list(BeliefUpdate)
-        seeds = [577747, 914425, 445063, 977049, 617127, 639676, 137294, 845058, 718814, 119679, 435223, 347541, 666852,
-                 701324, 604437, 908374, 941595, 800210, 745388, 399447, 140918, 910967, 917428, 497096, 222919, 726572,
-                 748497, 185669, 610661, 709441, 801330, 506120, 891889, 298223, 164318, 929955, 854094, 553307, 279254,
-                 597549, 223105, 708080, 220244, 126086, 634792, 458729, 822070, 972244, 751076, 130675, 100289, 252061,
-                 262114, 449996, 206219, 764775, 285626, 385767, 111989, 812234, 305433, 822474, 312966, 877990, 598853,
-                 389796, 777981, 937667, 943990, 393412, 913947, 594493, 543410, 199872, 519301, 577412, 615253, 914266,
-                 136560, 705707, 433804, 414487, 198043, 325188, 906659, 507433, 268008, 894819, 994630, 427593, 129353,
-                 207160, 780566, 131963, 158586, 428856, 485180, 445734, 806806, 958623]  # 100 seeds
+        seeds = get_100_seeds()
 
     # Gather data for each model individually
     for belief_update_fn in models:
