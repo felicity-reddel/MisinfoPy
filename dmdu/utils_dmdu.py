@@ -18,15 +18,19 @@ from ema_workbench import (
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
-def get_constants(steps, belief_update_fn):
+def get_constants(steps, belief_update_fn, n_replications=None):
     """
     Returns the constants. In the fitting format for the ema_workbench.
     @param steps: int, number of model steps
     @param belief_update_fn: BeliefUpdateFn (Enum)
+    @param n_replications: int, number of replications (model runs for 1 optimization-step)
     @return: list of ema_workbench Constants
     """
     constants = [Constant('steps', steps),
                  Constant('belief_update_fn', belief_update_fn)]
+
+    if n_replications:
+        constants += [Constant('n_replications', n_replications)]
 
     return constants
 
@@ -108,6 +112,30 @@ def get_levers():
     ]
 
     return levers
+
+
+def get_reference_scenario():
+    """
+    Provides the reference scenario (selected in ref_scenario_parcoords.ipynb).
+    @return: Scenario
+    """
+    ref_scenario = Scenario('reference', )  # TODO: FILL
+
+    return ref_scenario
+
+
+def get_100_seeds():
+    """Provide the list of 100 used seeds."""
+    seeds_100 = [577747, 914425, 445063, 977049, 617127, 639676, 137294, 845058, 718814, 119679, 435223, 347541, 666852,
+                 701324, 604437, 908374, 941595, 800210, 745388, 399447, 140918, 910967, 917428, 497096, 222919, 726572,
+                 748497, 185669, 610661, 709441, 801330, 506120, 891889, 298223, 164318, 929955, 854094, 553307, 279254,
+                 597549, 223105, 708080, 220244, 126086, 634792, 458729, 822070, 972244, 751076, 130675, 100289, 252061,
+                 262114, 449996, 206219, 764775, 285626, 385767, 111989, 812234, 305433, 822474, 312966, 877990, 598853,
+                 389796, 777981, 937667, 943990, 393412, 913947, 594493, 543410, 199872, 519301, 577412, 615253, 914266,
+                 136560, 705707, 433804, 414487, 198043, 325188, 906659, 507433, 268008, 894819, 994630, 427593, 129353,
+                 207160, 780566, 131963, 158586, 428856, 485180, 445734, 806806, 958623]
+
+    return seeds_100
 
 
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
@@ -238,15 +266,7 @@ def replicator_model_setup(belief_update_fn, steps, replications):
     @return: MisinfoPy
     """
     # Setting up the seeds
-    seeds_100 = [577747, 914425, 445063, 977049, 617127, 639676, 137294, 845058, 718814, 119679, 435223, 347541, 666852,
-                 701324, 604437, 908374, 941595, 800210, 745388, 399447, 140918, 910967, 917428, 497096, 222919, 726572,
-                 748497, 185669, 610661, 709441, 801330, 506120, 891889, 298223, 164318, 929955, 854094, 553307, 279254,
-                 597549, 223105, 708080, 220244, 126086, 634792, 458729, 822070, 972244, 751076, 130675, 100289, 252061,
-                 262114, 449996, 206219, 764775, 285626, 385767, 111989, 812234, 305433, 822474, 312966, 877990, 598853,
-                 389796, 777981, 937667, 943990, 393412, 913947, 594493, 543410, 199872, 519301, 577412, 615253, 914266,
-                 136560, 705707, 433804, 414487, 198043, 325188, 906659, 507433, 268008, 894819, 994630, 427593, 129353,
-                 207160, 780566, 131963, 158586, 428856, 485180, 445734, 806806, 958623]
-
+    seeds_100 = get_100_seeds()
     seeds = seeds_100[0:replications]
     seeds = [dict(seed=s) for s in seeds]
 
@@ -277,7 +297,7 @@ def make_sure_path_exists(path):
 
 def calculate_quantiles(outcomes_data, outcome, quantiles):
     """
-    Calculates the quantile data
+    Calculates the quantile data. Used by seed_analysis.ipynb (I think) # TODO: move to seed_analysis_utils.py
     @param outcomes_data: pd.Dataframe (with 'seed' column)
     @param outcome: str, name of the outcome
     @param quantiles: list of floats, each in range [0.0, 1.0]
