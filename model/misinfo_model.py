@@ -97,8 +97,8 @@ class MisinfoPy(Model):
                                             towards the post's belief. If mu=0.1, the update is 10% towards the
                                             post's belief.
         @param belief_metric_threshold:     float, threshold for the belief metric (agents above belief threshold)
-        @param n_posts_estimate_similarity:
-        @param seed: int
+        @param n_posts_estimate_similarity: int, nr of last posts used by an agent to estimate beliefs of another agent
+        @param seed:                        int
 
         """
         # Make model use the seed
@@ -303,7 +303,7 @@ class MisinfoPy(Model):
         # pretty = pd.Series(results_dict)
         # print(pretty)
 
-        return {k:float(v) for k, v in results_dict.items()}
+        return {k: float(v) for k, v in results_dict.items()}
 
     # –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
     # Init functions
@@ -680,7 +680,7 @@ class MisinfoPy(Model):
 def map_levers(mlit_select, del_t, rank_punish, rank_t, strikes_t):
     """Workaround until I understand the "resolution" from IntegerParam."""
 
-    mapping = {v: v*10 for v in range(11)}
+    mapping = {v: v * 10 for v in range(11)}
 
     mlit_select = mapping[mlit_select]
     del_t = mapping[del_t]
