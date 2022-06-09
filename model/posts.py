@@ -4,7 +4,6 @@ from model.utils import *
 
 
 class Post:
-
     def __init__(self, unique_id, source, tweet_beliefs=None, rank_t=0):
         """
         :param unique_id: int
@@ -20,8 +19,9 @@ class Post:
         else:
             self.tweet_beliefs = tweet_beliefs
 
-        self.ground_truth = GroundTruth.get_groundtruth(rng=self.source.model.random,
-                                                        tweet_belief=self.tweet_beliefs[Topic.VAX])
+        self.ground_truth = GroundTruth.get_groundtruth(
+            rng=self.source.model.random, tweet_belief=self.tweet_beliefs[Topic.VAX]
+        )
         self.p_true = self.factcheck_algorithm()
         self.detected_as_misinfo = self.detected_as_misinfo()
         self.visibility = self.get_visibility(rank_t)
@@ -62,7 +62,7 @@ class Post:
         # Visibility adjustment for (~41% of) posts that are factchecked as false (with high certainty).
         # source: brennen_2020 (see below)
         if (self.tweet_beliefs[Topic.VAX] <= rank_t) and self.detected_as_misinfo:
-            visibility *= (1 + self.source.model.rank_punish)
+            visibility *= 1 + self.source.model.rank_punish
             self.source.n_downranked += 1
 
         return visibility
@@ -85,6 +85,8 @@ class Post:
         :return: Boolean
         """
         rng = self.source.model.random
-        detected = rng.choices(population=[True, False], weights=[p_detected, 1-p_detected])[0]
+        detected = rng.choices(
+            population=[True, False], weights=[p_detected, 1 - p_detected]
+        )[0]
 
         return detected

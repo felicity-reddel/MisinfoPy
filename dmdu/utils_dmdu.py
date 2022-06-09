@@ -9,7 +9,7 @@ from ema_workbench import (
     Constant,
     Model,
     ReplicatorModel,
-    ArrayOutcome
+    ArrayOutcome,
 )
 
 
@@ -26,11 +26,13 @@ def get_constants(steps, belief_update_fn, n_replications=None):
     @param n_replications: int, number of replications (model runs for 1 optimization-step)
     @return: list of ema_workbench Constants
     """
-    constants = [Constant('steps', steps),
-                 Constant('belief_update_fn', belief_update_fn)]
+    constants = [
+        Constant("steps", steps),
+        Constant("belief_update_fn", belief_update_fn),
+    ]
 
     if n_replications:
-        constants += [Constant('n_replications', n_replications)]
+        constants += [Constant("n_replications", n_replications)]
 
     return constants
 
@@ -40,16 +42,21 @@ def get_uncertainties():
     Returns the outcomes. In the fitting format for the ema_workbench.
     @return: list of ema_workbench Parameters
     """
-    uncertainties = [IntegerParameter('belief_metric_threshold', 75, 80),
-                     IntegerParameter('n_edges', 2, 3),
-                     RealParameter('ratio_normal_user', 0.98, 0.995),  # other parts need this to stay RealParam
-                     IntegerParameter('mean_normal_user', 0, 2),
-                     IntegerParameter('mean_disinformer', 8, 12),
-                     RealParameter('high_media_lit', 0.25, 0.35),  # other parts need this to stay RealParam
-
-                     RealParameter('deffuant_mu', 0.01, 0.03),  # DEFFUANT-specific
-                     RealParameter('sampling_p_update', 0.01, 0.03),  # SAMPLING-specific
-                     IntegerParameter('n_posts_estimate_similarity', 5, 15)]  # SIT-specific
+    uncertainties = [
+        IntegerParameter("belief_metric_threshold", 75, 80),
+        IntegerParameter("n_edges", 2, 3),
+        RealParameter(
+            "ratio_normal_user", 0.98, 0.995
+        ),  # other parts need this to stay RealParam
+        IntegerParameter("mean_normal_user", 0, 2),
+        IntegerParameter("mean_disinformer", 8, 12),
+        RealParameter(
+            "high_media_lit", 0.25, 0.35
+        ),  # other parts need this to stay RealParam
+        RealParameter("deffuant_mu", 0.01, 0.03),  # DEFFUANT-specific
+        RealParameter("sampling_p_update", 0.01, 0.03),  # SAMPLING-specific
+        IntegerParameter("n_posts_estimate_similarity", 5, 15),
+    ]  # SIT-specific
     return uncertainties
 
 
@@ -59,11 +66,11 @@ def get_outcomes():
     @return: list of ema_workbench Outcomes
     """
     outcomes = [
-        ScalarOutcome('n_agents_above_belief_threshold', ScalarOutcome.MAXIMIZE),
-        ScalarOutcome('polarization_variance', ScalarOutcome.MINIMIZE),
-        ScalarOutcome('engagement', ScalarOutcome.MAXIMIZE),
-        ScalarOutcome('free_speech_constraint', ScalarOutcome.MINIMIZE),
-        ScalarOutcome('avg_user_effort', ScalarOutcome.MINIMIZE)
+        ScalarOutcome("n_agents_above_belief_threshold", ScalarOutcome.MAXIMIZE),
+        ScalarOutcome("polarization_variance", ScalarOutcome.MINIMIZE),
+        ScalarOutcome("engagement", ScalarOutcome.MAXIMIZE),
+        ScalarOutcome("free_speech_constraint", ScalarOutcome.MINIMIZE),
+        ScalarOutcome("avg_user_effort", ScalarOutcome.MINIMIZE),
     ]
 
     return outcomes
@@ -75,11 +82,11 @@ def get_replicator_outcomes():
         @return: list of ema_workbench Outcomes
         """
     outcomes = [
-        ArrayOutcome('n_agents_above_belief_threshold'),
-        ArrayOutcome('polarization_variance'),
-        ArrayOutcome('engagement'),
-        ArrayOutcome('free_speech_constraint'),
-        ArrayOutcome('avg_user_effort')
+        ArrayOutcome("n_agents_above_belief_threshold"),
+        ArrayOutcome("polarization_variance"),
+        ArrayOutcome("engagement"),
+        ArrayOutcome("free_speech_constraint"),
+        ArrayOutcome("avg_user_effort"),
     ]
 
     return outcomes
@@ -104,11 +111,11 @@ def get_levers():
     """
 
     levers = [
-        IntegerParameter('mlit_select', lower_bound=0, upper_bound=10),
-        IntegerParameter('del_t', lower_bound=0, upper_bound=5),
-        IntegerParameter('rank_punish', lower_bound=0, upper_bound=10),
-        IntegerParameter('rank_t', lower_bound=0, upper_bound=5),
-        IntegerParameter('strikes_t', lower_bound=0, upper_bound=5),
+        IntegerParameter("mlit_select", lower_bound=0, upper_bound=10),
+        IntegerParameter("del_t", lower_bound=0, upper_bound=5),
+        IntegerParameter("rank_punish", lower_bound=0, upper_bound=10),
+        IntegerParameter("rank_t", lower_bound=0, upper_bound=5),
+        IntegerParameter("strikes_t", lower_bound=0, upper_bound=5),
     ]
 
     return levers
@@ -119,21 +126,115 @@ def get_reference_scenario():
     Provides the reference scenario (selected in ref_scenario_parcoords.ipynb).
     @return: Scenario
     """
-    ref_scenario = Scenario('reference', )  # TODO: FILL
+    ref_scenario = Scenario("reference",)  # TODO: FILL
 
     return ref_scenario
 
 
 def get_100_seeds():
     """Provide the list of 100 used seeds."""
-    seeds_100 = [577747, 914425, 445063, 977049, 617127, 639676, 137294, 845058, 718814, 119679, 435223, 347541, 666852,
-                 701324, 604437, 908374, 941595, 800210, 745388, 399447, 140918, 910967, 917428, 497096, 222919, 726572,
-                 748497, 185669, 610661, 709441, 801330, 506120, 891889, 298223, 164318, 929955, 854094, 553307, 279254,
-                 597549, 223105, 708080, 220244, 126086, 634792, 458729, 822070, 972244, 751076, 130675, 100289, 252061,
-                 262114, 449996, 206219, 764775, 285626, 385767, 111989, 812234, 305433, 822474, 312966, 877990, 598853,
-                 389796, 777981, 937667, 943990, 393412, 913947, 594493, 543410, 199872, 519301, 577412, 615253, 914266,
-                 136560, 705707, 433804, 414487, 198043, 325188, 906659, 507433, 268008, 894819, 994630, 427593, 129353,
-                 207160, 780566, 131963, 158586, 428856, 485180, 445734, 806806, 958623]
+    seeds_100 = [
+        577747,
+        914425,
+        445063,
+        977049,
+        617127,
+        639676,
+        137294,
+        845058,
+        718814,
+        119679,
+        435223,
+        347541,
+        666852,
+        701324,
+        604437,
+        908374,
+        941595,
+        800210,
+        745388,
+        399447,
+        140918,
+        910967,
+        917428,
+        497096,
+        222919,
+        726572,
+        748497,
+        185669,
+        610661,
+        709441,
+        801330,
+        506120,
+        891889,
+        298223,
+        164318,
+        929955,
+        854094,
+        553307,
+        279254,
+        597549,
+        223105,
+        708080,
+        220244,
+        126086,
+        634792,
+        458729,
+        822070,
+        972244,
+        751076,
+        130675,
+        100289,
+        252061,
+        262114,
+        449996,
+        206219,
+        764775,
+        285626,
+        385767,
+        111989,
+        812234,
+        305433,
+        822474,
+        312966,
+        877990,
+        598853,
+        389796,
+        777981,
+        937667,
+        943990,
+        393412,
+        913947,
+        594493,
+        543410,
+        199872,
+        519301,
+        577412,
+        615253,
+        914266,
+        136560,
+        705707,
+        433804,
+        414487,
+        198043,
+        325188,
+        906659,
+        507433,
+        268008,
+        894819,
+        994630,
+        427593,
+        129353,
+        207160,
+        780566,
+        131963,
+        158586,
+        428856,
+        485180,
+        445734,
+        806806,
+        958623,
+    ]
 
     return seeds_100
 
@@ -147,16 +248,26 @@ def get_policies_all():
     """Returns list of 2 Policy objects: all-off and all-max."""
 
     policy_list = [
-        Policy('all off', **{'mlit_select': 0,
-                             'del_t': 0,
-                             'rank_punish': 0,
-                             'rank_t': 0,
-                             'strikes_t': 0}),
-        Policy('all max', **{'mlit_select': 10,
-                             'del_t': 5,
-                             'rank_punish': 10,
-                             'rank_t': 5,
-                             'strikes_t': 5}),
+        Policy(
+            "all off",
+            **{
+                "mlit_select": 0,
+                "del_t": 0,
+                "rank_punish": 0,
+                "rank_t": 0,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "all max",
+            **{
+                "mlit_select": 10,
+                "del_t": 5,
+                "rank_punish": 10,
+                "rank_t": 5,
+                "strikes_t": 5,
+            }
+        ),
     ]
 
     return policy_list
@@ -169,42 +280,74 @@ def get_policies_indiv():
     """
 
     policy_list = [
-        Policy('mlit_select max', **{'mlit_select': 10,
-                                     'del_t': 0,
-                                     'rank_punish': 0,
-                                     'rank_t': 0,
-                                     'strikes_t': 0}),
-        Policy('del_t max', **{'mlit_select': 0,
-                               'del_t': 5,
-                               'rank_punish': 0,
-                               'rank_t': 0,
-                               'strikes_t': 0}),
-        Policy('rank_punish max', **{'mlit_select': 0,
-                                     'del_t': 0,
-                                     'rank_punish': 10,
-                                     'rank_t': 1,
-                                     'strikes_t': 0}),
-        Policy('rank_t max', **{'mlit_select': 0,
-                                'del_t': 0,
-                                'rank_punish': 1,
-                                'rank_t': 5,
-                                'strikes_t': 0}),
-        Policy('double rank max', **{'mlit_select': 0,
-                                     'del_t': 0,
-                                     'rank_punish': 10,
-                                     'rank_t': 5,
-                                     'strikes_t': 0}),
-        Policy('strikes_t max', **{'mlit_select': 0,
-                                   'del_t': 0,
-                                   'rank_punish': 0,
-                                   'rank_t': 0,
-                                   'strikes_t': 5})
+        Policy(
+            "mlit_select max",
+            **{
+                "mlit_select": 10,
+                "del_t": 0,
+                "rank_punish": 0,
+                "rank_t": 0,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "del_t max",
+            **{
+                "mlit_select": 0,
+                "del_t": 5,
+                "rank_punish": 0,
+                "rank_t": 0,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "rank_punish max",
+            **{
+                "mlit_select": 0,
+                "del_t": 0,
+                "rank_punish": 10,
+                "rank_t": 1,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "rank_t max",
+            **{
+                "mlit_select": 0,
+                "del_t": 0,
+                "rank_punish": 1,
+                "rank_t": 5,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "double rank max",
+            **{
+                "mlit_select": 0,
+                "del_t": 0,
+                "rank_punish": 10,
+                "rank_t": 5,
+                "strikes_t": 0,
+            }
+        ),
+        Policy(
+            "strikes_t max",
+            **{
+                "mlit_select": 0,
+                "del_t": 0,
+                "rank_punish": 0,
+                "rank_t": 0,
+                "strikes_t": 5,
+            }
+        ),
     ]
 
     return policy_list
 
 
-def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, minimize=None):
+def epsilon_helper(
+    outcomes, bufn, metric, divide_by=10, best_quantile=0.25, minimize=None
+):
     """
     Helps to explore which epsilon-values would be suitable.
 
@@ -220,7 +363,11 @@ def epsilon_helper(outcomes, bufn, metric, divide_by=10, best_quantile=0.25, min
     subset = outcomes[outcomes["belief_update_fn"] == bufn]
 
     if minimize is None:
-        minimize = ['polarization_variance', 'free_speech_constraint', 'avg_user_effort']
+        minimize = [
+            "polarization_variance",
+            "free_speech_constraint",
+            "avg_user_effort",
+        ]
 
     if metric in minimize:
         lower_bound = min(subset[metric])
@@ -250,7 +397,7 @@ def model_setup(belief_update_fn, steps):
 
     # Setting up the model
     model = MisinfoPy()
-    model = Model('MisinfoPy', function=model)
+    model = Model("MisinfoPy", function=model)
 
     model.uncertainties = get_uncertainties()
     model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
@@ -272,7 +419,7 @@ def replicator_model_setup(belief_update_fn, steps, replications):
 
     # Setting up the model
     model = MisinfoPy()
-    model = ReplicatorModel('MisinfoPy', function=model)
+    model = ReplicatorModel("MisinfoPy", function=model)
     model.replications = seeds
     model.uncertainties = get_uncertainties()
     model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
@@ -307,7 +454,7 @@ def calculate_quantiles(outcomes_data, outcome, quantiles):
         row-header: quantile was calculated over this many seeds (first n)
     """
     # Preparation
-    seeds = outcomes_data['seed'].unique().tolist()
+    seeds = outcomes_data["seed"].unique().tolist()
     n_seeds_column = [s for s in range(len(seeds) + 1) if s != 0]
     data_dict = dict.fromkeys(n_seeds_column)
 
@@ -315,9 +462,9 @@ def calculate_quantiles(outcomes_data, outcome, quantiles):
     for n_seeds in n_seeds_column:
         considered_seeds = seeds[0:n_seeds]
         # subsetted dataframe: only the specific 'outcome' column and the 'seed' column
-        subset = outcomes_data[[outcome, 'seed']]
+        subset = outcomes_data[[outcome, "seed"]]
         # subsetted dataframe: only the rows of the seeds that should currently be considered
-        subset = subset.loc[subset['seed'].isin(considered_seeds)]
+        subset = subset.loc[subset["seed"].isin(considered_seeds)]
 
         q_data = []
         for q in quantiles:

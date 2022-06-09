@@ -49,6 +49,7 @@ def calculate_extremeness(beliefs):
 #   From/for misinfo_model.py
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
+
 def discretize(belief_list, n_bins=25):
     """
     Transform a list of (belief) values into a discretized distribution
@@ -88,7 +89,9 @@ def create_polarized_pdf(epsilon=0.001, n_bins=25):
     return pdf
 
 
-def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_digits=2):
+def kl_divergence(
+    belief_list=None, model=None, template_pdf=None, n_bins=25, n_digits=2
+):
     """
     Calculates the symmetric Kullback-Leibler divergence between the template of a polarized belief_list and
     the current belief belief_list of the agents (or the provided belief_list).
@@ -107,7 +110,9 @@ def kl_divergence(belief_list=None, model=None, template_pdf=None, n_bins=25, n_
     discrete_distribution = discretize(belief_list, n_bins)
 
     # Transform to probability belief_list (i.e., transform belief_list into a relative belief_list)
-    relative_distribution = [x / sum(discrete_distribution) for x in discrete_distribution]
+    relative_distribution = [
+        x / sum(discrete_distribution) for x in discrete_distribution
+    ]
 
     # Define the template of a polarized pdf. (Values should not be 0 because of ln(0)=inf in KL-divergence.)
     if template_pdf is None:
@@ -150,7 +155,9 @@ def get_belief_list(belief_list=None, model=None):
 
     if belief_list is None:
         if model is None:
-            raise ValueError("The model is not yet initialized and no belief-list has been provided.")
+            raise ValueError(
+                "The model is not yet initialized and no belief-list has been provided."
+            )
         else:
             belief_list = model.get_beliefs()
 
@@ -218,6 +225,7 @@ def get_update_strength(prev_belief, mean=50.0, std_dev=30.0):
 #   From/for experiments.py. Not used anymore.
 # ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
+
 def calculate_avg_belief(misinfo_model):
     """
     Calculates the average belief over all agents.
@@ -259,7 +267,7 @@ def profile(fnc):
         retval = fnc(*args, **kwargs)
         pr.disable()
         s = io.StringIO()
-        sortby = 'cumulative'
+        sortby = "cumulative"
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
         print(s.getvalue())

@@ -8,7 +8,7 @@ from dmdu.utils_dmdu import (
     get_constants,
     get_epsilons,
     get_reference_scenario,
-    make_sure_path_exists
+    make_sure_path_exists,
 )
 
 # General
@@ -29,18 +29,28 @@ from ema_workbench import (
 
 
 def misinfopy(
-        # uncertainties (general, below model specific)
-        belief_metric_threshold, n_edges, ratio_normal_user, mean_normal_user, mean_disinformer, high_media_lit,
-        deffuant_mu, sampling_p_update, n_posts_estimate_similarity,
-
-        # levers
-        mlit_select, del_t, rank_punish, rank_t, strikes_t,
-
-        # constants
-        steps, belief_update_fn,
-
-        # optimization param (dependent on the model's sensitivity to stochastics)
-        n_replications=1):
+    # uncertainties (general, below model specific)
+    belief_metric_threshold,
+    n_edges,
+    ratio_normal_user,
+    mean_normal_user,
+    mean_disinformer,
+    high_media_lit,
+    deffuant_mu,
+    sampling_p_update,
+    n_posts_estimate_similarity,
+    # levers
+    mlit_select,
+    del_t,
+    rank_punish,
+    rank_t,
+    strikes_t,
+    # constants
+    steps,
+    belief_update_fn,
+    # optimization param (dependent on the model's sensitivity to stochastics)
+    n_replications=1,
+):
     """
     Function for the optimization.
     The experiment specified by the parameters is run n_replications times. The resulting data is summarized & returned.
@@ -89,14 +99,24 @@ def misinfopy(
         # run model (-> get metrics data from 1 replication)
         metrics_1_replic = model(
             # uncertainties
-            belief_metric_threshold=belief_metric_threshold, n_edges=n_edges, ratio_normal_user=ratio_normal_user,
-            mean_normal_user=mean_normal_user, mean_disinformer=mean_disinformer, high_media_lit=high_media_lit,
-            deffuant_mu=deffuant_mu, sampling_p_update=sampling_p_update,
+            belief_metric_threshold=belief_metric_threshold,
+            n_edges=n_edges,
+            ratio_normal_user=ratio_normal_user,
+            mean_normal_user=mean_normal_user,
+            mean_disinformer=mean_disinformer,
+            high_media_lit=high_media_lit,
+            deffuant_mu=deffuant_mu,
+            sampling_p_update=sampling_p_update,
             n_posts_estimate_similarity=n_posts_estimate_similarity,
             # levers
-            mlit_select=mlit_select, del_t=del_t, rank_punish=rank_punish, rank_t=rank_t, strikes_t=strikes_t,
+            mlit_select=mlit_select,
+            del_t=del_t,
+            rank_punish=rank_punish,
+            rank_t=rank_t,
+            strikes_t=strikes_t,
             # constants
-            steps=steps, belief_update_fn=belief_update_fn
+            steps=steps,
+            belief_update_fn=belief_update_fn,
         )
         # save metrics data (dict)
         metrics_n_replic.append(metrics_1_replic)
@@ -111,7 +131,7 @@ def misinfopy(
     return metrics
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
@@ -121,30 +141,38 @@ if __name__ == '__main__':
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
-        print(f'Starting with Model {belief_update_fn.name}')
+        print(f"Starting with Model {belief_update_fn.name}")
 
         # Set up the model
-        model = Model(name=f'MisinfoPy{belief_update_fn.name}', function=misinfopy)
-        print(f'model initialized')
+        model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
+        print(f"model initialized")
         model.uncertainties = get_uncertainties()
         model.levers = get_levers()
-        model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn, n_replications=n_replications)
+        model.constants = get_constants(
+            steps=steps,
+            belief_update_fn=belief_update_fn,
+            n_replications=n_replications,
+        )
         model.outcomes = get_outcomes()
-        print(f'model completely set up')
+        print(f"model completely set up")
 
         # Optimization
-        with SequentialEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
-            print(f'starting optimization')
+        with SequentialEvaluator(
+            model
+        ) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
+            print(f"starting optimization")
             results = evaluator.optimize(  # TODO: TypeError: misinfopy() missing 9 arguments  – if SequentialEvaluator
-                searchover='levers',
+                searchover="levers",
                 nfe=3,  # 100000,
                 epsilons=get_epsilons(),
                 # reference=get_reference_scenario()  # comment-in when ref_scenario & function are ready
             )
-            print(f'results are in')
+            print(f"results are in")
 
         if saving:
-            dir_path = os.path.join(os.getcwd(), 'dmdu', 'optimization', 'data', f'{str(nfe)}nfe')
+            dir_path = os.path.join(
+                os.getcwd(), "dmdu", "optimization", "data", f"{str(nfe)}nfe"
+            )
             make_sure_path_exists(dir_path)
 
             file_name = f"results_{belief_update_fn.name}"

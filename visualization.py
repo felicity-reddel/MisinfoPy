@@ -19,8 +19,10 @@ def get_node_color(agent):
     #       100 --> green
     #       50 --> white
     #       0 --> red
-    c_norm = colors.Normalize(vmin=0, vmax=100)  # because belief can be any n_seen_posts_repl in [0,100]
-    scalar_map = cmx.ScalarMappable(norm=c_norm, cmap=plt.get_cmap('PiYG'))
+    c_norm = colors.Normalize(
+        vmin=0, vmax=100
+    )  # because belief can be any n_seen_posts_repl in [0,100]
+    scalar_map = cmx.ScalarMappable(norm=c_norm, cmap=plt.get_cmap("PiYG"))
 
     c_val = scalar_map.to_rgba(belief)
     new_c_val = []
@@ -48,19 +50,20 @@ def get_edge_width(weight=1, weight_borders=(0, 100)):
     return width
 
 
-def show_visualization(model,
-                       n_agents=100,
-                       n_edges=3,
-                       ratio_normal_user=0.99,
-                       mlit_select=0,
-                       del_t=-10,
-                       rank_t=-10,
-                       strikes_t=-10,
-                       rank_punish=-0,
-                       belief_update_fn=BeliefUpdate.SIT,
-                       sampling_p_update=0.02,
-                       deffuant_mu=0.02
-                       ):
+def show_visualization(
+    model,
+    n_agents=100,
+    n_edges=3,
+    ratio_normal_user=0.99,
+    mlit_select=0,
+    del_t=-10,
+    rank_t=-10,
+    strikes_t=-10,
+    rank_punish=-0,
+    belief_update_fn=BeliefUpdate.SIT,
+    sampling_p_update=0.02,
+    deffuant_mu=0.02,
+):
 
     """
     Internal function to show the visualization.
@@ -87,59 +90,77 @@ def show_visualization(model,
         """
         # The model ensures there is always 1 agent per node
         portrayal = dict()
-        portrayal['nodes'] = [{"shape": "circle",
-                               "color": f'rgb{get_node_color(agent)}',
-                               "size": 5,
-                               # "tooltip": f"{round(agent.unique_id)}"
-                               "tooltip": f"{sum(agent.n_seen_posts)}"
-                               }
-                              for (i, agent) in G.nodes.data("agent")]
+        portrayal["nodes"] = [
+            {
+                "shape": "circle",
+                "color": f"rgb{get_node_color(agent)}",
+                "size": 5,
+                # "tooltip": f"{round(agent.unique_id)}"
+                "tooltip": f"{sum(agent.n_seen_posts)}",
+            }
+            for (i, agent) in G.nodes.data("agent")
+        ]
 
-        portrayal['edges'] = [{'source': source,
-                               'target': target,
-                               'color': 'black',
-                               'width': 1,
-                               # to adjust line-width based on edge-weight, use instead:
-                               # 'width': get_edge_width(G.edges[source, target, key]['weight']),
-                               'directed': True
-                               }
-                              for (source, target, key) in G.edges]
+        portrayal["edges"] = [
+            {
+                "source": source,
+                "target": target,
+                "color": "black",
+                "width": 1,
+                # to adjust line-width based on edge-weight, use instead:
+                # 'width': get_edge_width(G.edges[source, target, key]['weight']),
+                "directed": True,
+            }
+            for (source, target, key) in G.edges
+        ]
 
         return portrayal
 
-    network = NetworkModule(network_portrayal, 500, 500, library='d3')
-    chart_avg_belief = ChartModule([{"Label": "Avg Vax-Belief", "Color": "blue"},
-                                    {"Label": "Avg Vax-Belief above threshold", "Color": "green"},
-                                    {"Label": "Avg Vax-Belief below threshold", "Color": "red"}],
-                                   data_collector_name="data_collector")
+    network = NetworkModule(network_portrayal, 500, 500, library="d3")
+    chart_avg_belief = ChartModule(
+        [
+            {"Label": "Avg Vax-Belief", "Color": "blue"},
+            {"Label": "Avg Vax-Belief above threshold", "Color": "green"},
+            {"Label": "Avg Vax-Belief below threshold", "Color": "red"},
+        ],
+        data_collector_name="data_collector",
+    )
 
-    chart_indiv_belief = ChartModule([{"Label": "Agent 0", "Color": "#FFCA03"},    # yellow
-                                      {"Label": "Agent 1", "Color": "#FF9300"},    # orange
-                                      {"Label": "Agent 2", "Color": "#F90716"},    # red
-                                      {"Label": "Agent 3", "Color": "#FF00E4"},    # pink
-                                      {"Label": "Agent 4", "Color": "#9C19E0"},    # purple
-                                      {"Label": "Agent 5", "Color": "#3E00FF"},    # blue
-                                      {"Label": "Agent 6", "Color": "#3EDBF0"},    # light blue
-                                      {"Label": "Agent 7", "Color": "#54E346"},    # light green
-                                      {"Label": "Agent 8", "Color": "#27AA80"},    # green
-                                      {"Label": "Agent 9", "Color": "#D06224"},    # brown
-                                      {"Label": "Agent 10", "Color": "#000000"}],  # black
-                                     data_collector_name="data_collector2")
+    chart_indiv_belief = ChartModule(
+        [
+            {"Label": "Agent 0", "Color": "#FFCA03"},  # yellow
+            {"Label": "Agent 1", "Color": "#FF9300"},  # orange
+            {"Label": "Agent 2", "Color": "#F90716"},  # red
+            {"Label": "Agent 3", "Color": "#FF00E4"},  # pink
+            {"Label": "Agent 4", "Color": "#9C19E0"},  # purple
+            {"Label": "Agent 5", "Color": "#3E00FF"},  # blue
+            {"Label": "Agent 6", "Color": "#3EDBF0"},  # light blue
+            {"Label": "Agent 7", "Color": "#54E346"},  # light green
+            {"Label": "Agent 8", "Color": "#27AA80"},  # green
+            {"Label": "Agent 9", "Color": "#D06224"},  # brown
+            {"Label": "Agent 10", "Color": "#000000"},
+        ],  # black
+        data_collector_name="data_collector2",
+    )
 
-    server = ModularServer(model,  # class name
-                           [network, chart_avg_belief, chart_indiv_belief],
-                           'Misinfo Model',  # title
-                           {'n_agents': n_agents,
-                            'n_edges': n_edges,
-                            'ratio_normal_user': ratio_normal_user,
-                            'mlit_select': mlit_select,
-                            'del_t': del_t,
-                            'rank_t': rank_t,
-                            'strikes_t': strikes_t,
-                            'rank_punish': rank_punish,
-                            'belief_update_fn': belief_update_fn,
-                            'sampling_p_update': sampling_p_update,
-                            'deffuant_mu': deffuant_mu})  # model parameters
+    server = ModularServer(
+        model,  # class name
+        [network, chart_avg_belief, chart_indiv_belief],
+        "Misinfo Model",  # title
+        {
+            "n_agents": n_agents,
+            "n_edges": n_edges,
+            "ratio_normal_user": ratio_normal_user,
+            "mlit_select": mlit_select,
+            "del_t": del_t,
+            "rank_t": rank_t,
+            "strikes_t": strikes_t,
+            "rank_punish": rank_punish,
+            "belief_update_fn": belief_update_fn,
+            "sampling_p_update": sampling_p_update,
+            "deffuant_mu": deffuant_mu,
+        },
+    )  # model parameters
 
     server.port = 8521  # The default
     server.launch()

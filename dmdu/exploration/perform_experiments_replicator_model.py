@@ -1,9 +1,4 @@
-from ema_workbench import (
-    Model,
-    ema_logging,
-    MultiprocessingEvaluator,
-    save_results
-)
+from ema_workbench import Model, ema_logging, MultiprocessingEvaluator, save_results
 from model.misinfo_model import MisinfoPy
 from model.enums import BeliefUpdate
 from dmdu.utils_dmdu import (
@@ -14,15 +9,23 @@ from dmdu.utils_dmdu import (
     get_policies_all,
     model_setup,
     replicator_model_setup,
-    make_sure_path_exists
+    make_sure_path_exists,
 )
 import os
 
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60, replications=1,
-                           saving=False, dir_path=None, file_name=None):
+def perform_my_experiments(
+    policies,
+    scenarios,
+    belief_update_fn,
+    steps=60,
+    replications=1,
+    saving=False,
+    dir_path=None,
+    file_name=None,
+):
     """
     Sets up the model, performs experiments and returns the results.
 
@@ -47,7 +50,7 @@ def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60, repl
 
     if saving:
         if dir_path is None:
-            dir_path = os.path.join(os.getcwd(), 'data')
+            dir_path = os.path.join(os.getcwd(), "data")
             make_sure_path_exists(dir_path)
 
         if file_name is None:
@@ -87,4 +90,5 @@ if __name__ == "__main__":
             steps=steps,
             replications=replications,
             saving=True,
-            file_name=f"ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief.name}")
+            file_name=f"ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief.name}",
+        )

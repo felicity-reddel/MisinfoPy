@@ -1,7 +1,9 @@
 from model.posts import *
+
 # import numpy as np
 
 import math
+
 # import random
 
 from mesa import Agent
@@ -30,7 +32,9 @@ class BaseAgent(Agent):
         self.n_total_seen_posts = 0
         self.visible_posts = []  # currently: all posts
         self.n_strikes = 0
-        self.blocked_until = 0  # Block excluding this number -> Can post on this tick again.
+        self.blocked_until = (
+            0  # Block excluding this number -> Can post on this tick again.
+        )
         self.preferred_n_posts = 0
         self.n_downranked = 0
 
@@ -46,12 +50,12 @@ class BaseAgent(Agent):
             nr_of_posts: int
         """
 
-        mean = self.vocality['mean']
+        mean = self.vocality["mean"]
         max_mean_increase = self.model.adjustment_based_on_belief
         extremeness = calculate_extremeness(self.beliefs)
 
         mean += extremeness * max_mean_increase
-        std_dev = self.vocality['std_dev']
+        std_dev = self.vocality["std_dev"]
 
         nr_of_posts = max(0, self.model.random.normalvariate(mu=mean, sigma=std_dev))
 
@@ -77,7 +81,7 @@ class BaseAgent(Agent):
                 post = self.create_post(rank_t=self.model.rank_t)
 
                 # Deleting: Posts that have a very low probability of being true might be deleted
-                if (post.p_true <= self.model.del_t/100) and post.detected_as_misinfo:
+                if (post.p_true <= self.model.del_t / 100) and post.detected_as_misinfo:
                     # Delete post by not appending it and advancing the delete-counter
                     self.model.n_posts_deleted += 1
                 else:
@@ -135,13 +139,17 @@ class BaseAgent(Agent):
             prev_belief = self.beliefs[topic]
 
             # Calculate SIT components
-            strength = self.calculate_strength(post)  # avg(relative_n_followers, belief_similarity)
+            strength = self.calculate_strength(
+                post
+            )  # avg(relative_n_followers, belief_similarity)
             # belief_similarity: between own_beliefs and source's_beliefs
             immediacy = self.calculate_immediacy(post)  # tie_strength
             n_sources = self.calculate_n_sources()  # (1 / n_following) * 100, [0,100]
 
             # Combine components
-            social_impact = strength * immediacy * n_sources  # [0,100] * [0,100] * [0,100] --> [0,100^3]
+            social_impact = (
+                strength * immediacy * n_sources
+            )  # [0,100] * [0,100] * [0,100] --> [0,100^3]
 
             # Rescale
             # downwards belief update
@@ -184,7 +192,9 @@ class BaseAgent(Agent):
         :return:            immediacy n_seen_posts_repl
         """
 
-        tie_strength = self.model.G.edges[self.unique_id, post.source.unique_id, 0]['weight']  # Always key=0 because
+        tie_strength = self.model.G.edges[self.unique_id, post.source.unique_id, 0][
+            "weight"
+        ]  # Always key=0 because
         # maximally one connection in this direction possible.
         immediacy = tie_strength
 
@@ -240,10 +250,7 @@ class BaseAgent(Agent):
             tweet_beliefs = sample_beliefs()
 
         # Create post
-        post = Post(post_id,
-                    source=self,
-                    tweet_beliefs=tweet_beliefs,
-                    rank_t=rank_t)
+        post = Post(post_id, source=self, tweet_beliefs=tweet_beliefs, rank_t=rank_t)
 
         return post
 
@@ -257,7 +264,9 @@ class BaseAgent(Agent):
         n_followers = len(list(self.model.G.successors(source.unique_id)))
         min_followers, max_followers = self.model.agents_data["n_followers_range"]
 
-        relative_n_followers = (n_followers - min_followers) / (max_followers - min_followers)
+        relative_n_followers = (n_followers - min_followers) / (
+            max_followers - min_followers
+        )
         relative_n_followers = relative_n_followers * 100
 
         return relative_n_followers
@@ -306,10 +315,14 @@ class BaseAgent(Agent):
         :return: update_elasticity:     float                               (domain: [0,1])
         :param neutral_belief:          float or int                        (domain: belief_domain)
         """
-        update_strength = get_update_strength(prev_belief=prev_belief, mean=neutral_belief, std_dev=std_dev)
+        update_strength = get_update_strength(
+            prev_belief=prev_belief, mean=neutral_belief, std_dev=std_dev
+        )
 
         # Rescale update_strength, such that at middle (e.g., 50), the update elasticity is 1:
-        max_elasticity = get_update_strength(prev_belief=neutral_belief, mean=neutral_belief, std_dev=std_dev)
+        max_elasticity = get_update_strength(
+            prev_belief=neutral_belief, mean=neutral_belief, std_dev=std_dev
+        )
         update_elasticity = update_strength / max_elasticity
 
         return update_elasticity
@@ -325,10 +338,13 @@ class NormalUser(BaseAgent):
         """
         super().__init__(unique_id, model)
 
-        self.vocality = {'mean': self.model.mean_normal_user,
-                         'std_dev': self.model.sigma}
-        self.media_literacy = MediaLiteracy.get_random(mlit_weights=[1-high_media_lit, high_media_lit],
-                                                       rng=self.model.random)  # {LOW, HIGH}
+        self.vocality = {
+            "mean": self.model.mean_normal_user,
+            "std_dev": self.model.sigma,
+        }
+        self.media_literacy = MediaLiteracy.get_random(
+            mlit_weights=[1 - high_media_lit, high_media_lit], rng=self.model.random
+        )  # {LOW, HIGH}
 
     def init_beliefs(self):
         """
@@ -345,7 +361,9 @@ class NormalUser(BaseAgent):
         if len(self.received_posts) > 0:
             # Sample which of the received posts are actually seen (depends on ranking).
             rng = self.model.random
-            seen_posts = [post for post in self.received_posts if (rng.random() < post.visibility)]
+            seen_posts = [
+                post for post in self.received_posts if (rng.random() < post.visibility)
+            ]
             self.n_seen_posts.append(len(seen_posts))
             self.n_total_seen_posts += len(seen_posts)
 
@@ -432,7 +450,10 @@ class NormalUser(BaseAgent):
         :return: boolean, whether the post is judged as true or false
         """
         judged_truthfulness = True
-        if self.media_literacy == MediaLiteracy.HIGH and post.ground_truth == GroundTruth.FALSE:
+        if (
+            self.media_literacy == MediaLiteracy.HIGH
+            and post.ground_truth == GroundTruth.FALSE
+        ):
             judged_truthfulness = False
 
         return judged_truthfulness
@@ -452,7 +473,9 @@ class NormalUser(BaseAgent):
             else:
                 p_judged_as_truthful = 0.2
         else:
-            p_judged_as_truthful = 1.0  # People with Medialiteracy.LOW will always update
+            p_judged_as_truthful = (
+                1.0  # People with Medialiteracy.LOW will always update
+            )
 
         # Sample whether post is judged as truthful
         if self.model.random.random() < p_judged_as_truthful:
@@ -469,8 +492,10 @@ class Disinformer(BaseAgent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
 
-        self.vocality = {'mean': self.model.mean_disinformer,
-                         'std_dev': self.model.sigma}
+        self.vocality = {
+            "mean": self.model.mean_disinformer,
+            "std_dev": self.model.sigma,
+        }
 
     def init_beliefs(self):
         """
@@ -484,5 +509,9 @@ class Disinformer(BaseAgent):
         Second part of the Disinformer agent's step function. Disinformers don't update their tweet_beliefs
         """
         # To include disinformers into the profit metric of n_seen_posts:
-        seen_posts = [post for post in self.received_posts if (self.model.random.random() < post.visibility)]
+        seen_posts = [
+            post
+            for post in self.received_posts
+            if (self.model.random.random() < post.visibility)
+        ]
         self.n_seen_posts.append(len(seen_posts))

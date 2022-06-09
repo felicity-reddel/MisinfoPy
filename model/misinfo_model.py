@@ -28,8 +28,7 @@ class MisinfoPy(Model):
         self.G = None
         self.grid = None
         self.post_id_counter = 0
-        self.agents_data = {'n_followers_range': (0, 0),
-                            'n_following_range': (0, 0)}
+        self.agents_data = {"n_followers_range": (0, 0), "n_following_range": (0, 0)}
 
         # ––– Posting behavior –––
         self.sigma = None
@@ -60,10 +59,31 @@ class MisinfoPy(Model):
         self.n_posts_deleted = 0
         self.data_collector = None
 
-    def set_up(self, n_agents, n_edges, high_media_lit, ratio_normal_user, sigma, mean_normal_user, mean_disinformer,
-               adjustment_based_on_belief, mlit_select, mlit_dur_init, mlit_dur_low, mlit_dur_high, rank_punish, del_t,
-               rank_t, strikes_t, belief_update_fn, sampling_p_update, deffuant_mu, n_posts_estimate_similarity,
-               belief_metric_threshold, seed):
+    def set_up(
+        self,
+        n_agents,
+        n_edges,
+        high_media_lit,
+        ratio_normal_user,
+        sigma,
+        mean_normal_user,
+        mean_disinformer,
+        adjustment_based_on_belief,
+        mlit_select,
+        mlit_dur_init,
+        mlit_dur_low,
+        mlit_dur_high,
+        rank_punish,
+        del_t,
+        rank_t,
+        strikes_t,
+        belief_update_fn,
+        sampling_p_update,
+        deffuant_mu,
+        n_posts_estimate_similarity,
+        belief_metric_threshold,
+        seed,
+    ):
         """
         Sets up the initial, barebone MisinfoPy model.
 
@@ -106,9 +126,13 @@ class MisinfoPy(Model):
 
         # ––– Network & Setup –––  # n_nodes=n_agents, exactly 1 agent per node
         self.n_agents = n_agents
-        self.G = self.random_graph(rng=self.random, seed=self._seed, n_nodes=n_agents, m=n_edges)
+        self.G = self.random_graph(
+            rng=self.random, seed=self._seed, n_nodes=n_agents, m=n_edges
+        )
         self.grid = NetworkGrid(self.G)
-        self.schedule = StagedActivation(self, stage_list=["share_post_stage", "update_beliefs_stage"])
+        self.schedule = StagedActivation(
+            self, stage_list=["share_post_stage", "update_beliefs_stage"]
+        )
 
         # ––– Posting behavior –––
         self.sigma = sigma
@@ -122,8 +146,10 @@ class MisinfoPy(Model):
         self.mlit_dur_high = mlit_dur_high
         self.apply_media_literacy_intervention(mlit_select)
         if not (-100 <= rank_punish <= -0):
-            raise ValueError(f"Visibility adjustment for ranking was {rank_punish}, "
-                             f"while it should be in range [-100, 0]")
+            raise ValueError(
+                f"Visibility adjustment for ranking was {rank_punish}, "
+                f"while it should be in range [-100, 0]"
+            )
         self.del_t = del_t
         self.rank_t = rank_t
         self.rank_punish = rank_punish
@@ -180,41 +206,39 @@ class MisinfoPy(Model):
         # self.data_collector2.collect(self)
 
     # @profile  # To profile the code: Comment this line in.
-    def __call__(self,
-                 # ––– Network –––
-                 n_agents=1000,
-                 n_edges=3,
-                 high_media_lit=0.3,
-                 ratio_normal_user=0.99,
-
-                 # ––– Posting behavior –––
-                 sigma=0.7,
-                 mean_normal_user=1,
-                 mean_disinformer=10,
-                 adjustment_based_on_belief=2,
-
-                 # ––– Levers –––
-                 mlit_select=0,
-                 mlit_dur_init=3600,
-                 mlit_dur_low=3,
-                 mlit_dur_high=30,
-                 rank_punish=0,
-                 del_t=0,
-                 rank_t=0,
-                 strikes_t=0,
-
-                 # ––– Belief updating behavior –––
-                 belief_update_fn=BeliefUpdate.SAMPLE,
-                 sampling_p_update=0.02,
-                 deffuant_mu=0.02,
-                 belief_metric_threshold=50.0,
-                 n_posts_estimate_similarity=10,
-
-                 # ––– Call parameters –––
-                 steps=60,
-                 seed=None,
-                 time_tracking=False,
-                 debug=False):
+    def __call__(
+        self,
+        # ––– Network –––
+        n_agents=1000,
+        n_edges=3,
+        high_media_lit=0.3,
+        ratio_normal_user=0.99,
+        # ––– Posting behavior –––
+        sigma=0.7,
+        mean_normal_user=1,
+        mean_disinformer=10,
+        adjustment_based_on_belief=2,
+        # ––– Levers –––
+        mlit_select=0,
+        mlit_dur_init=3600,
+        mlit_dur_low=3,
+        mlit_dur_high=30,
+        rank_punish=0,
+        del_t=0,
+        rank_t=0,
+        strikes_t=0,
+        # ––– Belief updating behavior –––
+        belief_update_fn=BeliefUpdate.SAMPLE,
+        sampling_p_update=0.02,
+        deffuant_mu=0.02,
+        belief_metric_threshold=50.0,
+        n_posts_estimate_similarity=10,
+        # ––– Call parameters –––
+        steps=60,
+        seed=None,
+        time_tracking=False,
+        debug=False,
+    ):
         """
         Runs the model for the specified number of steps.
         # TODO: Add all the other params
@@ -226,11 +250,9 @@ class MisinfoPy(Model):
         # Convert seed into integer
         # seed = int(seed)
         # Workaround until I understand the "resolution" from IntegerParam
-        [mlit_select, del_t, rank_punish, rank_t, strikes_t] = map_levers(mlit_select,
-                                                                          del_t,
-                                                                          rank_punish,
-                                                                          rank_t,
-                                                                          strikes_t)
+        [mlit_select, del_t, rank_punish, rank_t, strikes_t] = map_levers(
+            mlit_select, del_t, rank_punish, rank_t, strikes_t
+        )
 
         self.set_up(
             # ––– Network –––
@@ -238,13 +260,11 @@ class MisinfoPy(Model):
             n_edges=n_edges,
             high_media_lit=high_media_lit,
             ratio_normal_user=ratio_normal_user,
-
             # ––– Posting behavior –––
             sigma=sigma,
             mean_normal_user=mean_normal_user,
             mean_disinformer=mean_disinformer,
             adjustment_based_on_belief=adjustment_based_on_belief,
-
             # ––– Levers –––
             mlit_select=mlit_select,
             mlit_dur_init=mlit_dur_init,
@@ -254,33 +274,37 @@ class MisinfoPy(Model):
             del_t=del_t,
             rank_t=rank_t,
             strikes_t=strikes_t,
-
             # ––– Belief updating behavior –––
             belief_update_fn=belief_update_fn,
             sampling_p_update=sampling_p_update,
             deffuant_mu=deffuant_mu,
             n_posts_estimate_similarity=n_posts_estimate_similarity,
             belief_metric_threshold=belief_metric_threshold,
-
-            seed=seed
+            seed=seed,
         )
 
         start_time = time.time()
 
         for i in range(steps):
             if debug:
-                print(f'––––––––––––––––––––––––––––––––––––––– Step: {i} –––––––––––––––––––––––––––––––––––––––')
+                print(
+                    f"––––––––––––––––––––––––––––––––––––––– Step: {i} –––––––––––––––––––––––––––––––––––––––"
+                )
             self.step()
 
         if time_tracking:
             run_time = round(time.time() - start_time, 2)
-            print(f'Run time: {run_time} seconds')
+            print(f"Run time: {run_time} seconds")
 
         if debug:
-            n_inf_blocked = sum([1 for x in self.schedule.agents if x.blocked_until == math.inf])
+            n_inf_blocked = sum(
+                [1 for x in self.schedule.agents if x.blocked_until == math.inf]
+            )
             print()
             print(f"{n_inf_blocked}/{self.n_agents} blocked permanently")
-            print(f"n_disinformers: {sum([1 for x in self.schedule.agents if isinstance(x, Disinformer)])}")
+            print(
+                f"n_disinformers: {sum([1 for x in self.schedule.agents if isinstance(x, Disinformer)])}"
+            )
 
         # Calculate metrics for this run
         n_agents_above_belief_threshold = self.get_n_above_belief_threshold()
@@ -291,12 +315,12 @@ class MisinfoPy(Model):
         avg_user_effort = self.get_avg_user_effort()
 
         results_dict = {
-            'n_agents_above_belief_threshold': n_agents_above_belief_threshold,
-            'polarization_variance': polarization_variance,
-            'polarization_kl_divergence_from_polarized': polarization_kl_divergence_from_polarized,
-            'engagement': engagement,
-            'free_speech_constraint': free_speech_constraint,
-            'avg_user_effort': avg_user_effort,
+            "n_agents_above_belief_threshold": n_agents_above_belief_threshold,
+            "polarization_variance": polarization_variance,
+            "polarization_kl_divergence_from_polarized": polarization_kl_divergence_from_polarized,
+            "engagement": engagement,
+            "free_speech_constraint": free_speech_constraint,
+            "avg_user_effort": avg_user_effort,
         }
 
         # print()
@@ -319,7 +343,9 @@ class MisinfoPy(Model):
         # Create agents & add them to the scheduler
         for i in range(self.n_agents):
             # Pick which type should be added
-            agent_type = self.random.choices(population=types, weights=percentages, k=1)[0]
+            agent_type = self.random.choices(
+                population=types, weights=percentages, k=1
+            )[0]
 
             # Add agent of that type
             if agent_type is NormalUser:
@@ -337,7 +363,7 @@ class MisinfoPy(Model):
             self.grid.place_agent(agent, node)
 
             # add agent to node
-            self.G.nodes[node]['agent'] = agent
+            self.G.nodes[node]["agent"] = agent
 
     def init_followers_and_following(self):
         """Initializes the followers and following of each agent."""
@@ -347,8 +373,12 @@ class MisinfoPy(Model):
         # Init followers & following (after all agents have been set up)
         for agent in self.schedule.agents:
             # Gather connected agents
-            predecessors = [self.schedule.agents[a] for a in self.G.predecessors(agent.unique_id)]
-            successors = [self.schedule.agents[a] for a in self.G.successors(agent.unique_id)]
+            predecessors = [
+                self.schedule.agents[a] for a in self.G.predecessors(agent.unique_id)
+            ]
+            successors = [
+                self.schedule.agents[a] for a in self.G.successors(agent.unique_id)
+            ]
 
             # Assign to this agent
             agent.following = predecessors
@@ -368,7 +398,9 @@ class MisinfoPy(Model):
         self.agents_data["n_following_range"] = (min_n_following, max_n_following)
         self.agents_data["n_followers_range"] = (min_n_followers, max_n_followers)
 
-    def apply_media_literacy_intervention(self, percentage_selected=0, select_by=SelectAgentsBy.RANDOM):
+    def apply_media_literacy_intervention(
+        self, percentage_selected=0, select_by=SelectAgentsBy.RANDOM
+    ):
         """
         Applies the media literacy intervention (if needed).
         @param percentage_selected: int, in domain [0,100], Percentage of agents empowered by mlit-intervention
@@ -378,13 +410,17 @@ class MisinfoPy(Model):
         # (i.e., if some percentage of agents is targeted with it)
         if percentage_selected > 0:
             n_select = int(len(self.schedule.agents) * (percentage_selected / 100))
-            selected_agents = self.select_agents_for_media_literacy_intervention(n_select, select_by)
+            selected_agents = self.select_agents_for_media_literacy_intervention(
+                n_select, select_by
+            )
 
             for agent in selected_agents:
                 agent.media_literacy = MediaLiteracy.HIGH
                 agent.received_media_literacy_intervention = True
 
-    def select_agents_for_media_literacy_intervention(self, n_select=0, select_by=SelectAgentsBy.RANDOM):
+    def select_agents_for_media_literacy_intervention(
+        self, n_select=0, select_by=SelectAgentsBy.RANDOM
+    ):
         """
         Select agents for the intervention.
         @param n_select:    int, how many agents should be selected for the intervention
@@ -392,12 +428,16 @@ class MisinfoPy(Model):
         @return:            list of agents, [(Base)Agent, (Base)Agent, ...]
         """
         if select_by.__eq__(SelectAgentsBy.RANDOM):
-            selected_agents = self.random.choices(population=self.schedule.agents, k=n_select)
+            selected_agents = self.random.choices(
+                population=self.schedule.agents, k=n_select
+            )
         else:
-            raise ValueError(f'Selection style {select_by} has not yet been implemented. '
-                             f'To sample which agents will be empowered by the media literacy intervention,'
-                             f'please use an agent selection style that has already been implemented. '
-                             f'(e.g. SelectAgentsBy.RANDOM).')
+            raise ValueError(
+                f"Selection style {select_by} has not yet been implemented. "
+                f"To sample which agents will be empowered by the media literacy intervention,"
+                f"please use an agent selection style that has already been implemented. "
+                f"(e.g. SelectAgentsBy.RANDOM)."
+            )
 
         return selected_agents
 
@@ -442,13 +482,17 @@ class MisinfoPy(Model):
         """
         effort_per_agent = []
         for agent in self.schedule.agents:
-            initial_investment = int(agent.received_media_literacy_intervention) * self.mlit_dur_init
+            initial_investment = (
+                int(agent.received_media_literacy_intervention) * self.mlit_dur_init
+            )
             if agent.media_literacy == MediaLiteracy.HIGH:
                 judging_all_posts = agent.n_total_seen_posts * self.mlit_dur_high
             elif agent.media_literacy == MediaLiteracy.LOW:
                 judging_all_posts = agent.n_total_seen_posts * self.mlit_dur_low
             else:
-                raise ValueError("Only MediaLiteracy.HIGH and MediaLiteracy.LOW are currently implemented.")
+                raise ValueError(
+                    "Only MediaLiteracy.HIGH and MediaLiteracy.LOW are currently implemented."
+                )
             effort = initial_investment + judging_all_posts
             effort_per_agent.append(effort)
 
@@ -574,9 +618,15 @@ class MisinfoPy(Model):
         @return: avg:       float
         """
 
-        beliefs_above_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] >= threshold]
+        beliefs_above_threshold = [
+            a.beliefs[topic]
+            for a in self.schedule.agents
+            if a.beliefs[topic] >= threshold
+        ]
         if len(beliefs_above_threshold) == 0:
-            avg = self.get_avg_belief_below_threshold()  # If nobody above threshold, take avg of below threshold.
+            avg = (
+                self.get_avg_belief_below_threshold()
+            )  # If nobody above threshold, take avg of below threshold.
         else:
             avg = sum(beliefs_above_threshold) / len(beliefs_above_threshold)
         return avg
@@ -590,10 +640,16 @@ class MisinfoPy(Model):
         @return: avg:       float
         """
 
-        beliefs_below_threshold = [a.beliefs[topic] for a in self.schedule.agents if a.beliefs[topic] < threshold]
+        beliefs_below_threshold = [
+            a.beliefs[topic]
+            for a in self.schedule.agents
+            if a.beliefs[topic] < threshold
+        ]
 
         if len(beliefs_below_threshold) == 0:
-            avg = self.get_avg_belief_above_threshold()  # If nobody below threshold, take avg of above threshold.
+            avg = (
+                self.get_avg_belief_above_threshold()
+            )  # If nobody below threshold, take avg of above threshold.
         else:
             avg = sum(beliefs_below_threshold) / len(beliefs_below_threshold)
 
@@ -612,7 +668,7 @@ class MisinfoPy(Model):
         agents = [a for a in self.schedule.agents if a.unique_id in agent_ids_list]
         for agent in agents:
             belief = agent.beliefs[topic]
-            vax_beliefs[f'belief of agent {id}'] = belief
+            vax_beliefs[f"belief of agent {id}"] = belief
 
         return vax_beliefs
 
@@ -662,7 +718,7 @@ class MisinfoPy(Model):
 
                 # Sample weights & save them
                 weight = rng.randint(0, 100)
-                graph.edges[from_e, to_e, key]['weight'] = weight
+                graph.edges[from_e, to_e, key]["weight"] = weight
 
         else:  # not directed --> no key
             # Add edge weights
@@ -672,7 +728,7 @@ class MisinfoPy(Model):
 
                 # Sample weights & save them (weights in range [0,2]: no visible change)
                 weight = 1 + rng.random() * rng.choice([-1, 1])
-                graph.edges[from_e, to_e]['weight'] = weight
+                graph.edges[from_e, to_e]["weight"] = weight
 
         return graph
 
@@ -691,7 +747,7 @@ def map_levers(mlit_select, del_t, rank_punish, rank_t, strikes_t):
     return mlit_select, del_t, rank_punish, rank_t, strikes_t
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     model = MisinfoPy()
     results = model(steps=15)
 
