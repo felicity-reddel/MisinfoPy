@@ -3,7 +3,7 @@ from visualization import *
 import time
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Parameters
     visualize = False
@@ -22,36 +22,38 @@ if __name__ == '__main__':
     if visualize:
 
         # Only needs the line below. Runs model in the browser.
-        show_visualization(model=MisinfoPy,
-                           n_agents=n_agents,
-                           n_edges=n_edges,
-                           ratio_normal_user=ratio,
-                           mlit_select=mlit_select,
-                           rank_punish=rank_punish,
-                           del_t=del_t,
-                           rank_t=rank_t,
-                           strikes_t=strikes_t,
-                           belief_update_fn=belief_update_fn,
-                           sampling_p_update=sampling_p_update,
-                           deffuant_mu=deffuant_mu
-                           )
+        show_visualization(
+            model=MisinfoPy,
+            n_agents=n_agents,
+            n_edges=n_edges,
+            ratio_normal_user=ratio,
+            mlit_select=mlit_select,
+            rank_punish=rank_punish,
+            del_t=del_t,
+            rank_t=rank_t,
+            strikes_t=strikes_t,
+            belief_update_fn=belief_update_fn,
+            sampling_p_update=sampling_p_update,
+            deffuant_mu=deffuant_mu,
+        )
 
     else:
 
         max_run_length = 10
 
-        model = MisinfoPy(n_agents=n_agents,
-                          n_edges=n_edges,
-                          ratio_normal_user=ratio,
-                          mlit_select=mlit_select,
-                          rank_punish=rank_punish,
-                          del_t=del_t,
-                          rank_t=rank_t,
-                          strikes_t=strikes_t,
-                          belief_update_fn=belief_update_fn,
-                          sampling_p_update=sampling_p_update,
-                          deffuant_mu=deffuant_mu
-                          )
+        model = MisinfoPy(
+            n_agents=n_agents,
+            n_edges=n_edges,
+            ratio_normal_user=ratio,
+            mlit_select=mlit_select,
+            rank_punish=rank_punish,
+            del_t=del_t,
+            rank_t=rank_t,
+            strikes_t=strikes_t,
+            belief_update_fn=belief_update_fn,
+            sampling_p_update=sampling_p_update,
+            deffuant_mu=deffuant_mu,
+        )
 
         print(f"Starting")
         start_time = time.time()

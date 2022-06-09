@@ -1,9 +1,4 @@
-from ema_workbench import (
-    Model,
-    ema_logging,
-    MultiprocessingEvaluator,
-    save_results
-)
+from ema_workbench import Model, ema_logging, MultiprocessingEvaluator, save_results
 from model.misinfo_model import MisinfoPy
 from model.enums import BeliefUpdate
 from dmdu.utils_dmdu import (
@@ -12,15 +7,22 @@ from dmdu.utils_dmdu import (
     get_levers,
     get_outcomes,
     get_policies_all,
-    model_setup
+    model_setup,
 )
 import os
 
 ema_logging.log_to_stderr(ema_logging.INFO)
 
 
-def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60,
-                           saving=False, dir_path=None, file_name=None):
+def perform_my_experiments(
+    policies,
+    scenarios,
+    belief_update_fn,
+    steps=60,
+    saving=False,
+    dir_path=None,
+    file_name=None,
+):
     """
     Sets up the model, performs experiments and returns the results.
 
@@ -43,7 +45,7 @@ def perform_my_experiments(policies, scenarios, belief_update_fn, steps=60,
 
     if saving:
         if dir_path is None:
-            dir_path = os.path.join(os.getcwd(), 'dmdu', 'exploration', 'data')
+            dir_path = os.path.join(os.getcwd(), "dmdu", "exploration", "data")
         if file_name is None:
             file_name = f"exploration_{scenarios}_scenarios"
         path = os.path.join(dir_path, file_name)
@@ -74,9 +76,11 @@ if __name__ == "__main__":
     steps = 60
 
     for belief in beliefs:
-        perform_my_experiments(policies=policies,
-                               scenarios=scenarios,
-                               belief_update_fn=belief,
-                               steps=steps,
-                               saving=True,
-                               file_name=f"open_exploration_{exp_name}_{belief.name}")
+        perform_my_experiments(
+            policies=policies,
+            scenarios=scenarios,
+            belief_update_fn=belief,
+            steps=steps,
+            saving=True,
+            file_name=f"open_exploration_{exp_name}_{belief.name}",
+        )

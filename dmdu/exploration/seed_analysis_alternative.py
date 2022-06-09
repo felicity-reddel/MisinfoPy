@@ -1,7 +1,12 @@
 # Project
 from model.misinfo_model import MisinfoPy
-from dmdu.utils_dmdu import (get_uncertainties, get_constants, get_outcomes,
-                             get_levers, make_sure_path_exists)
+from dmdu.utils_dmdu import (
+    get_uncertainties,
+    get_constants,
+    get_outcomes,
+    get_levers,
+    make_sure_path_exists,
+)
 from model.enums import BeliefUpdate
 
 # General
@@ -9,8 +14,15 @@ import pandas as pd
 import os
 
 # ema_workbench
-from ema_workbench import (Model, Constant, MultiprocessingEvaluator, ArrayOutcome,
-                           save_results, SequentialEvaluator, ReplicatorModel)
+from ema_workbench import (
+    Model,
+    Constant,
+    MultiprocessingEvaluator,
+    ArrayOutcome,
+    save_results,
+    SequentialEvaluator,
+    ReplicatorModel,
+)
 
 if __name__ == "__main__":
     n_experiments = 400
@@ -40,18 +52,24 @@ if __name__ == "__main__":
 
         # Setting up the model
         model_function = MisinfoPy()
-        model = ReplicatorModel('MisinfoPy', function=model_function)  # ReplicatorModel alternative
+        model = ReplicatorModel(
+            "MisinfoPy", function=model_function
+        )  # ReplicatorModel alternative
         model.replications = seeds  # ReplicatorModel alternative
         steps = 60
 
         # Combining uncertainties and levers (for better sampling coverage)
         model.uncertainties = get_uncertainties() + get_levers()
         model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
-        model.outcomes = [ArrayOutcome('n_agents_above_belief_threshold'),  # ReplicatorModel alternative
-                          ArrayOutcome('polarization_variance'),
-                          ArrayOutcome('engagement'),
-                          ArrayOutcome('free_speech_constraint'),
-                          ArrayOutcome('avg_user_effort')]
+        model.outcomes = [
+            ArrayOutcome(
+                "n_agents_above_belief_threshold"
+            ),  # ReplicatorModel alternative
+            ArrayOutcome("polarization_variance"),
+            ArrayOutcome("engagement"),
+            ArrayOutcome("free_speech_constraint"),
+            ArrayOutcome("avg_user_effort"),
+        ]
         model.levers = []
 
         # Experiments
@@ -74,7 +92,9 @@ if __name__ == "__main__":
         # Save data
         if saving:
             # Path
-            dir_path = os.path.join(os.getcwd(), 'data', 'seedanalysis', belief_update_fn.name)
+            dir_path = os.path.join(
+                os.getcwd(), "data", "seedanalysis", belief_update_fn.name
+            )
             make_sure_path_exists(dir_path)
             experiments_path = os.path.join(dir_path, f"experiments.csv")
             outcomes_path = os.path.join(dir_path, f"outcomes.csv")

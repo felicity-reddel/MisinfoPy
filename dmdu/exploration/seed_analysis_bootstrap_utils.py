@@ -15,9 +15,11 @@ def load_outcomes(belief_update_fn):
     @param belief_update_fn: BeliefUpdate
     @return: pd.DataFrame
     """
-    path = os.path.join(os.getcwd(), 'data', 'seedanalysis', belief_update_fn.name, 'outcomes.csv')
+    path = os.path.join(
+        os.getcwd(), "data", "seedanalysis", belief_update_fn.name, "outcomes.csv"
+    )
     outcomes = pd.read_csv(path)
-    outcomes = outcomes.rename(columns={'Unnamed: 0': 'uncert_sample'})
+    outcomes = outcomes.rename(columns={"Unnamed: 0": "uncert_sample"})
 
     return outcomes
 
@@ -45,9 +47,9 @@ def get_quantile_data(data, n_seeds_list, n_samplings, quantile, seed=None):
             seed_sample = random.sample(population=seeds_100, k=n_seeds)
 
             # Only need rows of those seeds
-            subset = data[data['seed'].isin(seed_sample)]
+            subset = data[data["seed"].isin(seed_sample)]
             # Only need to calculate the quantile data over the columns of objectives
-            subset = subset.drop(columns=['uncert_sample', 'seed'])
+            subset = subset.drop(columns=["uncert_sample", "seed"])
 
             # Calculate the quantile data and save it
             data_1_sample = subset.quantile(axis=0, q=quantile)
@@ -55,7 +57,7 @@ def get_quantile_data(data, n_seeds_list, n_samplings, quantile, seed=None):
 
         df = pd.DataFrame(n_seeds_data)
         # add column to keep the information of over how many seeds the metrics were averaged
-        df['n_seeds'] = n_seeds
+        df["n_seeds"] = n_seeds
 
         data_list.append(df)
 
@@ -73,7 +75,7 @@ def save_to_csv(data, belief_update_fn):
     @return:
     """
 
-    dir_path = os.path.join(os.getcwd(), 'data', 'seedanalysis', belief_update_fn.name)
+    dir_path = os.path.join(os.getcwd(), "data", "seedanalysis", belief_update_fn.name)
     make_sure_path_exists(dir_path)
 
     path = os.path.join(dir_path, f"quantile.csv")

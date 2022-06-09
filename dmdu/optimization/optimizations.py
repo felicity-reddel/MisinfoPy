@@ -22,14 +22,16 @@ def run_my_optimization(bufn, nfe=100000, steps=60, saving=True, dir_path=None):
 
     # Running the optimization
     with MultiprocessingEvaluator(model) as evaluator:
-        results, epsilon_progress = evaluator.optimize(nfe=nfe, epsilons=epsilons, convergence=epsilon_progress)
+        results, epsilon_progress = evaluator.optimize(
+            nfe=nfe, epsilons=epsilons, convergence=epsilon_progress
+        )
 
     # Saving the data
     if saving:
 
         # Create path name
         if dir_path is None:
-            dir_path = os.path.join(os.getcwd(), 'data', bufn.name)
+            dir_path = os.path.join(os.getcwd(), "data", bufn.name)
         make_sure_path_exists(dir_path)
 
         results_path = os.path.join(dir_path, f"results.csv")
@@ -49,5 +51,5 @@ if __name__ == "__main__":
     models = [BeliefUpdate.SIT] if only_one_model else list(BeliefUpdate)
 
     for belief_update_fn in models:
-        print(f'Starting optimization for {belief_update_fn.name}')
+        print(f"Starting optimization for {belief_update_fn.name}")
         run_my_optimization(bufn=belief_update_fn, nfe=nfe, saving=True)

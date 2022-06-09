@@ -19,7 +19,11 @@ def get_results(belief_update_fn, scenarios, replications):
 
     @return: (pd.DataFrame, dict)
     """
-    path = os.path.join(os.getcwd(), 'data', f'ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief_update_fn}')
+    path = os.path.join(
+        os.getcwd(),
+        "data",
+        f"ref_scenario_{scenarios}_scenarios_{replications}_replications_{belief_update_fn}",
+    )
     results = load_results(path)
     experiments, outcomes = results
 
@@ -65,11 +69,11 @@ def parcoords_color_by(data, color_by):
         v_colors[v] = color
 
     # Plotting preparations
-    sns.set(rc={'figure.figsize': (14, 10)})
+    sns.set(rc={"figure.figsize": (14, 10)})
     limits = parcoords.get_limits(data)
     axes = parcoords.ParallelAxes(limits)
 
-    minimize = ['polarization_variance', 'free_speech_constraint', 'avg_user_effort']
+    minimize = ["polarization_variance", "free_speech_constraint", "avg_user_effort"]
     for metric in minimize:
         axes.invert_axis(metric)
 
