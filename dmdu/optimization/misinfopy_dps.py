@@ -79,7 +79,6 @@ def misinfopy(
 
     @return: tuple (1 value for each metric)
     """
-    print("start")
     # Initialize the model
     model = MisinfoPy()
 
@@ -132,14 +131,27 @@ if __name__ == '__main__':
         model.outcomes = get_outcomes()
         print(f'model completely set up')
 
+        # Set up reference scenario
+        test_params = {'belief_metric_threshold': 77.5,
+                       'n_edges': 2,
+                       'ratio_normal_user': 0.9875,
+                       'mean_normal_user': 1,
+                       'mean_disinformer': 10,
+                       'high_media_lit': 0.3,
+                       'deffuant_mu': 0.02,
+                       'sampling_p_update': 0.02,
+                       'n_posts_estimate_similarity': 10}
+        test_scenario = Scenario('test', **test_params)
+
         # Optimization
-        with SequentialEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
+        with MultiprocessingEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
             print(f'starting optimization')
-            results = evaluator.optimize(  # TODO: TypeError: misinfopy() missing 9 arguments  – if SequentialEvaluator
+            results = evaluator.optimize(
                 searchover='levers',
                 nfe=3,  # 100000,
                 epsilons=get_epsilons(),
                 # reference=get_reference_scenario()  # comment-in when ref_scenario & function are ready
+                reference=test_scenario
             )
             print(f'results are in')
 
