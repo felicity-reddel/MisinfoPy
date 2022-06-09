@@ -9,7 +9,8 @@ from ema_workbench import (
     Constant,
     Model,
     ReplicatorModel,
-    ArrayOutcome
+    ArrayOutcome,
+    Scenario
 )
 
 
@@ -117,9 +118,19 @@ def get_levers():
 def get_reference_scenario():
     """
     Provides the reference scenario (selected in ref_scenario_parcoords.ipynb).
+    Can also be loaded from the 'ref_scenario.csv' file.
     @return: Scenario
     """
-    ref_scenario = Scenario('reference', )  # TODO: FILL
+    params = {'belief_metric_threshold': 80.0,
+              'deffuant_mu': 0.0185664008066397,
+              'high_media_lit': 0.2851257267625852,
+              'mean_disinformer': 8.0,
+              'mean_normal_user': 0,
+              'n_edges': 3,
+              'n_posts_estimate_similarity': 5,
+              'ratio_normal_user': 0.9930851855394072,
+              'sampling_p_update': 0.027594598317021}
+    ref_scenario = Scenario('reference', **params)
 
     return ref_scenario
 

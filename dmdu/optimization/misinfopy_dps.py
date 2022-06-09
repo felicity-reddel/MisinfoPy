@@ -114,9 +114,18 @@ if __name__ == '__main__':
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    steps = 3
-    only_one_model = True
-    n_replications = 2
+    just_testing = True   # TODO: Set to 'False' before starting the test-run.
+
+    if just_testing:
+        steps = 3
+        only_one_model = True
+        n_replications = 2
+        nfe = 3
+    else:
+        steps = 60
+        only_one_model = True  # For Test-Run, still use only 1 model
+        n_replications = 30
+        nfe = 150000
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
@@ -124,36 +133,19 @@ if __name__ == '__main__':
 
         # Set up the model
         model = Model(name=f'MisinfoPy{belief_update_fn.name}', function=misinfopy)
-        print(f'model initialized')
         model.uncertainties = get_uncertainties()
         model.levers = get_levers()
         model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn, n_replications=n_replications)
         model.outcomes = get_outcomes()
-        print(f'model completely set up')
-
-        # Set up reference scenario
-        test_params = {'belief_metric_threshold': 77.5,
-                       'n_edges': 2,
-                       'ratio_normal_user': 0.9875,
-                       'mean_normal_user': 1,
-                       'mean_disinformer': 10,
-                       'high_media_lit': 0.3,
-                       'deffuant_mu': 0.02,
-                       'sampling_p_update': 0.02,
-                       'n_posts_estimate_similarity': 10}
-        test_scenario = Scenario('test', **test_params)
 
         # Optimization
-        with MultiprocessingEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
-            print(f'starting optimization')
+        with SequentialEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
             results = evaluator.optimize(
                 searchover='levers',
-                nfe=3,  # 100000,
+                nfe=nfe,
                 epsilons=get_epsilons(),
-                # reference=get_reference_scenario()  # comment-in when ref_scenario & function are ready
-                reference=test_scenario
+                reference=get_reference_scenario()
             )
-            print(f'results are in')
 
         if saving:
             dir_path = os.path.join(os.getcwd(), 'dmdu', 'optimization', 'data', f'{str(nfe)}nfe')
