@@ -6,7 +6,7 @@ from dmdu.utils_dmdu import make_sure_path_exists
 import os
 import pandas as pd
 from dmdu.utils_dmdu import get_100_seeds
-import random  # TODO: CAN USE THIS RANDOM, AND WITHOUT SEED?
+import random
 
 
 def load_outcomes(belief_update_fn):
@@ -22,15 +22,18 @@ def load_outcomes(belief_update_fn):
     return outcomes
 
 
-def get_quantile_data(data, n_seeds_list, n_samplings, quantile):
+def get_quantile_data(data, n_seeds_list, n_samplings, quantile, seed=None):
     """  # TODO: UPDATE
     Creates a DataFrame of the means of each of the bootstrap-samples (from the provided outcomes DataFrame).
     @param data: pd.DataFrame
     @param n_seeds_list: list of integers, n_seeds included in a seed sample
     @param n_samplings: int, how many times each number of seeds should be sampled for the bootstrapping
     @param quantile: float, in range [0.0, 1.0], if 0.5 -> calculate median
+    @param seed: int
     @return: dict, key = outcome names, value = quantile value over the provided DataFrame
     """
+    if seed:
+        random.seed(seed)
     seeds_100 = get_100_seeds()
     data_list = []
 
