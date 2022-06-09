@@ -25,7 +25,10 @@ from ema_workbench import (
     SequentialEvaluator,
     CategoricalParameter,
     Scenario,
+    ema_logging
 )
+
+_logger = ema_logging.get_module_logger(__name__)
 
 
 def misinfopy(
@@ -89,6 +92,7 @@ def misinfopy(
 
     @return: tuple (1 value for each metric)
     """
+    _logger.debug("start")
     # Initialize the model
     model = MisinfoPy()
 
@@ -140,11 +144,11 @@ if __name__ == "__main__":
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
-        print(f"Starting with Model {belief_update_fn.name}")
+        _logger.info(f"Starting with Model {belief_update_fn.name}")
 
         # Set up the model
         model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
-        print(f"model initialized")
+        _logger.debug(f"model initialized")
         model.uncertainties = get_uncertainties()
         model.levers = get_levers()
         model.constants = get_constants(
@@ -153,7 +157,13 @@ if __name__ == "__main__":
             n_replications=n_replications,
         )
         model.outcomes = get_outcomes()
-        print(f"model completely set up")
+        _logger.debug(f"model completely set up")
+
+        params = {}
+        for k in model.uncertainties:
+            params[k.name] = k.lower_bound
+
+        scenario = Scenario("test", **params)
 
         # Set up reference scenario
         test_params = {'belief_metric_threshold': 77.5,
@@ -168,16 +178,17 @@ if __name__ == "__main__":
         test_scenario = Scenario('test', **test_params)
 
         # Optimization
-        with MultiprocessingEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
-            print(f'starting optimization')
-            results = evaluator.optimize(
-                searchover='levers',
+        with MultiprocessingEvaluator(
+            model
+        ) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
+            # print(f"starting optimization")
+            results = evaluator.optimize(  # TODO: TypeError: misinfopy() missing 9 arguments  – if SequentialEvaluator
+                searchover="levers",
                 nfe=3,  # 100000,
                 epsilons=get_epsilons(),
-                # reference=get_reference_scenario()  # comment-in when ref_scenario & function are ready
                 reference=test_scenario
             )
-            print(f"results are in")
+            # print(f"results are in")
 
         if saving:
             dir_path = os.path.join(
