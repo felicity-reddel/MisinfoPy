@@ -76,7 +76,8 @@ def parcoords_color_by(data, color_by):
     for v, color in v_colors.items():
         indices = list(data[data[color_by] == v].index)
         part = data.iloc[indices, :]
-        axes.plot(part, color=color, label=v)
-        # Bonus: exclude belief_update_fn axis (e.g., get limits via combined df, but do plotting via dict {'DEFFUANT': df} )
+        axes.plot(part, color=color, label=v, alpha=0.1)
+        # Bonus:
+        # exclude belief_update_fn axis (e.g., get limits via combined df, but do plotting via dict {'DEFFUANT': df} )
 
     axes.legend()
