@@ -138,7 +138,7 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_testing = True   # TODO: Set to 'False' before starting the test-run.
+    just_testing = False
 
     if just_testing:
         steps = 3
@@ -187,7 +187,7 @@ if __name__ == "__main__":
         test_scenario = Scenario('test', **test_params)
 
         # Optimization
-        with MultiprocessingEvaluator(model) as evaluator:  # TODO: PickleError here  – if MultiprocessingEvaluator
+        with MultiprocessingEvaluator(model) as evaluator:
             results = evaluator.optimize(
                 searchover='levers',
                 nfe=nfe,
