@@ -12,6 +12,7 @@ from dmdu.utils_dmdu import (
 )
 
 # General
+import os
 import pandas as pd
 
 # ema_workbench
@@ -138,18 +139,20 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_testing = True   # TODO: Set to 'False' before starting the test-run.
+    just_testing = False   # TODO: Set to 'False' before starting the test-run.
 
     if just_testing:
         steps = 3
         only_one_model = True
         n_replications = 2
         nfe = 3
+        saving = False
     else:
         steps = 60
         only_one_model = True  # For Test-Run, still use only 1 model
         n_replications = 30
         nfe = 150000
+        saving = True
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
