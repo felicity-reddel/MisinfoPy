@@ -12,6 +12,7 @@ from dmdu.utils_dmdu import (
 )
 
 # General
+import os
 import pandas as pd
 import os
 
@@ -147,11 +148,13 @@ if __name__ == "__main__":
         only_one_model = False
         n_replications = 2
         nfe = 3
+        saving = False
     else:
         steps = 60
         only_one_model = True  # For Test-Run, still use only 1 model
         n_replications = 30
         nfe = 150000
+        saving = True
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
