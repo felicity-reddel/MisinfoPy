@@ -140,15 +140,14 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_testing = True
-    saving = True
+    just_debugging = False
 
-    if just_testing:
+    if just_debugging:
         steps = 3
         only_one_model = False
         n_replications = 2
-        nfe = 3
-        saving = False
+        nfe = 200
+        saving = True
     else:
         steps = 60
         only_one_model = True  # For Test-Run, still use only 1 model
