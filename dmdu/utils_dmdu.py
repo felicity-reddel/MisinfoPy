@@ -98,9 +98,17 @@ def get_epsilons():
     Returns the epsilon values for all outcomes. In the same order as the outcomes list.
     These values stem from the analysis in epsilon_values.ipynb.
 
+    In the following order:
+    - n_agents_above_belief_threshold:  2       (2, 4.6, 4.8), before 1
+    - polarization_variance:            2       (2, 18, 16), before 1
+    - engagement:                       40      (48, 30, 39), before 10
+    - free_speech_constraint:           0.02    (0.01, 0.04, 0.03), before 0.01
+    - avg_user_effort:                  1.0     (0.65 , 1.05, 1.06), before 0.5
+
     @return: list of floats
     """
-    epsilons = [1.0, 1.0, 10.0, 0.01, 0.5]
+    # epsilons = [1.0, 1.0, 10.0, 0.01, 0.5]
+    epsilons = [2, 2, 40, 0.02, 1.0]
 
     return epsilons
 

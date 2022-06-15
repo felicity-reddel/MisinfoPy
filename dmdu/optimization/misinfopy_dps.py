@@ -13,6 +13,7 @@ from dmdu.utils_dmdu import (
 
 # General
 import pandas as pd
+import os
 
 # ema_workbench
 from ema_workbench import (
@@ -138,11 +139,12 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_testing = False
+    just_testing = True
+    saving = True
 
     if just_testing:
         steps = 3
-        only_one_model = True
+        only_one_model = False
         n_replications = 2
         nfe = 3
     else:
@@ -197,10 +199,10 @@ if __name__ == "__main__":
 
         if saving:
             dir_path = os.path.join(
-                os.getcwd(), "dmdu", "optimization", "data", f"{str(nfe)}nfe"
+                os.getcwd(), "data", f"{str(nfe)}_nfe"
             )
             make_sure_path_exists(dir_path)
 
             file_name = f"results_{belief_update_fn.name}"
             path = os.path.join(dir_path, file_name)
-            save_results(results, path)
+            results.to_csv(path)
