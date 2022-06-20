@@ -152,7 +152,7 @@ if __name__ == "__main__":
         steps = 60
         only_one_model = True  # For Test-Run, still use only 1 model
         n_replications = 30
-        nfe = 150000
+        nfe = 50000
         saving = True
 
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
