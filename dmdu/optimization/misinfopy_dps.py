@@ -35,26 +35,26 @@ _logger = ema_logging.get_module_logger(__name__)
 
 
 def misinfopy(
-    # uncertainties (general, below model specific)
-    belief_metric_threshold,
-    n_edges,
-    ratio_normal_user,
-    mean_normal_user,
-    mean_disinformer,
-    high_media_lit,
-    deffuant_mu,
-    sampling_p_update,
-    n_posts_estimate_similarity,
-    # levers
-    mlit_select,
-    del_t,
-    rank_punish,
-    rank_t,
-    strikes_t,
-    # constants
-    steps,
-    belief_update_fn,
-    n_replications=1,  # optimization param (dependent on the model's sensitivity to stochastics)
+        # uncertainties (general, below model specific)
+        belief_metric_threshold,
+        n_edges,
+        ratio_normal_user,
+        mean_normal_user,
+        mean_disinformer,
+        high_media_lit,
+        deffuant_mu,
+        sampling_p_update,
+        n_posts_estimate_similarity,
+        # levers
+        mlit_select,
+        del_t,
+        rank_punish,
+        rank_t,
+        strikes_t,
+        # constants
+        steps,
+        belief_update_fn,
+        n_replications=1,  # optimization param (dependent on the model's sensitivity to stochastics)
 ):
     """
     Function for the optimization.
@@ -158,6 +158,9 @@ if __name__ == "__main__":
     models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
         _logger.info(f"Starting with Model {belief_update_fn.name}")
+        nfe_dir = os.path.join(
+            os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name,
+        )
 
         # Model setup
         model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
@@ -172,7 +175,14 @@ if __name__ == "__main__":
         model.outcomes = get_outcomes()
 
         # Convergence metrics setup
-        epsilon_progress = [EpsilonProgress()]
+        hypervolume_dir = os.path.join(nfe_dir, "hypervolume")
+        make_sure_path_exists(hypervolume_dir)
+        archive_logger = ArchiveLogger(
+            hypervolume_dir,
+            [l.name for l in model.levers],
+            [o.name for o in model.outcomes if o.kind != o.INFO])
+
+        convergence = [EpsilonProgress(), archive_logger]
 
         _logger.debug(f"model completely set up")
 
@@ -182,18 +192,18 @@ if __name__ == "__main__":
                 searchover='levers',
                 nfe=nfe,
                 epsilons=get_epsilons(),
-                convergence=epsilon_progress,
+                convergence=convergence,
                 reference=get_reference_scenario()
             )
 
         if saving:
             # Path directories
             dir_path = os.path.join(
-                os.getcwd(), "data", f"{str(nfe)}_nfe"
+                os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name
             )
             make_sure_path_exists(dir_path)
-            results_path = os.path.join(dir_path, f"results_{belief_update_fn.name}.csv")
-            epsilon_progress_path = os.path.join(dir_path, f"epsilon_progress_{belief_update_fn.name}.csv")
+            results_path = os.path.join(dir_path, "results.csv")
+            epsilon_progress_path = os.path.join(dir_path, "epsilon_progress.csv")
 
             # Saving results
             results.to_csv(results_path)
