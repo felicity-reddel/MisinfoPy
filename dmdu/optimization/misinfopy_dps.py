@@ -29,6 +29,7 @@ from ema_workbench import (
     Scenario,
     ema_logging
 )
+from ema_workbench.em_framework.optimization import EpsilonProgress, ArchiveLogger
 
 _logger = ema_logging.get_module_logger(__name__)
 
@@ -53,8 +54,7 @@ def misinfopy(
     # constants
     steps,
     belief_update_fn,
-    # optimization param (dependent on the model's sensitivity to stochastics)
-    n_replications=1,
+    n_replications=1,  # optimization param (dependent on the model's sensitivity to stochastics)
 ):
     """
     Function for the optimization.
@@ -140,13 +140,13 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_debugging = False
+    just_debugging = True
 
     if just_debugging:
         steps = 3
         only_one_model = False
         n_replications = 2
-        nfe = 200
+        nfe = 2
         saving = True
     else:
         steps = 60
@@ -159,7 +159,7 @@ if __name__ == "__main__":
     for belief_update_fn in models:
         _logger.info(f"Starting with Model {belief_update_fn.name}")
 
-        # Set up the model
+        # Model setup
         model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
         _logger.debug(f"model initialized")
         model.uncertainties = get_uncertainties()
@@ -170,41 +170,31 @@ if __name__ == "__main__":
             n_replications=n_replications,
         )
         model.outcomes = get_outcomes()
+
+        # Convergence metrics setup
+        epsilon_progress = [EpsilonProgress()]
+
         _logger.debug(f"model completely set up")
-
-        params = {}
-        for k in model.uncertainties:
-            params[k.name] = k.lower_bound
-
-        scenario = Scenario("test", **params)
-
-        # Set up reference scenario
-        test_params = {'belief_metric_threshold': 77.5,
-                       'n_edges': 2,
-                       'ratio_normal_user': 0.9875,
-                       'mean_normal_user': 1,
-                       'mean_disinformer': 10,
-                       'high_media_lit': 0.3,
-                       'deffuant_mu': 0.02,
-                       'sampling_p_update': 0.02,
-                       'n_posts_estimate_similarity': 10}
-        test_scenario = Scenario('test', **test_params)
 
         # Optimization
         with MultiprocessingEvaluator(model) as evaluator:
-            results = evaluator.optimize(
+            results, epsilon_progress = evaluator.optimize(
                 searchover='levers',
                 nfe=nfe,
                 epsilons=get_epsilons(),
+                convergence=epsilon_progress,
                 reference=get_reference_scenario()
             )
 
         if saving:
+            # Path directories
             dir_path = os.path.join(
                 os.getcwd(), "data", f"{str(nfe)}_nfe"
             )
             make_sure_path_exists(dir_path)
+            results_path = os.path.join(dir_path, f"results_{belief_update_fn.name}.csv")
+            epsilon_progress_path = os.path.join(dir_path, f"epsilon_progress_{belief_update_fn.name}.csv")
 
-            file_name = f"results_{belief_update_fn.name}"
-            path = os.path.join(dir_path, file_name)
-            results.to_csv(path)
+            # Saving results
+            results.to_csv(results_path)
+            epsilon_progress.to_csv(epsilon_progress_path)
