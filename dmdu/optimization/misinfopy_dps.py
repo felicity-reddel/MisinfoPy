@@ -7,6 +7,7 @@ from dmdu.utils_dmdu import (
     get_outcomes,
     get_constants,
     get_epsilons,
+    get_100_seeds,
     get_reference_scenario,
     make_sure_path_exists,
 )
@@ -14,7 +15,8 @@ from dmdu.utils_dmdu import (
 # General
 import os
 import pandas as pd
-import os
+import random
+import numpy as np
 
 # ema_workbench
 from ema_workbench import (
@@ -140,71 +142,74 @@ if __name__ == "__main__":
     ema_logging.log_to_stderr(ema_logging.INFO)
 
     # Params
-    just_debugging = True
+    n_seeds = 1
+    nfe = 50000
+    models = [
+        # BeliefUpdate.DEFFUANT,    # This was used in the testrun
+        BeliefUpdate.SAMPLE,
+        BeliefUpdate.SIT,
+    ]
 
-    if just_debugging:
-        steps = 3
-        only_one_model = False
-        n_replications = 2
-        nfe = 2
-        saving = True
-    else:
-        steps = 60
-        only_one_model = True  # For Test-Run, still use only 1 model
-        n_replications = 30
-        nfe = 50000
-        saving = True
+    seeds = get_100_seeds()[:n_seeds]
+    steps = 60
+    n_replications = 30
+    saving = True
 
-    models = [BeliefUpdate.DEFFUANT] if only_one_model else list(BeliefUpdate)
     for belief_update_fn in models:
-        _logger.info(f"Starting with Model {belief_update_fn.name}")
-        nfe_dir = os.path.join(
-            os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name,
-        )
+        for seed_idx, seed in enumerate(seeds):
 
-        # Model setup
-        model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
-        _logger.debug(f"model initialized")
-        model.uncertainties = get_uncertainties()
-        model.levers = get_levers()
-        model.constants = get_constants(
-            steps=steps,
-            belief_update_fn=belief_update_fn,
-            n_replications=n_replications,
-        )
-        model.outcomes = get_outcomes()
+            # Setting seeds
+            random.seed(seed)
+            np.random.seed(seed)
 
-        # Convergence metrics setup
-        hypervolume_dir = os.path.join(nfe_dir, "hypervolume")
-        make_sure_path_exists(hypervolume_dir)
-        archive_logger = ArchiveLogger(
-            hypervolume_dir,
-            [l.name for l in model.levers],
-            [o.name for o in model.outcomes if o.kind != o.INFO])
-
-        convergence = [EpsilonProgress(), archive_logger]
-
-        _logger.debug(f"model completely set up")
-
-        # Optimization
-        with MultiprocessingEvaluator(model) as evaluator:
-            results, epsilon_progress = evaluator.optimize(
-                searchover='levers',
-                nfe=nfe,
-                epsilons=get_epsilons(),
-                convergence=convergence,
-                reference=get_reference_scenario()
+            _logger.info(f"Starting with Model {belief_update_fn.name}")
+            nfe_dir = os.path.join(
+                os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name,
             )
 
-        if saving:
-            # Path directories
-            dir_path = os.path.join(
-                os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name
+            # Model setup
+            model = Model(name=f"MisinfoPy{belief_update_fn.name}", function=misinfopy)
+            _logger.debug(f"model initialized")
+            model.uncertainties = get_uncertainties()
+            model.levers = get_levers()
+            model.constants = get_constants(
+                steps=steps,
+                belief_update_fn=belief_update_fn,
+                n_replications=n_replications,
             )
-            make_sure_path_exists(dir_path)
-            results_path = os.path.join(dir_path, "results.csv")
-            epsilon_progress_path = os.path.join(dir_path, "epsilon_progress.csv")
+            model.outcomes = get_outcomes()
 
-            # Saving results
-            results.to_csv(results_path)
-            epsilon_progress.to_csv(epsilon_progress_path)
+            # Convergence metrics setup
+            hypervolume_dir = os.path.join(nfe_dir, f"seed_{seed_idx}", "hypervolume")
+            make_sure_path_exists(hypervolume_dir)
+            archive_logger = ArchiveLogger(
+                hypervolume_dir,
+                [l.name for l in model.levers],
+                [o.name for o in model.outcomes if o.kind != o.INFO])
+
+            convergence = [EpsilonProgress(), archive_logger]
+
+            _logger.debug(f"model completely set up")
+
+            # Optimization
+            with MultiprocessingEvaluator(model) as evaluator:
+                results, epsilon_progress = evaluator.optimize(
+                    searchover='levers',
+                    nfe=nfe,
+                    epsilons=get_epsilons(),
+                    convergence=convergence,
+                    reference=get_reference_scenario()
+                )
+
+            if saving:
+                # Path directories
+                dir_path = os.path.join(
+                    os.getcwd(), "data", f"{str(nfe)}_nfe", belief_update_fn.name, f"seed_{seed_idx}"
+                )
+                make_sure_path_exists(dir_path)
+                results_path = os.path.join(dir_path, "results.csv")
+                epsilon_progress_path = os.path.join(dir_path, "epsilon_progress.csv")
+
+                # Saving results
+                results.to_csv(results_path)
+                epsilon_progress.to_csv(epsilon_progress_path)

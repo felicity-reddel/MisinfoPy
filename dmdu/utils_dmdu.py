@@ -77,6 +77,19 @@ def get_outcomes():
     return outcomes
 
 
+def get_outcome_names():
+    """Returns the lever names"""
+    names = [
+        "n_agents_above_belief_threshold",
+        "polarization_variance",
+        "engagement",
+        "free_speech_constraint",
+        "avg_user_effort"
+    ]
+
+    return names
+
+
 def get_replicator_outcomes():
     """
         Returns the outcomes. In the fitting format for the ema_workbench.
@@ -107,7 +120,7 @@ def get_epsilons():
 
     @return: list of floats
     """
-    # epsilons = [1.0, 1.0, 10.0, 0.01, 0.5]
+    # epsilons = [1.0, 1.0, 10.0, 0.01, 0.5]   # previous values
     epsilons = [2, 2, 40, 0.02, 1.0]
 
     return epsilons
@@ -116,6 +129,14 @@ def get_epsilons():
 def get_levers():
     """
     Returns the levers. In the fitting format for the ema_workbench.
+    Currently downscaled:
+     - for range
+        0 -> 0
+        1 -> 10
+        2 -> 20
+        ...
+        10 -> 100
+
     @return: list of ema_workbench Parameters
     """
 
@@ -128,6 +149,13 @@ def get_levers():
     ]
 
     return levers
+
+
+def get_lever_names():
+    """Returns the lever names"""
+    names = ["mlit_select", "del_t", "rank_punish", "rank_t", "strikes_t"]
+
+    return names
 
 
 def get_reference_scenario():
@@ -271,7 +299,7 @@ def get_policies_indiv():
 
 
 def epsilon_helper(
-    outcomes, bufn, metric, divide_by=10, best_quantile=0.25, minimize=None
+        outcomes, bufn, metric, divide_by=10, best_quantile=0.25, minimize=None
 ):
     """
     Helps to explore which epsilon-values would be suitable.
