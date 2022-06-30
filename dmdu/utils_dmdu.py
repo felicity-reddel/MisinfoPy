@@ -151,6 +151,31 @@ def get_levers():
     return levers
 
 
+def get_test_levers():
+    """
+    Returns the levers for testing. In the fitting format for the ema_workbench.
+    Currently downscaled:
+     - for range
+        0 -> 0
+        1 -> 10
+        2 -> 20
+        ...
+        10 -> 100
+
+    @return: list of ema_workbench Parameters
+    """
+
+    levers = [
+        IntegerParameter("mlit_select", lower_bound=0, upper_bound=1),
+        IntegerParameter("del_t", lower_bound=0, upper_bound=1),
+        IntegerParameter("rank_punish", lower_bound=0, upper_bound=1),
+        IntegerParameter("rank_t", lower_bound=0, upper_bound=1),
+        IntegerParameter("strikes_t", lower_bound=0, upper_bound=1),
+    ]
+
+    return levers
+
+
 def get_lever_names():
     """Returns the lever names"""
     names = ["mlit_select", "del_t", "rank_punish", "rank_t", "strikes_t"]
@@ -378,6 +403,7 @@ def replicator_model_setup(belief_update_fn, steps, replications):
     model.constants = get_constants(steps=steps, belief_update_fn=belief_update_fn)
     model.outcomes = get_replicator_outcomes()
     model.levers = get_levers()
+    # model.levers = get_test_levers()
 
     return model
 
