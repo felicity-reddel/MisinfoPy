@@ -92,6 +92,8 @@ if __name__ == "__main__":
     # scenarios = 200  # 4
     # beliefs = list(BeliefUpdate)
     # steps = 60
+    ema_logging.log_to_stderr((ema_logging.INFO))
+
 
     # (5) testing for final experiment
     replications = 30
