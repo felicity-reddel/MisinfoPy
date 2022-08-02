@@ -61,6 +61,24 @@ def get_uncertainties():
     return uncertainties
 
 
+def get_uncertainty_names():
+    """Returns the uncertainty names"""
+
+    names = [
+        "belief_metric_threshold",
+        "n_edges",
+        "ratio_normal_user",
+        "mean_normal_user",
+        "mean_disinformer",
+        "high_media_lit",
+        "deffuant_mu",
+        "sampling_p_update",
+        "n_posts_estimate_similarity",
+    ]
+
+    return names
+
+
 def get_outcomes():
     """
     Returns the outcomes. In the fitting format for the ema_workbench.
