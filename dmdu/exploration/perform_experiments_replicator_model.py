@@ -23,7 +23,7 @@ def perform_my_experiments(
     scenarios,
     belief_update_fn,
     steps=60,
-    replications=1,
+    replications=30,
     lever_sampling=None,
     saving=False,
     dir_path=None,
