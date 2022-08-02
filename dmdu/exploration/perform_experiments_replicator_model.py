@@ -42,7 +42,6 @@ def perform_my_experiments(
     @param file_name:           string
     @return:
     """
-    print(os.getcwd())
 
     # Setting up the model
     model = replicator_model_setup(belief_update_fn, steps, replications)
