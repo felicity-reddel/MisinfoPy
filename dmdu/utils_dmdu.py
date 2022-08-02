@@ -328,6 +328,17 @@ def epsilon_helper(
 ):
     """
     Helps to explore which epsilon-values would be suitable.
+    -   This is to explore the results from a random open exploration. As such, the results are likely not as good as
+        those that would be in a set of Pareto-optimal policies (either resulting from an optimization or from a
+        thorough evaluation of many policy candidates).
+    -   Consequently, it will be explored how many policies are not in the whole range, but in a subset (best quantile).
+        ("Best" depends on whether the metric is to be minimized or maximized.)
+    -   The range of 1 quantile is sliced into a number of parts (divide_by).
+    -   The result of the relevant range, divided by divide_by, leads to an epsilon value.
+    -   The function returns that epsilon value and how many policies fall within the "first epsilon-sized slice".
+    -   Like that it can be estimated what resolution might be useful, i.e., how big the epsilon value should be.
+    This can be done for all three models, then a suitable value that might work for each of them can be chosen.
+    -> Likely closer to the lower end of the three values (to make sure enough policies are returned).
 
     @param outcomes: dataframe
     @param bufn: BeliefUpdateFn
